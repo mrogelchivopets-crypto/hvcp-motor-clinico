@@ -97,6 +97,10 @@ create or replace view public.v_uso_sesiones with (security_invoker = on) as
 grant select on public.v_casos_validos, public.v_casos_por_dia, public.v_casos_estado, public.v_cerrados_abiertos,
   public.v_acierto_casos, public.v_acierto_resumen, public.v_tiempo_soap, public.v_dx_frecuentes, public.v_uso_sesiones
 to authenticated;
+-- Supabase concede por defecto escritura sobre objetos nuevos: las vistas son solo de lectura.
+revoke insert, update, delete, truncate, references, trigger on public.v_casos_validos, public.v_casos_por_dia, public.v_casos_estado, public.v_cerrados_abiertos,
+  public.v_acierto_casos, public.v_acierto_resumen, public.v_tiempo_soap, public.v_dx_frecuentes, public.v_uso_sesiones
+from authenticated;
 revoke all on public.v_casos_validos, public.v_casos_por_dia, public.v_casos_estado, public.v_cerrados_abiertos,
   public.v_acierto_casos, public.v_acierto_resumen, public.v_tiempo_soap, public.v_dx_frecuentes, public.v_uso_sesiones
 from anon;

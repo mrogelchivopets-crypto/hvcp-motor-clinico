@@ -2864,7 +2864,11 @@ function netPintar(){const el=document.getElementById("netst");if(!el)return;con
   else{el.textContent="Sincronizado";el.className="netst ok";el.title="Todos los casos de este dispositivo están en el registro"}}
 
 // ─── Conexión con Supabase ───
-function regConfig(){const c=window.HVCP_CONFIG||{};return c.supabaseUrl&&c.supabaseAnonKey&&!/TU-PROYECTO|PEGUE/.test(c.supabaseUrl+c.supabaseAnonKey)?c:null}
+function regConfig(){const c=window.HVCP_CONFIG||{};if(!c.supabaseUrl||!c.supabaseAnonKey||/TU-PROYECTO|PEGUE/.test(c.supabaseUrl+c.supabaseAnonKey))return null;
+  // Nunca funcionar con la clave secreta: si alguien la pegó por error, el registro no arranca.
+  let secreta=c.supabaseAnonKey.startsWith("sb_secret_");try{secreta=secreta||/service_role/.test(atob((c.supabaseAnonKey.split(".")[1]||"").replace(/-/g,"+").replace(/_/g,"/")))}catch(e){}
+  if(secreta){console.error("config.js tiene la service_role key: quítela de inmediato y use la anon key.");return null}
+  return c}
 function cargarSupabase(){return window.supabase&&window.supabase.createClient?Promise.resolve():new Promise((res,rej)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js";s.crossOrigin="anonymous";s.onload=res;s.onerror=()=>rej(new Error("supabase-js"));document.head.appendChild(s)})}
 // Garantiza una sesión: la del admin si existe; si no, una anónima del dispositivo (dura indefinidamente con renovación automática).
 async function regSesionLista(){
