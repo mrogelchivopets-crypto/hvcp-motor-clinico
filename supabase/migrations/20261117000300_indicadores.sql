@@ -56,16 +56,17 @@ create or replace view public.v_acierto_casos with (security_invoker = on) as
   join public.cierres k on k.caso = c.id
   where k.dx_nombre is not null and k.confirmacion is not null;
 
+-- Totales sin agrupar: sin «having es_admin()» un anónimo vería una fila en cero (sin datos, pero no debe ver nada).
 create or replace view public.v_acierto_resumen with (security_invoker = on) as
   select 'todos' as grupo, count(*)::int as n,
          count(*) filter (where top1 and dx_codigo is not null)::int as top1,
          count(*) filter (where top3 and dx_codigo is not null)::int as top3
-  from public.v_acierto_casos
+  from public.v_acierto_casos having public.es_admin()
   union all
   select 'confirmacion_objetiva', count(*)::int,
          count(*) filter (where top1 and dx_codigo is not null)::int,
          count(*) filter (where top3 and dx_codigo is not null)::int
-  from public.v_acierto_casos where confirmacion_objetiva;
+  from public.v_acierto_casos where confirmacion_objetiva having public.es_admin();
 
 -- Tiempo medio desde el inicio de la atención hasta la nota SOAP
 create or replace view public.v_tiempo_soap with (security_invoker = on) as

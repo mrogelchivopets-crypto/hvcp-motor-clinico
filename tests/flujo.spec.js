@@ -28,8 +28,10 @@ async function dispositivo(browser, { conConfig = true } = {}) {
 
 async function pacienteYSoap(page) {
   await page.locator("#s1 button.opt", { hasText: "Canino" }).click();
-  await page.locator("#s2 .mot").first().click();
-  await page.locator("#s2 .chip").first().click();
+  // Motivo «Vómito o diarrea» (con signos marcados por el motivo, así el motor da diagnósticos)
+  const motivo = await page.evaluate(() => MOTIVOS.find((m) => m.id === "dig").n);
+  await page.locator("#s2 .mot", { hasText: motivo }).click();
+  await page.locator("#s2 .chip:not(.on)").first().click();
   await page.getByRole("button", { name: "Generar nota SOAP" }).click();
   return page.locator("#soap").inputValue();
 }
@@ -151,7 +153,13 @@ test.describe("con el proyecto de prueba", () => {
     await page.locator("#admpass").fill(cfg.adminPass);
     await page.getByRole("button", { name: "Entrar" }).click();
     await expect(page.locator("#regbar")).toBeVisible({ timeout: 20000 });
-    await expect(page.locator("#regbody")).toContainText(codigoNormal, { timeout: 20000 });
+    // La lista abre en «Pendientes»: el caso cerrado aparece en «Cerrados» y en «Todos».
+    await expect(page.locator("#regbody")).toContainText(codigoOffline, { timeout: 20000 });
+    await expect(page.locator("#regbody")).not.toContainText(codigoNormal);
+    await page.getByRole("button", { name: /^Cerrados/ }).click();
+    await expect(page.locator("#regbody")).toContainText(codigoNormal);
+    await page.getByRole("button", { name: "Todos", exact: true }).click();
+    await expect(page.locator("#regbody")).toContainText(codigoNormal);
     await expect(page.locator("#regbody")).not.toContainText(codigoPrueba);
     await expect(page.locator("#regvet option")).not.toHaveCount(1);
     const espera = page.waitForEvent("download");

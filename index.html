@@ -2854,7 +2854,9 @@ function colaEnviar(){if(!colaCorriendo)colaCorriendo=colaEnviar_().finally(()=>
 async function colaEnviar_(){
   const ini=colaLeer();if(!ini.length)return {ok:true};
   if(!navigator.onLine||!(await regSesionLista()))return {ok:false};
+  await regSesionUso();
   for(const it of ini){
+    if(!it.p.sesion&&REG.sesion)it.p.sesion=REG.sesion;
     const {error}=await REG.sb.rpc("registrar_caso",{p:it.p});
     let c=colaLeer();
     if(!error){c=c.filter(x=>!(x.t===it.t&&x.k===it.k&&x.p.fa===it.p.fa));colaEscribir(c);continue}
@@ -2890,7 +2892,9 @@ async function regSesionLista(){
 function dispositivo(){const u=navigator.userAgent;const so=/iPhone|iPad/.test(u)?"iOS":/Android/.test(u)?"Android":/Windows/.test(u)?"Windows":/Mac OS/.test(u)?"macOS":/Linux/.test(u)?"Linux":"Otro";
   const nav=/Edg\//.test(u)?"Edge":/CriOS|Chrome\//.test(u)?"Chrome":/FxiOS|Firefox\//.test(u)?"Firefox":/Safari\//.test(u)?"Safari":"Otro";
   return `${so} · ${nav} · ${/Mobi|iPhone|Android(?!.*Tablet)/.test(u)?"teléfono":/iPad|Tablet/.test(u)?"tableta":"computadora"}`}
-async function regNuevaSesion(){try{const {data}=await REG.sb.rpc("iniciar_sesion",{p_dispositivo:dispositivo(),p_version:MOTOR_VER});REG.sesion=data||null}catch(e){REG.sesion=null}}
+async function regNuevaSesion(){try{const {data,error}=await REG.sb.rpc("iniciar_sesion",{p_dispositivo:dispositivo(),p_version:MOTOR_VER});REG.sesion=error?null:(data||null)}catch(e){REG.sesion=null}}
+// Garantiza la sesión de uso antes de enviar casos (evita casos sin sesión si la nota se genera en los primeros segundos o sin red).
+function regSesionUso(){if(REG.sesion||!REG.sb)return Promise.resolve(REG.sesion);if(!REG.sesionP)REG.sesionP=regNuevaSesion().finally(()=>{REG.sesionP=null});return REG.sesionP}
 function regEvento(tipo){if(!REG.sb||!REG.uid||!navigator.onLine)return;REG.sb.rpc("registrar_evento",{p_tipo:tipo,p_sesion:REG.sesion,p_codigo:REG.cur?REG.cur.id:null}).then(()=>{},()=>{})}
 // «Copiar» registra el evento sin tocar copySOAP().
 (()=>{const orig=copySOAP;window.copySOAP=copySOAP=function(){const r=orig.apply(this,arguments);regEvento("copiar_soap");return r}})();
@@ -2906,7 +2910,7 @@ function regEvento(tipo){if(!REG.sb||!REG.uid||!navigator.onLine)return;REG.sb.r
   // Enlace de recuperación de contraseña: pedir la nueva al abrir la página.
   REG.sb.auth.onAuthStateChange(async(ev)=>{if(ev==="PASSWORD_RECOVERY"){const n=prompt("Escriba su nueva contraseña (mínimo 10 caracteres):");
     if(n&&n.length>=10){const {error}=await REG.sb.auth.updateUser({password:n});alert(error?"No se pudo cambiar la contraseña.":"Contraseña actualizada.")}}});
-  if(await regSesionLista()){await regPerfil();await regNuevaSesion()}
+  if(await regSesionLista()){await regPerfil();await regSesionUso()}
   netPintar();colaEnviar();
   if(REG.abierto){if(REG.admin&&!REG.cargado)regCargar();regRender()}
   window.addEventListener("online",()=>{netPintar();colaEnviar()});window.addEventListener("offline",netPintar);
