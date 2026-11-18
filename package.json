@@ -1,0 +1,19 @@
+{
+  "name": "hvcp-motor-clinico",
+  "private": true,
+  "description": "Motor Clínico de Urgencias HVCP v7.9.6 · registro en línea (GitHub Pages + Supabase)",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:equivalencia": "playwright test tests/equivalencia.spec.js",
+    "test:flujo": "playwright test tests/flujo.spec.js",
+    "test:rls": "node --test tests/rls.test.js",
+    "importar": "node scripts/importar_registro.mjs",
+    "servir": "node scripts/servir.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.48.2",
+    "@supabase/supabase-js": "2.45.4",
+    "xlsx": "0.18.5"
+  }
+}
