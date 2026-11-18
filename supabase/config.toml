@@ -1,0 +1,62 @@
+# Configuración para Supabase LOCAL (supabase start). En el proyecto en la nube estos mismos
+# ajustes se hacen desde el panel; el README indica dónde.
+project_id = "hvcp-motor-clinico"
+
+[api]
+port = 54321
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 5000
+
+[db]
+port = 54322
+major_version = 17
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[studio]
+port = 54323
+
+[inbucket]
+port = 54324
+
+[auth]
+enabled = true
+# Dirección donde se sirve el motor (en producción: la de GitHub Pages).
+site_url = "http://127.0.0.1:5173"
+additional_redirect_urls = ["http://127.0.0.1:5173/index.html", "http://localhost:5173"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+# Los médicos usan el motor sin cuenta: cada dispositivo recibe una sesión anónima.
+enable_anonymous_sign_ins = true
+enable_signup = true
+minimum_password_length = 10
+
+[auth.rate_limit]
+# Todo el hospital puede salir a internet por una sola IP: margen para varios dispositivos nuevos.
+anonymous_users = 60
+sign_in_sign_ups = 60
+
+[auth.email]
+enable_signup = true
+enable_confirmations = true
+secure_password_change = true
+max_frequency = "1m0s"
+
+[auth.email.template.recovery]
+subject = "Motor Clínico HVCP · Cambiar contraseña"
+content_path = "./supabase/templates/recuperar.html"
+
+[auth.email.template.invite]
+subject = "Motor Clínico HVCP · Invitación al registro"
+content_path = "./supabase/templates/invitar.html"
+
+[auth.email.template.confirmation]
+subject = "Motor Clínico HVCP · Confirme su correo"
+content_path = "./supabase/templates/confirmar.html"
+
+[auth.email.template.email_change]
+subject = "Motor Clínico HVCP · Confirme su nuevo correo"
+content_path = "./supabase/templates/cambio_correo.html"

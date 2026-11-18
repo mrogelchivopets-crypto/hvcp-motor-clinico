@@ -2646,6 +2646,7 @@ function regFicha(){
     <input class="reg-in" style="margin-top:8px" maxlength="300" placeholder="Otros resultados relevantes (sin datos del propietario)" value="${esc(E.otros)}" onchange="REG.ed.otros=this.value"></div>
    <div class="field"><span class="flabel">Notas clínicas</span><textarea class="reg-in" rows="3" maxlength="600" placeholder="Sin nombres ni datos del propietario" onchange="REG.ed.notas=this.value">${esc(E.notas)}</textarea></div>
    <div class="opts"><button class="opt on" onclick="regGuardarCierre()">Guardar</button><span class="muted" id="regedmsg" style="align-self:center">${esc(REG.edMsg||"")}</span></div>
+   ${REG.admin?`<div class="opts" style="margin-top:14px"><button class="mot2b" onclick="regAnular()">Anular este caso</button><span class="muted" style="align-self:center">No se borra: sale de la lista y de los indicadores, y queda constancia.</span></div>`:""}
    ${k&&k.fc?`<div class="ref">Última actualización: ${esc(fCorta(k.fc))}</div>`:""}
   </div></div></div>`;
 }
@@ -2660,6 +2661,15 @@ function regBuscaVC(q,dest){
 }
 function regPick(c,dest){const r=VC.get(c);if(!r)return;const o={c:r[0],n:r[1],cap:r[3]};if(dest==="con"){if(!REG.ed.con.some(x=>x.c===c)&&(!REG.ed.dx||REG.ed.dx.c!==c))REG.ed.con.push(o)}else{REG.ed.dx=o;REG.ed.sinDx=false}regRender()}
 function regNuevoDx(){const n=prompt("Nombre del diagnóstico (no existe en VetCIE-1):");if(n&&n.trim()){REG.ed.dx={c:"",n:n.trim().slice(0,120),cap:"",nuevo:true};REG.ed.sinDx=false;regRender()}}
+async function regAnular(){
+  const x=REG.sel;if(!x||!REG.admin||!REG.sb)return;
+  const m=prompt(`Motivo para anular ${x.id} (p. ej., duplicado, error de captura). El caso no se borra.`);if(m==null)return;
+  if(!m.trim()){alert("Escriba el motivo de la anulación.");return}
+  const {error}=await REG.sb.rpc("anular_caso",{p_codigo:x.id,p_motivo:m.trim().slice(0,300)});
+  if(error){REG.edMsg="No se pudo anular: "+(/caso_no_encontrado/.test(error.message)?"el caso ya estaba anulado.":"revise la conexión.");regRender();return}
+  REG.todos=(REG.todos||[]).filter(c=>c.id!==x.id);REG.casos=REG.casos.filter(c=>c.id!==x.id);REG.sel=null;REG.ed=null;
+  regRender();
+}
 async function regGuardarCierre(){
   const x=REG.sel,E=REG.ed;
   if(E.dx&&!E.conf){REG.edMsg="Indique la base de la confirmación del diagnóstico.";regRender();return}

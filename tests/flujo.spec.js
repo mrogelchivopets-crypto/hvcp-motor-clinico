@@ -163,6 +163,14 @@ test.describe("con el proyecto de prueba", () => {
     expect(fila).toBeTruthy();
     expect(fila["Veterinario"]).toMatch(/^Anónimo · disp\. [0-9A-F]{4}$/);
     expect(Object.keys(fila).join(" ")).not.toMatch(/propietari|tel[eé]fono|direcci|expediente/i);
+    // Anular desde la ficha (no se borra)
+    await page.locator(`[onclick="regAbrir('${codigoOffline}')"]`).first().click();
+    page.once("dialog", (d) => d.accept("Prueba automática: duplicado"));
+    await page.getByRole("button", { name: "Anular este caso" }).click();
+    await expect(page.locator("#regbody")).not.toContainText(codigoOffline, { timeout: 20000 });
+    const an = await ADM.from("casos").select("anulado,anulado_motivo").eq("codigo", codigoOffline).single();
+    expect(an.data).toEqual({ anulado: true, anulado_motivo: "Prueba automática: duplicado" });
+    codigoOffline = null;
     // Indicadores
     await page.locator("#regtabs button", { hasText: "Indicadores" }).click();
     await expect(page.locator("#regbody")).not.toBeEmpty();
