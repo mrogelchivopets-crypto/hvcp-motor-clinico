@@ -1,0 +1,17 @@
+*Motor Clínico de Urgencias HVCP* 🩺
+
+Colegas, ya está disponible el Motor Clínico de Urgencias en línea. Lo pueden abrir desde el teléfono o la computadora, *sin cuenta ni contraseña*:
+
+👉 https://mrogelchivopets-crypto.github.io/hvcp-motor-clinico/
+
+*Cómo se usa*
+1. Completen paciente, examen físico, motivo y signos, y toquen *Generar nota SOAP*.
+2. Copien la nota al expediente. Al final trae un código como *MC-7K3PQ2*.
+3. Cuando tengan el diagnóstico definitivo, entren a *Registro de casos*, escriban ese código y cierren el caso indicando en qué se basa el diagnóstico.
+
+*Tres reglas*
+⚠️ Nunca escriban datos del propietario (nombre, teléfono, dirección ni expediente).
+⚠️ Casos de práctica o docencia: marquen *No registrar (prueba o docencia)* antes de generar la nota.
+⚠️ Cierren siempre sus casos con el código MC.
+
+Les adjunto la guía rápida con el código QR. Cualquier duda, me escriben.

@@ -1,6 +1,6 @@
-# Motor Clínico de Urgencias HVCP v7.9.6 · registro en línea
+# Motor Clínico de Urgencias HVCP v7.9.7 · registro en línea
 
-Hospital Veterinario Chivo Pets. Es el mismo Motor Clínico v7.9.6, ahora con un enlace fijo en GitHub Pages y un **registro de casos único para todo el hospital** en Supabase (base de datos Postgres con autenticación).
+Hospital Veterinario Chivo Pets. Es el Motor Clínico (v7.9.7; los cambios de cada versión están en `CAMBIOS.md`), con un enlace fijo en GitHub Pages y un **registro de casos único para todo el hospital** en Supabase (base de datos Postgres con autenticación).
 
 - **La lógica clínica no cambió.** Diagnósticos, signos, preguntas, motivos, pesos, `scoreDx`, `altaList`, alertas, fluidoterapia y nota SOAP son idénticos al original. Así se comprobó: en 240 casos generados al azar, el original y la versión nueva dieron exactamente el mismo resultado (ver [Pruebas](#pruebas)).
 - **No se guarda ningún dato del propietario**: ni nombre, ni teléfono, ni dirección, ni número de expediente.
@@ -163,6 +163,12 @@ Del Excel anterior no se pueden recuperar:
 ## Indicadores y Excel
 
 - En el motor, el admin ve la pestaña **Indicadores**, con los mismos cálculos de la versión anterior, ahora con los casos de todo el hospital.
+- La pestaña **Uso** muestra el uso del hospital, con el mismo período y filtro de veterinario que las demás pestañas:
+  - casos por día (o por semana en períodos largos);
+  - casos por turno y por día de la semana;
+  - especie, motivos de consulta más frecuentes y versión del motor;
+  - mediana de tiempo hasta la nota SOAP y hasta el cierre;
+  - una tabla por veterinario o dispositivo con casos, % cerrados y sesiones de uso. Las sesiones se leen de `v_uso_sesiones`.
 - **Exportar a Excel** produce las mismas hojas y columnas que antes, más la columna **«Veterinario»**.
 - Para análisis aparte, la base tiene estas vistas, solo para el admin y en el **SQL Editor**:
 
@@ -176,6 +182,62 @@ Del Excel anterior no se pueden recuperar:
 | `v_uso_sesiones` | Sesiones de uso por día y dispositivo |
 
 Todas excluyen los casos anulados y los de prueba o docencia. La hora es la de El Salvador. Si los turnos del hospital son otros, ajuste la función `turno_de`.
+
+## Actualizar medicamentos, exámenes e inventario
+
+El catálogo (formulario de medicamentos, faltantes con su sustituto y exámenes) vive dentro de `index.html`. Se edita en Excel y se carga con dos comandos. **Los diagnósticos, signos y puntajes no se cambian así**: son lógica clínica y se validan aparte.
+
+### 1. Sacar el Excel del motor actual
+
+```powershell
+npm run catalogo:exportar -- --vetcie "C:\ruta\VetCIE-1_HVCP_Clasificador_v3.xlsx"
+```
+
+- Genera `catalogo/Catalogo_Motor_Clinico_HVCP_v<versión>.xlsx`.
+- `--vetcie` es opcional: si lo da, revisa que cada código de diagnóstico del motor exista en el clasificador.
+
+### 2. Editar
+
+- Se editan solo tres hojas: **Medicamentos HVCP**, **Medicamentos faltantes** y **Exámenes**. También la fila **Inventario de referencia** de la hoja **Resumen**.
+- Las columnas «(automático)» y las hojas de diagnósticos son de consulta y no se leen.
+- La hoja **Resumen** explica cada caso:
+  - un medicamento agotado se marca «No» en «En inventario»;
+  - un medicamento que se compra pasa de **Medicamentos faltantes** a **Medicamentos HVCP** con la misma clave;
+  - cambios en el código del laboratorio, sustitutos, etc.
+
+### 3. Revisar
+
+```powershell
+npm run catalogo:importar -- catalogo\Catalogo_Motor_Clinico_HVCP_v7_9_6.xlsx
+```
+
+No cambia nada. Muestra (y guarda en `catalogo/informe_revision.md`):
+
+- **Errores** que impiden aplicar:
+  - dosis mínima mayor que la máxima;
+  - un examen o medicamento que algún diagnóstico usa y fue borrado;
+  - un sustituto que no existe;
+  - celdas de Sí/No o números mal escritos.
+- **Cambios**, campo por campo y con el valor de antes y el de después. Por ejemplo: «Amikacina: dosis gato «10–15 mg/kg…» → «15 mg/kg…»».
+- **Avisos**, por ejemplo cuántos diagnósticos mostrarán un medicamento como «No disponible», o un medicamento nuevo que ningún diagnóstico usa todavía.
+
+### 4. Aplicar
+
+```powershell
+npm run catalogo:importar -- catalogo\Catalogo_Motor_Clinico_HVCP_v7_9_6.xlsx --aplicar
+```
+
+1. Reescribe solo las líneas del catálogo en `index.html`.
+2. Sube la versión, por ejemplo de 7.9.7 a 7.9.8. Para elegir otra, use `--version 7.10.0`.
+3. Comprueba con 240 casos que los diagnósticos y puntajes son **idénticos** a la versión anterior. Tarda unos 3 minutos. Si algo cambió, deja el motor como estaba.
+4. Anota el cambio en `CAMBIOS.md` y genera el Excel de la versión nueva.
+
+### 5. Publicar
+
+- Revise el motor con `npm run servir`.
+- Luego haga commit y push a `main`. GitHub Pages lo publica en un minuto.
+- Cada caso del registro guarda la versión del motor, así que los indicadores se pueden comparar entre versiones.
+- Si algo sale mal, se vuelve a la versión anterior con `git revert`.
 
 ## Pruebas
 
@@ -195,6 +257,8 @@ npm run test:flujo
   - la nota SOAP completa.
 
   Usa el Google Chrome instalado; con Edge, use `PW_CANAL=msedge`.
+
+  Después de una actualización del catálogo, el texto de los planes cambia a propósito. Por eso `catalogo:importar` compara contra la versión anterior (`EQ_BASE`) y solo el razonamiento clínico (`EQ_MODO=diagnostico`).
 - **`test:rls`** y **`test:flujo`** necesitan un **proyecto de prueba** configurado en `.env` (ver `.env.ejemplo`). Verifican:
   - que un dispositivo anónimo no puede leer, modificar ni borrar nada, ni hacerse admin;
   - la cola sin conexión;
@@ -215,5 +279,8 @@ También puede probar el motor en su computadora con `npm run servir` y abrir <h
 | `supabase/seed.sql` | Admin de prueba **solo para Supabase local** (sin datos reales) |
 | `supabase/templates/` | Correos de autenticación en español |
 | `scripts/importar_registro.mjs` | Importación del Excel anterior |
+| `scripts/catalogo_exportar.mjs` / `catalogo_importar.mjs` | Catálogo de medicamentos y exámenes en Excel: exportar, revisar y aplicar |
+| `CAMBIOS.md` | Historial de versiones del motor (lo escribe `catalogo:importar`) |
+| `guia/` | Guía rápida para médicos (QR, imagen y PDF); se regenera con `npm run guia` |
 | `tests/` | Equivalencia clínica, RLS y flujo |
 | `AVISO_PRIVACIDAD.md` | Qué datos se guardan y para qué |

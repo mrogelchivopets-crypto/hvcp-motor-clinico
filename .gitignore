@@ -7,4 +7,5 @@ playwright-report/
 supabase/.temp/
 supabase/.branches/
 *.xlsx
-
+tests/fixtures/anterior.html
+catalogo/informe_revision.md

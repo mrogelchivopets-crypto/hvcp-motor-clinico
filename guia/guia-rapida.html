@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Guía rápida · Motor Clínico HVCP</title>
+<style>
+  @page { size: letter; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --navy:#0f2a3d; --azul:#3D7EF5; --azul-claro:#EAF1FE; --texto:#1d2433; --sub:#5a6478; --rojo:#c62828; --rojo-claro:#fdecec; --linea:#dfe4ee; }
+  body { width: 816px; min-height: 1056px; font-family: "Segoe UI", Roboto, Arial, sans-serif; color: var(--texto); background: #fff; font-size: 14px; line-height: 1.38; }
+  header { background: var(--navy); color: #fff; padding: 24px 44px 20px; }
+  header .hosp { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; opacity: .75; }
+  header h1 { font-size: 29px; line-height: 1.15; margin-top: 6px; }
+  header p { font-size: 16px; opacity: .85; margin-top: 6px; }
+  main { padding: 20px 44px 10px; }
+  .acceso { display: flex; gap: 26px; align-items: center; border: 2px solid var(--azul); border-radius: 14px; padding: 14px 20px; background: var(--azul-claro); }
+  .acceso img { width: 168px; height: 168px; flex: none; border-radius: 6px; background: #fff; }
+  .acceso h2 { font-size: 20px; color: var(--navy); }
+  .acceso .url { font-family: Consolas, monospace; font-size: 14.5px; color: var(--azul); font-weight: 600; word-break: break-all; margin: 6px 0 10px; }
+  .acceso ul { list-style: none; font-size: 14px; color: var(--sub); }
+  .acceso li { margin-top: 3px; }
+  .acceso li b { color: var(--texto); }
+  h3 { font-size: 18px; color: var(--navy); margin: 18px 0 6px; display: flex; align-items: center; gap: 10px; }
+  h3 .n { width: 30px; height: 30px; border-radius: 50%; background: var(--azul); color: #fff; font-size: 16px; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+  ol.pasos { list-style: none; counter-reset: p; padding-left: 40px; }
+  ol.pasos li { counter-increment: p; position: relative; padding: 3px 0 3px 4px; }
+  ol.pasos li::before { content: counter(p) "."; position: absolute; left: -22px; color: var(--azul); font-weight: 700; }
+  .ui { background: #f1f3f8; border: 1px solid var(--linea); border-radius: 5px; padding: 0 6px; font-weight: 600; white-space: nowrap; }
+  .cod { font-family: Consolas, monospace; font-weight: 700; color: var(--navy); background: #fff6d6; border: 1px solid #f0d77a; border-radius: 5px; padding: 0 6px; white-space: nowrap; }
+  .nota { margin: 5px 0 0 40px; font-size: 13px; color: var(--sub); }
+  .reglas { margin-top: 18px; border: 2px solid var(--rojo); border-radius: 14px; overflow: hidden; }
+  .reglas .t { background: var(--rojo); color: #fff; font-weight: 700; font-size: 16px; padding: 8px 18px; letter-spacing: .02em; }
+  .reglas ul { list-style: none; padding: 8px 18px 12px; background: var(--rojo-claro); }
+  .reglas li { padding: 5px 0 5px 28px; position: relative; }
+  .reglas li + li { border-top: 1px solid #f3cfcf; }
+  .reglas li::before { content: "!"; position: absolute; left: 0; top: 7px; width: 18px; height: 18px; border-radius: 50%; background: var(--rojo); color: #fff; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+  footer { margin: 14px 44px 0; padding: 10px 0 18px; border-top: 1px solid var(--linea); font-size: 12.5px; color: var(--sub); display: flex; justify-content: space-between; gap: 20px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="hosp">Hospital Veterinario Chivo Pets · Urgencias</div>
+  <h1>Motor Clínico de Urgencias</h1>
+  <p>Guía rápida para médicos veterinarios · versión 7.9.7</p>
+</header>
+<main>
+  <section class="acceso">
+    <img src="qr-motor.svg" alt="Código QR del Motor Clínico">
+    <div>
+      <h2>Ábralo desde el teléfono o la computadora</h2>
+      <div class="url">mrogelchivopets-crypto.github.io/hvcp-motor-clinico</div>
+      <ul>
+        <li><b>Escanee el código QR</b> con la cámara o toque el enlace.</li>
+        <li><b>No necesita cuenta ni contraseña.</b></li>
+        <li>Guárdelo en la pantalla de inicio: en Chrome <b>⋮ → Agregar a la pantalla principal</b>; en iPhone <b>Compartir → Agregar a inicio</b>.</li>
+      </ul>
+    </div>
+  </section>
+
+  <h3><span class="n">1</span>Durante la consulta</h3>
+  <ol class="pasos">
+    <li>Elija la especie y complete los datos del paciente, el examen físico y el motivo de consulta.</li>
+    <li>Marque los signos y responda las preguntas que le haga el motor.</li>
+    <li>Toque <span class="ui">Generar nota SOAP</span>, revísela y toque <span class="ui">Copiar</span> para pegarla en el expediente.</li>
+  </ol>
+  <p class="nota">Al final de la nota aparece el código del caso, por ejemplo <span class="cod">Registro Motor Clínico: MC-7K3PQ2</span>. Ese código queda en el expediente y es el que se usa para cerrar el caso.</p>
+
+  <h3><span class="n">2</span>Cuando tenga el diagnóstico definitivo: cierre el caso</h3>
+  <ol class="pasos">
+    <li>Toque <span class="ui">Registro de casos</span> y escriba el código MC que quedó en la nota.</li>
+    <li>Toque <span class="ui">Abrir caso</span> y elija el diagnóstico definitivo (o «Sin diagnóstico definitivo»).</li>
+    <li>Indique en qué se basa: histopatología o necropsia, laboratorio específico, imagen, hallazgo quirúrgico, respuesta al tratamiento o solo criterio clínico.</li>
+    <li>Agregue los exámenes clave si los tiene y toque <span class="ui">Guardar</span>.</li>
+  </ol>
+  <p class="nota">Cualquier médico puede cerrar el caso, desde cualquier dispositivo, solo con el código. Por privacidad, la página no muestra el historial de casos.</p>
+
+  <section class="reglas">
+    <div class="t">Tres reglas</div>
+    <ul>
+      <li><b>Nunca escriba datos del propietario</b>: nombre, teléfono, dirección ni número de expediente. Solo datos clínicos del paciente.</li>
+      <li><b>Casos de práctica o docencia:</b> marque <span class="ui">No registrar (prueba o docencia)</span> antes de generar la nota, para que no cuenten en las estadísticas.</li>
+      <li><b>Cierre siempre sus casos</b> con el código MC. Así el hospital sabe qué tan acertado es el motor y lo puede mejorar.</li>
+    </ul>
+  </section>
+</main>
+<footer>
+  <span>¿Sin internet? El motor funciona igual: el caso se guarda en el dispositivo y se envía solo al reconectar.</span>
+  <span>El motor orienta; la decisión clínica es siempre del médico.</span>
+</footer>
+</body>
+</html>

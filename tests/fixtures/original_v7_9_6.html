@@ -1,4 +1,3 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -453,7 +452,7 @@ const QS = [
  {id:"vomtipo",s:"dig",t:"¿Cómo es el vómito?",h:"",w:["vom"],o:[["comun","Alimento o líquido sin características especiales","g"],["alim","Alimento sin digerir horas después de comer","y"],["bilis","Bilioso (amarillo), sobre todo en ayunas","y"],["sangre","Con sangre fresca o en «pozo de café»","r"],["fecal","Fecaloide (olor a heces)","r"],["espuma","Espumoso o solo arcadas","y"]]},
  {id:"secr",s:"res",t:"¿Cómo es la secreción?",h:"",w:["secnas","secoc"],o:[["ser","Serosa (transparente)","y"],["muco","Mucopurulenta (amarilla o verde)","r"],["sang","Con sangre","r"],["leche","Sale leche o alimento por la nariz","r"]]},
  {id:"alim",s:"res",t:"¿Cómo se alimenta?",h:"En cachorros y gatitos: el biberón, la jeringa y el paladar hendido predisponen a neumonía por aspiración",w:["disn","tos","taqp","secnas","regurg"],o:[["madre","Solo leche materna","g"],["biber","Biberón o jeringa (además de la madre o solo)","y"],["tose","Tose o sale leche por la nariz al comer","r"],["solido","Alimento sólido, sin problemas al comer","g"]]},
- {id:"prost",sp:["c"],sx:["me","mc"],s:"uro",t:"¿Próstata a la palpación rectal?",h:"Solo en machos enteros",w:["estr","nodef","hemu","prep"],o:[["dolor","Aumentada y dolorosa","r"],["aum","Aumentada, no dolorosa","y"],["n","Normal","g"]]},
+ {id:"prost",sp:["c"],sx:["me","mc"],s:"uro",t:"¿Próstata a la palpación rectal?",h:"Machos: la HPB es casi universal en enteros > 5 años y rara vez obstruye; próstata grande en castrado: sospechar neoplasia",w:["estr","nodef","hemu","prep","olig"],o:[["dolor","Aumentada y dolorosa","r"],["aum","Aumentada, no dolorosa","y"],["n","Normal","g"]]},
  {id:"contagio",s:"dig",t:"¿Contacto con animales enfermos o antecedente de parvovirus o moquillo en el hogar?",h:"El parvovirus persiste meses en el ambiente; un cachorro puede llegar decaído antes de vomitar",tf:"¿Contacto con gatos enfermos o antecedente de panleucopenia, gripe felina o FeLV/FIV en el hogar?",hf:"El virus de la panleucopenia persiste meses en el ambiente; un gatito puede llegar decaído antes de vomitar",w:["letar","anor","vom","diar","hemq","fieb","tos"],o:[["si","Sí","r"],["no","No","g"]]},
  {id:"plaq",lab:true,s:"cv",t:"¿Plaquetas (hemograma)?",h:"Trombocitopenia con signos inespecíficos: pensar en hemoparásitos aunque el 4Dx sea negativo",w:["letar","anor","fieb","petq","pali","epist","diar","vom","icter"],o:[["bajo","Trombocitopenia","r"],["n","Normales","g"]]},
  {id:"leuco",lab:true,s:"cv",t:"¿Leucocitos (hemograma)?",h:"",w:["letar","anor","fieb","vom","diar","hemq","dabd","desv","tos"],o:[["bajo","Leucopenia","r"],["n","Normales","g"],["alto","Leucocitosis","y"]]},
@@ -486,6 +485,7 @@ const QS = [
  {id:"hep_lab",lab:true,s:"hep",t:"¿ALT o bilirrubina elevadas?",h:"",w:["icter","vom","anor","ment","conv"],o:[["alta","Sí, marcadamente","r"],["n","Normales","g"],["nm","No medidas","b"]]},
  {id:"vejiga",s:"uro",t:"¿Vejiga a la palpación?",h:"Vejiga grande y firme en gato macho con estranguria: obstrucción uretral",w:["estr","olig","dabd","hemu","nodef"],o:[["grande","Distendida, firme, dolorosa","r"],["peq","Pequeña o no palpable","y"],["n","Normal","g"]]},
  {id:"orina",s:"uro",t:"¿Producción de orina (últimas 12 h)?",h:"",w:["olig","vom","pupd","estr"],o:[["n","Normal","g"],["dis","Disminuida","y"],["aus","Ausente","r"],["aum","Aumentada","y"]]},
+ {id:"orinq",s:"uro",t:"¿Intenta orinar y no puede, o casi no produce orina?",h:"Esfuerzo sin resultado o vejiga distendida: obstrucción o retención (desobstruir, vigilar K⁺). Vejiga pequeña sin esfuerzo: oliguria renal o prerrenal",w:["olig"],o:[["obst","Hace esfuerzo y sale poco o nada (no puede orinar)","r"],["oligo","No hace esfuerzo; casi no produce orina","y"],["nosabe","No se sabe","b"]]},
  {id:"agua",s:"uro",t:"¿Contacto con agua estancada, roedores, inundaciones o ganado (rancho o zona rural)?",h:"Factor de riesgo de leptospirosis (zoonosis)",w:["vom","icter","olig","fieb","pupd","diar","anor","letar"],o:[["si","Sí","r"],["no","No","g"]]},
  {id:"celo",sx:["he","hl"],s:"uro",t:"¿Celo en los últimos 2 meses?",h:"",w:["desv","vom","pupd","dabd","letar","fieb","nodef","dist","anor","masamam"],o:[["si","Sí","r"],["no","No / desconocido","g"]]},
  {id:"patron",s:"res",t:"¿Cómo respira el paciente?",h:"Observar 30 s antes de tocarlo; en gatos con disnea, manipulación mínima",w:["disn","taqp","cian","ruido","tos"],o:[
@@ -1752,6 +1752,39 @@ ADD({id:"neo_oral",n:"Neoplasia oral (melanoma, carcinoma escamoso, fibrosarcoma
  tx:[["_","Citología (CAAF) o biopsia incisional y radiografía de tórax antes de decidir cirugía"],["_","Referir a cirugía u oncología"]],
  ref:"Withrow & MacEwen's Small Animal Clinical Oncology (6.ª ed.)"});
 })();
+
+// ═══ v7.9.6 — Estado hemodinámico efectivo: concordancia entre el triaje marcado y las constantes ═══
+function hemoInfo(){
+  const sel=ST.hemo||"", e=ST.ex||{}, cat=ST.esp==="f", kg=parseFloat(ST.peso), fc=parseFloat(e.fc), t=parseFloat(e.temp), pas=(ST.ans||{}).pas;
+  const out={sel,eff:sel,cambio:"",motivo:""};
+  if(sel==="pcr"||!ST.esp) return out;
+  const fcOk=!isNaN(fc), taq=fcOk&&(cat?fc>220:fc>(ST.edad==="e0"?200:(kg&&kg<10?160:140)));
+  const bradCat=cat&&fcOk&&fc<160&&!isNaN(t)&&t<37.5;
+  const ind=[];
+  if(taq) ind.push(`taquicardia (${fc} lpm)`); if(bradCat) ind.push(`bradicardia con hipotermia (${fc} lpm, ${t} °C)`);
+  if(e.tllc==="l") ind.push("TLLC > 2 s"); if(["pali","gris"].includes(e.muc)) ind.push("mucosas "+(e.muc==="gris"?"grisáceas":"pálidas"));
+  if(["deb","aus"].includes(e.pulso)) ind.push("pulso "+(e.pulso==="aus"?"ausente":"débil")); if(pas==="bajo") ind.push("PAS < 90 mmHg");
+  const fcNorm=fcOk&&(cat?fc>=160&&fc<=220:fc>=60&&!taq);
+  const normal=fcNorm&&["r","n"].includes(e.tllc)&&e.muc==="rosa"&&!["deb","aus"].includes(e.pulso)&&pas!=="bajo";
+  if(["comp","desc"].includes(sel)&&normal&&!ind.length){
+    out.eff="est"; out.cambio="baja";
+    out.motivo=`FC ${fc} lpm, mucosas rosadas y TLLC ${e.tllc==="r"?"< 1 s":"1–2 s"}${e.pulso==="n"?", pulso normal":""}`;
+  } else if(sel!=="desc"&&ind.length>=2){
+    const dsc=pas==="bajo"||e.pulso==="aus"||(["deb"].includes(e.pulso)&&!isNaN(t)&&t<37.5);
+    out.eff=dsc?"desc":"comp"; if(out.eff!==sel){out.cambio="sube"; out.motivo=ind.join(", ")}
+  } else if(sel==="comp"&&(pas==="bajo"||e.pulso==="aus")){out.eff="desc";out.cambio="sube";out.motivo=pas==="bajo"?"PAS < 90 mmHg":"pulso ausente"}
+  return out;
+}
+function HEMO(){return hemoInfo().eff}
+
+// ═══ v7.9.6 — Oliguria: obstructiva vs renal ═══
+(function(){
+const D=id=>DX.find(x=>x.id===id), R=(id,q,vals,dl,txt)=>{const d=D(id); if(d) d.r.push([q,vals,dl,txt||""])};
+["urolit_c","obs_uret_f","hpb","prostatitis","retencion"].forEach(id=>R(id,"orinq",["obst"],10,"Esfuerzo para orinar sin resultado"));
+["ira","erc","lepto"].forEach(id=>R(id,"orinq",["oligo"],15,"Oliguria sin esfuerzo (renal o prerrenal)"));
+["urolit_c","obs_uret_f","hpb","prostatitis"].forEach(id=>R(id,"orinq",["oligo"],-20,""));
+R("uroabd","orinq",["oligo"],5,"");
+})();
 const ST = {hxs:new Set(),motivo2:null,soapSel:new Set(),openSys:new Set(),motivo:null,esp:null,peso:null,edad:null,sexo:null,hemo:null,vac:new Set(),signs:new Set(),ans:{},open:new Set(),
   fl:{tipo:"rl",desh:"0",horas:"24",perd:0,form:"b",ped:false,na:"",iris:{crea:"",sdma:"",upc:"",pas:""}}};
 
@@ -1767,7 +1800,7 @@ function vacStatus(key){
 }
 function answers(){
   const A={};
-  if(ST.esp)A.especie=ST.esp; if(ST.edad)A.edad=ST.edad; if(ST.sexo)A.sexo=ST.sexo; if(ST.hemo)A.hemo=ST.hemo;
+  if(ST.esp)A.especie=ST.esp; if(ST.edad)A.edad=ST.edad; if(ST.sexo)A.sexo=ST.sexo; {const _h=HEMO(); if(_h)A.hemo=_h;}
   if(ST.esp==="c"){A.vp=vacStatus("octuple");A.vr=vacStatus("rabia")}
   if(ST.esp==="f"){A.vpl=vacStatus("triple");A.vfl=vacStatus("felv");A.vr=vacStatus("rabia")}
   visibleQs().forEach(q=>{if(ST.ans[q.id]!==undefined)A[q.id]=ST.ans[q.id]});
@@ -1927,7 +1960,7 @@ function exDerive(){
   const e=ST.ex||{}, sg=new Set(), a={}, cat=ST.esp==="f";
   const t=parseFloat(e.temp), fc=parseFloat(e.fc), fr=parseFloat(e.fr);
   if(!isNaN(t)){a.temp=t<37.5?"bajo":t<39.5?"n":t<=41?"alto":"vhi"; const tc=tempCls(t); if(tc&&tc.k==="fiebre")sg.add("fieb"); if(t<37.5)sg.add("hipot")}
-  if(!isNaN(fc)&&ST.esp){ const kg=parseFloat(ST.peso), shk=["comp","desc"].includes(ST.hemo); const lim=cat?(shk?160:140):(shk?100:(kg&&kg<10?80:60)); if(fc<lim) sg.add("brad") }
+  if(!isNaN(fc)&&ST.esp){ const kg=parseFloat(ST.peso), shk=["comp","desc"].includes(HEMO()); const lim=cat?(shk?160:140):(shk?100:(kg&&kg<10?80:60)); if(fc<lim) sg.add("brad") }
   if(!isNaN(fr)&&fr>40) sg.add("taqp");
   const gl=parseFloat(e.gluc); if(!isNaN(gl)) a.gluc=gl<60?"lo":gl<=180?"n":gl<=300?"hi":"vhi";
   if(e.muc==="pali"||e.muc==="gris") sg.add("pali");
@@ -1942,6 +1975,7 @@ function exDerive(){
   if(e.card==="galope"){a.card="si"; a.galope="si"}
   if(e.pulm&&e.pulm!=="n") a.ausc=e.pulm; else if(e.card==="apag") a.ausc="apag"; else if(e.pulm==="n") a.ausc="n";
   if(e.vej) a.vejiga=e.vej;
+  if(ST.signs&&ST.signs.has("olig")&&!ST.signs.has("estr")){const A=ST.ans||{};if(A.orinq==="obst"||e.vej==="grande"||A.vejiga==="grande")sg.add("estr")}
   if(e.mam==="si") sg.add("masamam"); if(e.linf==="gen") sg.add("linfad"); if(e.abm==="si") sg.add("masaab");
   if(e.ecto&&e.ecto!=="no") a.garr="si";
   if(e.cc){const c=parseInt(e.cc); a.cc=c<=2?"del":c>=4?"obeso":"ideal"; if(c<=2) sg.add("pesop")}
@@ -2067,7 +2101,7 @@ function renderS3(){
   if(!vq.length){el.innerHTML=exNote+`<div class="empty">${exq.length?"No hay más preguntas para los signos marcados.":"Marque los signos presentes: aparecerán solo las preguntas necesarias."}</div>`;return}
   const imp=qImpact(clin), prim=MOTIVOS.find(x=>x.id===ST.motivo).sys;
   const ranked=clin.filter(q=>imp[q.id]>0).sort((a,b)=>imp[b.id]-imp[a.id]||((b.s===prim)-(a.s===prim)));
-  const PIN={toxt:"expt",evento:"disn",paresq:"paresia",ojoq:"ojo",partoq:"parto",defq:"nodef",expul:"regurg"}, GG=SG(), pinT=clin.filter(q=>(PIN[q.id]&&GG.has(PIN[q.id]))||(q.id==="garr"&&ST.esp==="c"&&!(ST.ex&&ST.ex.ecto)&&["vom","diar","letar","anor","fieb"].some(x=>GG.has(x)))||(q.id==="agua"&&((GG.has("icter")&&GG.has("fieb"))||["l","m","s"].includes(ST.ans.crea)||ST.ans.hep_lab==="alta"))), SYSOK=(()=>{const M2=ST.motivo2?MOTIVOS.find(x=>x.id===ST.motivo2).sys:null, t=scoreDx().slice(0,2).map(x=>x.d.sys), o=new Set([prim,M2,...t].filter(Boolean)); if(["comp","desc"].includes(ST.hemo)) o.add("cv"); return o})(), key=[...pinT,...ranked.filter(q=>!pinT.includes(q)&&SYSOK.has(q.s))].slice(0,5), keyIds=new Set(key.map(q=>q.id)), rest=clin.filter(q=>!keyIds.has(q.id));
+  const PIN={toxt:"expt",evento:"disn",paresq:"paresia",ojoq:"ojo",partoq:"parto",defq:"nodef",expul:"regurg"}, GG=SG(), pinT=clin.filter(q=>(PIN[q.id]&&GG.has(PIN[q.id]))||(q.id==="garr"&&ST.esp==="c"&&!(ST.ex&&ST.ex.ecto)&&["vom","diar","letar","anor","fieb"].some(x=>GG.has(x)))||(q.id==="agua"&&((GG.has("icter")&&GG.has("fieb"))||["l","m","s"].includes(ST.ans.crea)||ST.ans.hep_lab==="alta"))), SYSOK=(()=>{const M2=ST.motivo2?MOTIVOS.find(x=>x.id===ST.motivo2).sys:null, t=scoreDx().slice(0,2).map(x=>x.d.sys), o=new Set([prim,M2,...t].filter(Boolean)); if(["comp","desc"].includes(HEMO())) o.add("cv"); return o})(), key=[...pinT,...ranked.filter(q=>!pinT.includes(q)&&SYSOK.has(q.s))].slice(0,5), keyIds=new Set(key.map(q=>q.id)), rest=clin.filter(q=>!keyIds.has(q.id));
   const XA3=exDerive().a; const qhtml=q=>{const cur=ST.ans[q.id]!==undefined?ST.ans[q.id]:XA3[q.id];return `<div class="q ${cur!==undefined?"done":""}">
       <div class="q-t"><span class="dot" style="background:${SYS[q.s].col};margin-right:6px"></span>${esc(qT(q))}</div>${qH(q)?`<div class="q-h">${esc(qH(q))}</div>`:""}
       <div class="opts">${q.o.map(o=>{const on=Array.isArray(cur)?cur.includes(o[0]):cur===o[0];return `<button class="opt ${on?"on "+o[2]:""}" aria-pressed="${on}" onclick="answer('${q.id}','${o[0]}')">${esc(o[1])}</button>`}).join("")}</div></div>`};
@@ -2092,18 +2126,21 @@ function answer(q,v){const Q=QS.find(x=>x.id===q);
 // ─── PANEL DERECHO ───
 function renderAlerts(){
   const A=answers(), s=SG(), al=[];
-  if(!ST.hemo&&A.perf==="hipo") al.push(["y","Hipoperfusión en el examen físico","TLLC > 2 s, mucosas grisáceas o pulso débil: indique el estado hemodinámico (shock compensado o descompensado) para activar la reanimación con fluidos."]);
+  {const hi=hemoInfo(), L=x=>(P_HEMO.find(p=>p[0]===x)||[,"sin marcar"])[1].toLowerCase();
+   if(hi.cambio==="baja") al.push(["y","Estado hemodinámico no concuerda con las constantes",`Marcó ${L(hi.sel)}, pero ${hi.motivo} están en rango normal. El motor analiza al paciente como ESTABLE (diagnósticos, fluidos y AINE). Si el shock es real, reevalúe y registre las constantes alteradas.`]);
+   if(hi.cambio==="sube") al.push(["r","Constantes compatibles con shock",`Marcó ${hi.sel?L(hi.sel):"sin estado hemodinámico"}, pero hay ${hi.motivo}. El motor analiza al paciente como ${L(hi.eff).toUpperCase()} y activa la reanimación con fluidos. Corrija el triaje si no corresponde.`]);}
+  if(!ST.hemo&&A.perf==="hipo"&&hemoInfo().cambio!=="sube") al.push(["y","Hipoperfusión en el examen físico","TLLC > 2 s, mucosas grisáceas o pulso débil: indique el estado hemodinámico (shock compensado o descompensado) para activar la reanimación con fluidos."]);
   if(A.hemo==="pcr") al.push(["r","RCP inmediata (RECOVER 2024)","Compresiones 100–120/min, 1/3–1/2 del ancho del tórax, ciclos de 2 min sin interrupciones. Intubar y ventilar 10 rpm. Adrenalina 0.01 mg/kg IV/IO cada 3–5 min. Monitorear capnografía."]);
   if(A.hemo==="desc") al.push(["r","Shock descompensado","Estabilizar antes de diagnosticar: O₂, acceso venoso, bolo de cristaloide y reevaluar (ver Fluidoterapia)."]);
   if(s.has("cian")||(["insp","rapsup","parad"].includes(A.patron)&&A.ausc!=="n")) al.push(["r","Oxígeno inmediato","Mínima manipulación (sobre todo en gatos). Rayos X solo cuando esté estable."]);
   {const e=ST.ex||{},cat=ST.esp==="f",fc=parseFloat(e.fc);
    if(s.has("vom")&&A.expul==="reg") al.push(["y","Verifique: vómito y regurgitación","Marcó vómito pero respondió que expulsa la comida sin esfuerzo (regurgitación). Son cuadros distintos: corrija el que no corresponda."]);
    if(e.pulso==="aus") al.push(["r","Pulso femoral ausente","Confirmar con auscultación y Doppler: si no hay latido efectivo, iniciar RCP. Si es unilateral, sospechar tromboembolismo."]);
-   if(e.muc==="pali"&&e.tllc&&e.tllc!=="l"&&!["deb","aus"].includes(e.pulso)&&!["comp","desc","pcr"].includes(ST.hemo)) al.push(["b","Palidez con perfusión conservada","Sugiere anemia más que hipoperfusión: medir Hto/PT. En hemorragia aguda la palidez puede preceder a la caída del TLLC y del pulso: reevaluar en 15–30 min."]);
+   if(e.muc==="pali"&&e.tllc&&e.tllc!=="l"&&!["deb","aus"].includes(e.pulso)&&!["comp","desc","pcr"].includes(HEMO())) al.push(["b","Palidez con perfusión conservada","Sugiere anemia más que hipoperfusión: medir Hto/PT. En hemorragia aguda la palidez puede preceder a la caída del TLLC y del pulso: reevaluar en 15–30 min."]);
    if(ST.hemo==="desc"&&["n","pre","alto","salto"].includes(A.pas)) al.push(["y","Verifique el estado hemodinámico","Marcó shock descompensado, pero la PAS es ≥ 90 mmHg: con presión conservada corresponde a shock compensado. Revise la medición o el estado elegido (cambia el volumen de los bolos)."]);
    if(A.pas==="bajo"&&!["comp","desc","pcr"].includes(ST.hemo)) al.push(["r","Hipotensión (PAS < 90 mmHg)","El paciente está en shock descompensado aunque el estado hemodinámico no lo indique: marque el estado para activar la reanimación."]);
    if(e.tllc==="n"&&["hipo","hiper"].includes(ST.ans.perf)) al.push(["y","Verifique la perfusión","La respuesta de perfusión contradice el TLLC de 1–2 s registrado en el examen físico."]);
-   if(["comp","desc"].includes(ST.hemo)&&e.tllc==="n"&&!isNaN(fc)&&fc>=(cat?140:60)&&fc<=(cat?220:160)&&!["pali","gris"].includes(e.muc)) al.push(["y","Verifique el estado hemodinámico","Marcó shock, pero FC, TLLC y mucosas registradas están en rango normal; esto cambia la fluidoterapia (bolos)."]);
+   if(false) al.push(["y","Verifique el estado hemodinámico","Marcó shock, pero FC, TLLC y mucosas registradas están en rango normal; esto cambia la fluidoterapia (bolos)."]);
    if(e.vej==="grande"&&!["estr","olig","hemu","nodef","incont"].some(x=>s.has(x))) al.push(["y","Vejiga distendida sin signos urinarios","Confirme si orina: descartar retención (neurogénica, dolor, sedación) u obstrucción."]);}
   if(A.gluc===undefined&&["conv","colap","ment","temb","fasc"].some(x=>s.has(x))) al.push(["y","Medir glucemia ahora","Convulsiones, colapso o alteración de conciencia: descartar hipoglucemia con glucómetro antes de continuar."]);
   if(A.gluc==="lo") al.push(["r","Hipoglucemia","Dextrosa 50% 0.5–1 mL/kg IV diluida 1:2–1:4 en 1–2 min; luego suero mixto (2.5–5%) en CRI y glucemia cada 1–2 h."]);
@@ -2158,7 +2195,7 @@ const ANALG=["morfina","fentanilo","tramadol","dipirona","meloxicam","ketoprofen
 const AINE_DX=["estom_urem","ira","erc","obs_uret_f","urolit_c","uroabd","retencion","addison","ulcera_gi","aine_tox","lepto","shga","parvo","panleuco","rodent","hemopar","sepsis","peritonitis","shock_hipo","hemoabd","dvg","cad","hepatopatia","lipidosis","anafilaxia","golpe_calor","ahim"];
 function aineCI(){
   const r=[], A=answers(), e=ST.ex||{}, G=SG(), H=ST.hxs||new Set();
-  if(["comp","desc","pcr"].includes(ST.hemo)) r.push("shock o hipoperfusión");
+  if(["comp","desc","pcr"].includes(HEMO())) r.push("shock o hipoperfusión");
   if(A.pas==="bajo") r.push("hipotensión");
   if(e.dh&&e.dh!=="0") r.push("deshidratación");
   if(["l","m","s"].includes(A.crea)||G.has("olig")||((e.vej==="grande"||A.vejiga==="grande")&&G.has("estr"))) r.push("azotemia u obstrucción urinaria");
@@ -2284,7 +2321,7 @@ function renderFluids(list){
 function renderFluidOut(list){
   const el=document.getElementById("flout"); if(!el) return;
   list=list||scoreDx();
-  const shock=["comp","desc","pcr"].includes(ST.hemo)||ST.fl.desh==="12"||(list[0]&&list[0].d.fl==="shock"&&ST.hemo!=="est");
+  const _he=HEMO(), shock=["comp","desc","pcr"].includes(_he)||ST.fl.desh==="12"||(list[0]&&list[0].d.fl==="shock"&&_he!=="est");
   const restr=list.slice(0,3).some(x=>x.d.fl==="restr")||ST.ans.card==="si";
   const kg=ST.peso, cat=ST.esp==="f", f=ST.fl, ped=!!f.ped;
   const tipo={rl:"Hartmann (Ringer lactato)",ssn:"solución salina 0.9%",mix:"mixto (solución salina + dextrosa)"}[f.tipo];
@@ -2419,7 +2456,7 @@ function genSOAPbase(){
   L.push(...qLines(q=>Q_S.includes(q.id)));
   L.push("");
   L.push("O — OBJETIVO");
-  if(ST.hemo) L.push(`Estado hemodinámico al ingreso: ${lab(P_HEMO,ST.hemo)}`);
+  {const hi=hemoInfo(); if(ST.hemo||hi.eff) L.push(`Estado hemodinámico al ingreso: ${ST.hemo?lab(P_HEMO,ST.hemo):"sin marcar"}${hi.cambio?` — analizado como ${lab(P_HEMO,hi.eff)} por las constantes (${hi.motivo})`:""}`);}
   {const e=ST.ex||{},p=[];if(e.fc)p.push(`FC ${e.fc} lpm`);if(e.fr)p.push(`FR ${e.fr} rpm`);if(e.temp){const tc=tempCls(e.temp);p.push(`T ${e.temp} °C${tc?" ("+tc.s+")":""}`)}if(e.muc)p.push(`mucosas ${lab(EX_MUC,e.muc).toLowerCase()}`);if(e.tllc)p.push(`TLLC ${lab(EX_TLLC,e.tllc)}`);if(e.pulso)p.push(`pulso femoral ${lab(EX_PULSO,e.pulso).toLowerCase()}`);if(e.dh)p.push(`deshidratación ${lab(EX_DH,e.dh)}`);if(e.gluc)p.push(`glucemia ${e.gluc} mg/dL`);if(e.dolor)p.push(`dolor: ${lab(EX_DOL,e.dolor).split(" (")[0].toLowerCase()}`);if(e.cc)p.push(`CC ${e.cc}/5`);if(e.vej)p.push(`vejiga ${lab(EX_VEJ,e.vej).toLowerCase()}`);if(e.abm==="si")p.push("masa abdominal/esplenomegalia");if(e.mam==="si")p.push("nódulos mamarios");if(e.linf&&e.linf!=="no")p.push(`linfonodos: aumento ${e.linf==="gen"?"generalizado":"localizado"}`);if(e.ecto&&e.ecto!=="no")p.push(`ectoparásitos: ${{garr:"garrapatas",pulg:"pulgas",ambos:"garrapatas y pulgas"}[e.ecto]}`);if(e.card)p.push(`ausc. cardíaca: ${lab(EX_CARD,e.card).toLowerCase()}`);if(e.pulm)p.push(`ausc. pulmonar: ${lab(EX_PULM,e.pulm).toLowerCase()}`);if(p.length)L.push(`Constantes: ${p.join(", ")}`)}
   const ex=qLines(q=>!Q_S.includes(q.id)&&!q.lab); if(ex.length){L.push("Examen físico:");L.push(...ex)}
   const lb=qLines(q=>q.lab); if(lb.length){L.push("Resultados disponibles:");L.push(...lb)}
@@ -2427,7 +2464,7 @@ function genSOAPbase(){
   L.push("");
   L.push("A — ANÁLISIS");
   const msys=[...new Set(alta.map(x=>x.d.sys))]; if(msys.length) L.push(`Sistema más afectado: ${msys.map(k=>SYS[k].n).join(" / ")}`);
-  if(alta.length){L.push(alta.length>1?"Diagnósticos presuntivos:":"Diagnóstico presuntivo:");alta.forEach((x,i)=>L.push(`${alta.length>1?(i+1)+". ":""}${x.d.n} [${x.d.c}]${x.d.z?" — ZOONOSIS":""}${x.pos.length?` — a favor: ${x.pos.join("; ")}`:""}`))}
+  if(alta.length){L.push(alta.length>1?"Diagnósticos presuntivos:":"Diagnóstico presuntivo:");alta.forEach((x,i)=>L.push(`${alta.length>1?(i+1)+". ":""}${x.d.n}${x.d.z?" — ZOONOSIS":""}${x.pos.length?` — a favor: ${x.pos.join("; ")}`:""}`))}
   else L.push("Sin diagnóstico presuntivo con los datos actuales.");
   L.push("");
   L.push("P — PLAN");
@@ -2435,12 +2472,12 @@ function genSOAPbase(){
   const ids={}; alta.forEach(x=>x.d.lab.forEach(l=>{let id=l.replace("!",""),u=l[0]==="!"; if(LB[id].inv===false){if(LSUB[id])id=LSUB[id];else return} id=labSp(id); if(!id) return; ids[id]=ids[id]||u}));
   if(alta.length&&SG().has("icter")){ids.hepatico=true;ids.uro=true}
   const ex1=Object.entries(ids).sort((a,b)=>b[1]-a[1]);
-  if(ex1.length){L.push("Exámenes:");ex1.forEach(([id,u])=>L.push(`  · ${LB[id].n}${LB[id].cod&&!LB[id].img?` (${LB[id].cod})`:""}${u?" — inmediato":""}`))}
+  if(ex1.length){L.push("Exámenes:");ex1.forEach(([id,u])=>L.push(`  · ${LB[id].n}${u?" — inmediato":""}`))}
   // fluidos
   if(ST.peso&&ST.esp){
     const cat=ST.esp==="f", kg=ST.peso, f=ST.fl;
     const tk=(f.tipo==="rl"&&!f.tipoSet&&alta.some(x=>x.d.tx[0]&&x.d.tx[0][0]==="ssn"))?"ssn":f.tipo; const tipo={rl:"Hartmann",ssn:"solución salina 0.9%",mix:"suero mixto"}[tk];
-    const shock=["comp","desc","pcr"].includes(ST.hemo)||f.desh==="12";
+    const shock=["comp","desc","pcr"].includes(HEMO())||f.desh==="12";
     let maint=f.form==="a"?(cat?40:60)*kg:f.form==="c"?30*kg+70:(cat?80:132)*Math.pow(kg,0.75); if(f.ped) maint*=cat?2.5:3;
     const desh=Math.min(parseFloat(f.desh),12), def=kg*desh*10, h=parseFloat(f.horas), r1=def/h+(maint+(f.perd||0))/24;
     L.push("Fluidoterapia:");
@@ -2516,7 +2553,7 @@ function regSnapshot(){
   [["fc","FC"],["fr","FR"],["temp","Temperatura"],["muc","Mucosas"],["tllc","TLLC"],["dh","% deshidratación"],["cc","Condición corporal"]].forEach(([k,n])=>{if(!e[k])faltan.push(n)});
   const vq=visibleQs(),mini=x=>({id:x.d.id,c:x.d.c,n:x.d.n,sys:x.d.sys,sc:Math.round(x.sc)});
   return JSON.parse(JSON.stringify({
-    ent:{esp:ST.esp,peso:ST.peso,edad:ST.edad,sexo:ST.sexo,hemo:ST.hemo,vac:[...ST.vac],hxs:[...ST.hxs],ex:e,motivo:ST.motivo,motivo2:ST.motivo2,signs:[...ST.signs],signsAll:[...SG()],ans:ST.ans},
+    ent:{esp:ST.esp,peso:ST.peso,edad:ST.edad,sexo:ST.sexo,hemo:ST.hemo,hemoEf:HEMO(),vac:[...ST.vac],hxs:[...ST.hxs],ex:e,motivo:ST.motivo,motivo2:ST.motivo2,signs:[...ST.signs],signsAll:[...SG()],ans:ST.ans},
     sal:{top:all.slice(0,8).map(mini),alta:alta.map(x=>x.d.c),insuf:!alta.length&&all.length>0,sinDx:!all.length,soap:soap.map(x=>x.d.c),soapAuto:auto,faltan,qVis:vq.length,qPend:vq.filter(q=>ST.ans[q.id]===undefined).map(q=>q.id)}
   }));
 }
@@ -2841,5 +2878,3 @@ renderAll();
 </script>
 </body>
 </html>
-
-</body></html>

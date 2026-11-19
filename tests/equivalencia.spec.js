@@ -9,9 +9,18 @@
 //   · altaList(), alertas (ST._al) y el HTML de alertas, diagnósticos, laboratorios,
 //     fluidoterapia, IRIS, sistemas, preguntas y barra inferior
 //   · la nota SOAP completa (con la hora congelada para que la fecha coincida)
+//
+// Variables opcionales:
+//   EQ_BASE=/tests/fixtures/anterior.html  compara contra otra versión (la que deja catalogo:importar)
+//   EQ_MODO=diagnostico                    compara solo el razonamiento clínico (diagnósticos, puntajes,
+//                                          alertas, preguntas, sistemas, fluidoterapia e IRIS) y no el texto
+//                                          que sale del catálogo (planes, exámenes, nota SOAP), que es lo que
+//                                          cambia a propósito al actualizar medicamentos o exámenes.
 import { test, expect } from "@playwright/test";
 
 const CASOS = Number(process.env.EQ_CASOS || 240);
+const BASE = process.env.EQ_BASE || "/tests/fixtures/original_v7_9_6.html";
+const SOLO_DX = process.env.EQ_MODO === "diagnostico";
 const LOTES = 8;
 const HORA_FIJA = new Date("2026-11-17T10:30:00-06:00");
 
@@ -85,7 +94,7 @@ function aplicar(log) {
 }
 
 // Se ejecuta en ambas páginas: todo lo que produce el motor.
-function extraer() {
+function extraer(soloDx) {
   const all = scoreDx();
   const html = (id) => { const e = document.getElementById(id); return e ? e.innerHTML : null; };
   const salida = {
@@ -93,10 +102,13 @@ function extraer() {
     alta: altaList(all).map((x) => [x.d.id, x.sc]),
     alertas: ST._al || [],
     respuestas: answers(),
-    vistas: Object.fromEntries(["alerts", "dxcount", "dxlist", "labs", "fluids", "flout", "iriscard", "systems", "s1", "s2", "s3", "bbar"].map((id) => [id, html(id)])),
+    vistas: Object.fromEntries(["alerts", "dxcount", "dxlist", "labs", "fluids", "flout", "iriscard", "systems", "s1", "s2", "s3", "bbar"]
+      .filter((id) => !soloDx || !["dxlist", "labs"].includes(id)).map((id) => [id, html(id)])),
   };
+  if (soloDx) return salida;
   genSOAPbase();
-  salida.soap = document.getElementById("soap").value;
+  // El número de versión de la nota puede diferir del original a propósito (p. ej. 7.9.6 → 7.9.7).
+  salida.soap = document.getElementById("soap").value.replace(/Motor Clínico HVCP v\d+\.\d+\.\d+/g, "Motor Clínico HVCP v·");
   salida.soapmsg = document.getElementById("soapmsg").textContent;
   return salida;
 }
@@ -121,7 +133,7 @@ async function abrir(browser, ruta) {
 const porLote = Math.ceil(CASOS / LOTES);
 for (let lote = 0; lote < LOTES; lote++) {
   test(`equivalencia clínica · lote ${lote + 1}/${LOTES}`, async ({ browser }) => {
-    const O = await abrir(browser, "/tests/fixtures/original_v7_9_6.html");
+    const O = await abrir(browser, BASE);
     const N = await abrir(browser, process.env.EQ_NUEVO || "/index.html");
     let comparados = 0, conDx = 0;
     for (let i = 0; i < porLote; i++) {
@@ -133,7 +145,7 @@ for (let lote = 0; lote < LOTES; lote++) {
       await listo(N.page);
       const log = await O.page.evaluate(generarYAplicar, semilla);
       await N.page.evaluate(aplicar, log);
-      const [a, b] = await Promise.all([O.page.evaluate(extraer), N.page.evaluate(extraer)]);
+      const [a, b] = await Promise.all([O.page.evaluate(extraer, SOLO_DX), N.page.evaluate(extraer, SOLO_DX)]);
       const msj = `caso ${caso} (semilla ${semilla}); acciones: ${JSON.stringify(log)}`;
       expect(b.dx.slice(0, 5).map((x) => [x.id, x.sc]), "top 5 y puntajes · " + msj).toEqual(a.dx.slice(0, 5).map((x) => [x.id, x.sc]));
       expect(b, msj).toEqual(a);

@@ -1,4 +1,4 @@
-# Aviso de privacidad · Motor Clínico de Urgencias HVCP v7.9.6 · registro en línea
+# Aviso de privacidad · Motor Clínico de Urgencias HVCP v7.9.7 · registro en línea
 
 **Responsable:** Hospital Veterinario Chivo Pets, Dirección General.
 **Última actualización:** 17 de noviembre de 2026.

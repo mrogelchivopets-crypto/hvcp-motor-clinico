@@ -42,7 +42,7 @@ test("sin configuración el motor funciona igual, guarda en cola y no intenta co
   const remotas = [];
   page.on("request", (r) => { if (/supabase|jsdelivr/.test(r.url())) remotas.push(r.url()); });
   const soap = await pacienteYSoap(page);
-  expect(soap).toContain("Motor Clínico HVCP v7.9.6");
+  expect(soap).toContain(`Motor Clínico HVCP v${await page.evaluate(() => MOTOR_VER)}`);
   // El caso queda en la cola del dispositivo y se enviará cuando el registro esté configurado.
   await expect(page.locator("#netst")).toHaveText("1 caso pendiente");
   expect(remotas).toEqual([]);
@@ -68,7 +68,7 @@ test.describe("con el proyecto de prueba", () => {
     const { ctx, page, errores } = await dispositivo(browser);
     await expect(page.locator("#netst")).toHaveText("Sincronizado", { timeout: 20000 });
     const soap = await pacienteYSoap(page);
-    expect(soap).toContain("v7.9.6");
+    expect(soap).toContain(`v${await page.evaluate(() => MOTOR_VER)}`);
     codigoNormal = soap.match(SOAP_COD)?.[1];
     expect(codigoNormal).toBeTruthy();
     await expect(page.locator("#regmsg")).toContainText(`Caso ${codigoNormal} registrado`, { timeout: 20000 });
@@ -183,6 +183,17 @@ test.describe("con el proyecto de prueba", () => {
     // Indicadores
     await page.locator("#regtabs button", { hasText: "Indicadores" }).click();
     await expect(page.locator("#regbody")).not.toBeEmpty();
+    // Tablero de uso: casos por día y turno, por veterinario o dispositivo y sesiones
+    await page.locator("#regtabs button", { hasText: "Uso" }).click();
+    await expect(page.locator("#regbody")).toContainText("Casos por día");
+    await expect(page.locator("#regbody")).toContainText("Por turno");
+    await expect(page.locator("#regbody .uso-tabla")).toContainText(/Anónimo · disp\. [0-9A-F]{4}/);
+    await expect(page.locator("#regbody")).not.toContainText("(no disponible)");
+    await page.screenshot({ path: "test-results/tablero-uso.png", fullPage: true });
+    await expect(page.locator("#regbody .uso-tabla")).not.toContainText("Abrieron el motor sin registrar casos: 0");
+    // Cambiar el período recarga casos y sesiones sin errores
+    await page.selectOption("#regrango", "todo");
+    await expect(page.locator("#regbody")).toContainText(/Casos por (día|semana)/, { timeout: 20000 });
     // Salir deja al dispositivo otra vez como anónimo
     await page.getByRole("button", { name: "Cerrar sesión de administrador" }).click();
     await expect(page.locator("#regbar")).toBeHidden({ timeout: 20000 });
