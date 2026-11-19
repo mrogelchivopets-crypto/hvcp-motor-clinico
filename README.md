@@ -69,7 +69,7 @@ En **Authentication**:
 2. **URL Configuration**:
    - **Site URL**: la dirección de GitHub Pages (paso 6), por ejemplo `https://SU-USUARIO.github.io/hvcp-motor-clinico/`.
    - **Redirect URLs**: agregue esa misma dirección seguida de `**`.
-3. **Email Templates**: ponga los textos en español. Para cada plantilla, copie el contenido de `supabase/templates/` y use estos asuntos:
+3. **Emails → Templates** (opcional): Supabase solo permite editar las plantillas si configura un servidor de correo propio (**SMTP Settings**). Sin eso, los correos salen en inglés con el texto estándar, y funcionan igual. Si configura SMTP, ponga los textos en español: para cada plantilla, copie el contenido de `supabase/templates/` y use estos asuntos:
 
    | Plantilla | Archivo | Asunto |
    |---|---|---|

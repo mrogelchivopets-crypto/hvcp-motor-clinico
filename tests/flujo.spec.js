@@ -15,10 +15,11 @@ let ADM, codigoNormal, codigoOffline, codigoPrueba;
 // Sirve un config.js con el proyecto de prueba (el del repositorio queda con marcadores).
 async function dispositivo(browser, { conConfig = true } = {}) {
   const ctx = await browser.newContext({ acceptDownloads: true });
-  if (conConfig) {
-    await ctx.route("**/config.js", (r) => r.fulfill({ contentType: "text/javascript",
-      body: `window.HVCP_CONFIG=${JSON.stringify({ supabaseUrl: cfg.url, supabaseAnonKey: cfg.anon })};` }));
-  }
+  // Nunca se usa el config.js del repositorio (es el de producción): proyecto de prueba o marcadores.
+  const conf = conConfig ? { supabaseUrl: cfg.url, supabaseAnonKey: cfg.anon }
+                         : { supabaseUrl: "https://TU-PROYECTO.supabase.co", supabaseAnonKey: "PEGUE-AQUI-LA-ANON-KEY" };
+  await ctx.route("**/config.js", (r) => r.fulfill({ contentType: "text/javascript",
+    body: `window.HVCP_CONFIG=${JSON.stringify(conf)};` }));
   const page = await ctx.newPage();
   const errores = [];
   page.on("pageerror", (e) => errores.push(String(e)));

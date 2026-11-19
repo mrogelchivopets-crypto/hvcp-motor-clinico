@@ -1,8 +1,8 @@
-// Configuración del registro en línea del Motor Clínico HVCP.
-// Copie aquí la URL del proyecto y la «anon public key» (Supabase → Project Settings → API).
-// La anon key es pública por diseño: la seguridad la da Row Level Security en la base.
-// NUNCA ponga aquí la «service_role key».
+// Configuración del registro en línea del Motor Clínico HVCP (proyecto de PRODUCCIÓN).
+// URL del proyecto y «publishable key» (Supabase → Project Settings → API Keys).
+// La publishable key es pública por diseño: la seguridad la da Row Level Security en la base.
+// NUNCA ponga aquí la «secret» / «service_role key».
 window.HVCP_CONFIG = {
-  supabaseUrl: "https://TU-PROYECTO.supabase.co",
-  supabaseAnonKey: "PEGUE-AQUI-LA-ANON-KEY"
+  supabaseUrl: "https://bjvdjznnktgfweipeshn.supabase.co",
+  supabaseAnonKey: "sb_publishable_ooAmdcK3QrobsHZiXufymA_gGhVmWmE"
 };
