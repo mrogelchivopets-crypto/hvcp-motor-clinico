@@ -2673,7 +2673,7 @@ function regFicha(){
   const quick=s.top.slice(0,4);
   return `<button class="opt" onclick="regCerrarFicha()" style="margin-bottom:12px">${REG.admin?"← Lista de casos":"← Volver"}</button>
   <div class="reg-grid"><div class="card"><div class="card-h">${esc(x.id)}<span class="cnt">${esc(fCorta(x.f))} · motor v${esc(x.v)}</span></div><div class="card-b reg-ficha">
-   <p><b>Paciente:</b> ${esc(lab(P_ESP,e.esp)||"especie no indicada")}${e.peso?`, ${fmt(e.peso)} kg`:""}${e.edad?`, ${esc(lab(P_EDAD,e.edad))}`:""}${e.sexo?`, ${esc(lab(P_SEXO,e.sexo).toLowerCase())}`:""}${e.hemo?` · ${esc(lab(P_HEMO,e.hemo))}`:""}</p>
+   <p><b>Paciente:</b> ${esc(lab(P_ESP,e.esp)||"especie no indicada")}${e.peso?`, ${fmt(e.peso)} kg`:""}${e.edad?`, ${esc(lab(P_EDAD,e.edad))}`:""}${e.sexo?`, ${esc(lab(P_SEXO,e.sexo).toLowerCase())}`:""}${e.hemo?` · ${esc(lab(P_HEMO,e.hemo))}`:""}${e.hemoEf&&e.hemoEf!==e.hemo?` <span class="lk m" title="El motor analizó al paciente con el estado que indican las constantes">Analizado como ${esc(lab(P_HEMO,e.hemoEf).toLowerCase())}</span>`:""}</p>
    <p><b>Motivo:</b> ${esc(nombreMotivo(e.motivo))}${e.motivo2?` · secundario: ${esc(nombreMotivo(e.motivo2))}`:""}</p>
    ${cons.length?`<p><b>Constantes:</b> ${esc(cons.join(", "))}</p>`:""}
    ${sig.length?`<p><b>Signos:</b> ${esc(sig.join(", "))}</p>`:""}
@@ -2861,7 +2861,7 @@ function regLibro(etq){
     const st=regStats(),evm=new Map(st.ev.map(r=>[r.c.id,r])),wb=XLSX.utils.book_new();
     const filas=REG.casos.map(c=>{const e=c.ent,s=c.sal,x=e.ex||{},k=REG.cierres.get(c.id)||{},r=evm.get(c.id),o={
       "Código":c.id,"Fecha":fIso(c.f),"Versión motor":c.v,"Veterinario":c.vet||"",
-      "Especie":lab(P_ESP,e.esp),"Peso (kg)":e.peso,"Edad":lab(P_EDAD,e.edad),"Sexo":lab(P_SEXO,e.sexo),"Estado hemodinámico":lab(P_HEMO,e.hemo),
+      "Especie":lab(P_ESP,e.esp),"Peso (kg)":e.peso,"Edad":lab(P_EDAD,e.edad),"Sexo":lab(P_SEXO,e.sexo),"Estado hemodinámico":lab(P_HEMO,e.hemo),"Estado hemodinámico analizado":e.hemoEf?lab(P_HEMO,e.hemoEf):"",
       "FC":numX(x.fc),"FR":numX(x.fr),"Temperatura":numX(x.temp),"Mucosas":lab(EX_MUC,x.muc),"TLLC":lab(EX_TLLC,x.tllc),"Pulso":lab(EX_PULSO,x.pulso),"Deshidratación":lab(EX_DH,x.dh),"CC (1-5)":numX(x.cc),
       "Ausc. cardíaca":lab(EX_CARD,x.card),"Ausc. pulmonar":lab(EX_PULM,x.pulm),"Vejiga":lab(EX_VEJ,x.vej),
       "Motivo":nombreMotivo(e.motivo),"Motivo secundario":e.motivo2?nombreMotivo(e.motivo2):"",

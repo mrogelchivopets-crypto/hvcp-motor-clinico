@@ -54,6 +54,9 @@ En el panel, vaya a **SQL Editor → New query**. Pegue y ejecute (**Run**) **en
 2. `supabase/migrations/20261117000200_seguridad_rls.sql`: seguridad (RLS) y funciones.
 3. `supabase/migrations/20261117000300_indicadores.sql`: vistas de indicadores.
 4. `supabase/migrations/20261117000400_admin.sql`: funciones del admin.
+5. `supabase/migrations/20261119000500_hemo_efectivo.sql`: estado hemodinámico efectivo (motor v7.9.7).
+
+Cuando se agregue una migración nueva a un proyecto que ya está funcionando, se ejecuta **solo esa**. Conviene correrla primero en el proyecto de prueba y después en el de producción.
 
 Cada uno debe terminar con «Success. No rows returned». **No ejecute `supabase/seed.sql` en la nube**: es solo para pruebas locales.
 

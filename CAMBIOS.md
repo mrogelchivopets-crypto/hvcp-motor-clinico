@@ -20,5 +20,7 @@ Origen: `HVCP_ER_Motor_Clinico_v7_9_6.html` actualizado por el hospital (19/11/2
 ### Nota SOAP
 - Ya no muestra el código VetCIE-1 junto a cada diagnóstico presuntivo ni el código de laboratorio junto a cada examen.
 
-### Pendiente
-- El registro en línea todavía no guarda el estado hemodinámico efectivo, solo el marcado. Guardarlo requiere un cambio en la base de Supabase.
+### Registro en línea
+- Columna nueva `hemo_efectivo` (migración `20261119000500_hemo_efectivo.sql`). Guarda el estado con el que el motor analizó al paciente. `hemo` sigue siendo el que marcó el médico.
+- En el panel del administrador, la ficha muestra «Analizado como …» cuando los dos estados difieren. El Excel tiene la columna «Estado hemodinámico analizado».
+- Los casos registrados antes de aplicar la migración no tienen este dato.

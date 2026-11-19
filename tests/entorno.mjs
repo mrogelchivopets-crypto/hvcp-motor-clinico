@@ -30,9 +30,9 @@ export function codigoMC() {
 // Caso mínimo con la forma que envía el motor (regGuardar). Siempre marcado como prueba.
 export function casoDePrueba(codigo, extra = {}) {
   return {
-    id: codigo, f: new Date().toISOString(), fa: new Date().toISOString(), v: "7.9.6", prueba: true, min: 4,
+    id: codigo, f: new Date().toISOString(), fa: new Date().toISOString(), v: "7.9.7", prueba: true, min: 4,
     alertas: [["y", "Alerta de prueba"]],
-    ent: { esp: "c", peso: 12.5, edad: "e2", sexo: "mc", hemo: "est", vac: ["aldia"], hxs: [], ex: { temp: "39.1" },
+    ent: { esp: "c", peso: 12.5, edad: "e2", sexo: "mc", hemo: "comp", hemoEf: "est", vac: ["aldia"], hxs: [], ex: { temp: "39.1" },
            motivo: "vom", motivo2: null, signs: ["vom"], signsAll: ["vom"], ans: { dur: "d1" } },
     sal: { top: [{ id: "gastritis", c: "GEN-DIG-001", n: "Gastritis aguda", sys: "dig", sc: 40 }], alta: ["GEN-DIG-001"], insuf: false, sinDx: false,
            soap: ["GEN-DIG-001"], soapAuto: true, faltan: [], qVis: 3, qPend: [] },

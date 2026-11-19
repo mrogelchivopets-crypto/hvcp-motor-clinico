@@ -127,8 +127,10 @@ test("ningún dato del propietario existe en el esquema", { skip: omitir }, asyn
 
 test("el administrador ve todo, los indicadores y puede anular (no borrar)", { skip: omitir }, async () => {
   assert.equal((await ADM.rpc("es_admin")).data, true);
-  const t = await ADM.from("casos").select("codigo,prueba,usuario").eq("codigo", codigoA);
+  const t = await ADM.from("casos").select("codigo,prueba,usuario,hemo,hemo_efectivo").eq("codigo", codigoA);
   assert.ifError(t.error); assert.equal(t.data.length, 1); assert.equal(t.data[0].prueba, true);
+  // Estado hemodinámico: el marcado por el médico y el que analizó el motor (v7.9.7)
+  assert.equal(t.data[0].hemo, "comp"); assert.equal(t.data[0].hemo_efectivo, "est");
   for (const v of VISTAS) { const r = await ADM.from(v).select("*").limit(3); assert.ifError(r.error, v); }
   // Los casos de prueba quedan fuera de los indicadores
   const val = await ADM.from("v_casos_validos").select("codigo").eq("codigo", codigoA);
@@ -137,7 +139,7 @@ test("el administrador ve todo, los indicadores y puede anular (no borrar)", { s
   assert.ok(!l1.data.some((x) => x.caso.id === codigoA), "un caso de prueba apareció sin pedirlo");
   const l2 = await ADM.rpc("admin_casos", { p_desde: "2000-01-01T00:00:00Z", p_incluir_pruebas: true });
   const fila = l2.data.find((x) => x.caso.id === codigoA);
-  assert.ok(fila); assert.match(fila.caso.vet, /^Anónimo · disp\. [0-9A-F]{4}$/); assert.equal(fila.cierre.conf, "clin");
+  assert.ok(fila); assert.equal(fila.caso.ent.hemoEf, "est"); assert.match(fila.caso.vet, /^Anónimo · disp\. [0-9A-F]{4}$/); assert.equal(fila.cierre.conf, "clin");
   const ses = await ADM.from("sesiones").select("id,dispositivo").eq("id", sesionA);
   assert.equal(ses.data[0].dispositivo, "Prueba · Node");
   // Ni el admin puede borrar
