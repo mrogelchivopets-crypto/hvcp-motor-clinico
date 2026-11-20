@@ -330,6 +330,22 @@ details.sgrp[open]>summary{margin-bottom:8px}
 .field.miss>.opts .opt{border-color:#7F2A2A}
 label.miss input,label.miss select{border-color:#EF4444;box-shadow:0 0 0 1px #EF4444}
 :root[data-theme="light"] .ipop{box-shadow:0 10px 30px rgba(0,0,0,.18)}
+
+/* ── Grupos de signos desplegables más visibles ── */
+details.sgrp{border-color:var(--border2)}
+details.sgall{margin-top:12px;border:1px solid var(--border2);border-radius:8px;padding:8px 10px}
+details.sgall[open]>summary{margin-bottom:8px}
+details.sgall>summary,details.sgrp>summary{list-style:none;cursor:pointer;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;min-height:30px}
+details.sgall>summary::-webkit-details-marker,details.sgrp>summary::-webkit-details-marker{display:none}
+details.sgall>summary:hover .sg-t,details.sgrp>summary:hover .sg-t{color:var(--accent)}
+.sg-ar{width:22px;height:22px;flex-shrink:0;border-radius:6px;background:var(--accent);position:relative}
+.sg-ar::after{content:"";position:absolute;left:8px;top:6px;border:solid #fff;border-width:0 2.5px 2.5px 0;padding:3.5px;transform:rotate(-45deg);transition:transform .15s}
+details[open]>summary .sg-ar::after{left:7px;top:5px;transform:rotate(45deg)}
+.sg-t{color:var(--text)}
+.sg-hint{margin-left:auto;font-size:12px;font-weight:600;color:var(--accent);white-space:nowrap}
+.sg-ocu{display:none}
+details[open]>summary .sg-ver{display:none}
+details[open]>summary .sg-ocu{display:inline}
 </style>
 </head>
 <body>
@@ -466,7 +482,7 @@ const SIGNS = {
  incont:["Goteo de orina o incontinencia","Metabólico y urinario",{uro:2,neu:2,tox:2}],
  hiperest:["Hiperestesia o sobresalto exagerado a estímulos","Neurológico",{neu:3,tox:3}],
  traum:["Trauma reciente","Sistémico y otros",{tra:6}],
- herida:["Herida o mordedura","Sistémico y otros",{tra:4}],
+ herida:["Herida o mordedura","Piel y tejido subcutáneo",{tra:4,piel:3}],
  cojera:["Cojera o dolor musculoesquelético","Sistémico y otros",{tra:4}],
  masaab:["Masa abdominal o esplenomegalia palpable","Sistémico y otros",{cv:3,dig:2}],
  masamam:["Masas o nódulos mamarios","Sistémico y otros",{uro:3}],
@@ -580,7 +596,8 @@ const MOTIVOS = [
  {id:"met",n:"Bebe y orina mucho, ictericia o pérdida de peso",sys:"met",pre:[],signs:["pupd","icter","pesop","cet","anor","letar","vom","diar","ment"]},
  {id:"hem",n:"Sangrado o mucosas pálidas",sys:"cv",pre:[],signs:["petq","pali","epist","mel","hemu","icter","fieb","letar","colap"]},
  {id:"tox",n:"Intoxicación o exposición a tóxico",sys:"tox",pre:["expt"],signs:["expt","atax","incont","hiperest","sial","temb","fasc","mios","midr","conv","vom","diar","petq","herida","cian","urtic","ment","methb","bocaroja"]},
- {id:"tra",n:"Trauma, herida o dolor",sys:"tra",pre:[],signs:["traum","ojo","herida","cojera","dvert","paresia","disn","pali","dabd","ment","calor"]}
+ {id:"tra",n:"Trauma (atropello, caída, golpe o pelea)",sys:"tra",pre:["traum"],signs:["traum","herida","cojera","dvert","paresia","disn","pali","dabd","ment","ojo","calor"]},
+{id:"piel",n:"Herida, piel o dolor",sys:"piel",pre:[],signs:["herida","bulto","pus","larvas","prur","erup","alop","arrastre","urtic","cojera","dvert","fieb","letar","linfad","anor"]}
 ];
 // ═══════════════════════════════════════════════════════════════
 // DIAGNÓSTICOS PRESUNTIVOS
@@ -1920,6 +1937,85 @@ genSOAP=function(){
   }
   ST.valTried=false; return _genSOAPorig.apply(this,arguments);
 };
+
+// ═══ Piel y tejido subcutáneo: abscesos, erupciones y prurito (v7.9.7) ═══
+(function(){
+SYS.piel={n:"Piel y tejido subcutáneo",col:"#D97706"};
+const G="Piel y tejido subcutáneo";
+Object.assign(SIGNS,{
+ bulto:["Aumento de volumen o bulto bajo la piel",G,{piel:5}],
+ pus:["Secreción purulenta, fístula o mal olor en la piel",G,{piel:5}],
+ larvas:["Larvas en una herida (gusanera)",G,{piel:6}],
+ prur:["Prurito (se rasca, lame o muerde)",G,{piel:4}],
+ erup:["Erupción: pápulas, pústulas, costras o enrojecimiento",G,{piel:4}],
+ alop:["Alopecia (pérdida de pelo)",G,{piel:3}],
+ arrastre:["Se arrastra o se lame la zona anal",G,{piel:3,dig:1}]
+});
+QS.push(
+ {id:"bultoq",s:"piel",t:"¿Cómo es el aumento de volumen?",h:"Fluctuante, caliente y doloroso, días después de una pelea: absceso. Súbito en cara o párpados: reacción alérgica (angioedema)",w:["bulto","hinch"],o:[["fluct","Blando o fluctuante, caliente y doloroso","r"],["firme","Firme y no doloroso","y"],["subito","Apareció de golpe en cara, párpados o cuello","r"],["crep","Crepita al tocarlo (aire bajo la piel)","r"],["reduc","Se reduce al presionarlo (posible hernia)","y"]]},
+ {id:"pelea",s:"piel",t:"¿Pelea, mordedura o herida punzante en los últimos 3–10 días?",h:"Los abscesos por mordedura aparecen días después; frecuentes en gatos machos enteros que salen a la calle",w:["bulto","pus","herida","fieb","cojera"],o:[["si","Sí","r"],["no","No / desconocido","g"]]},
+ {id:"zonap",s:"piel",t:"¿Dónde están las lesiones de piel o el prurito?",h:"La distribución orienta la causa del prurito",w:["prur","erup","alop","pus"],o:[["dorso","Dorso, base de la cola y muslos","y"],["orejas","Bordes de las orejas, codos y abdomen","r"],["cara","Cara, patas, axilas e ingles","y"],["circ","Zonas circulares sin pelo (cara, orejas, patas)","y"],["perianal","Alrededor del ano","y"],["gen","Generalizada","y"]]}
+);
+const ADD=o=>DX.push(Object.assign({b:0,fl:"mant",z:false,r:[],lab:[]},o));
+ADD({id:"absceso",n:"Absceso subcutáneo o por mordedura",c:"GEN-TRA-436",sys:"piel",sp:["c","f"],k:["bulto","pus"],
+ s:{bulto:25,pus:25,herida:10,fieb:10,cojera:5,letar:5,anor:5},
+ r:[["bultoq",["fluct"],30,"Fluctuante, caliente y doloroso"],["bultoq",["firme"],-20,""],["bultoq",["subito"],-25,""],["bultoq",["reduc"],-25,""],["pelea",["si"],20,"Pelea o mordedura reciente"],["sexo",["me"],5,""],["especie",["f"],5,"Frecuente en gatos que salen a la calle"]],
+ need:{s:["bulto","pus"],a:[],pen:-20,txt:"Sin bulto ni secreción purulenta"},
+ why:"Bulto fluctuante, caliente y doloroso, a veces con fiebre y cojera, 3–10 días después de una mordedura. Puede drenar pus fétido. En gatos, descartar FeLV/FIV.",
+ lab:["citologia","cultivo","hemograma","snap_felv"],
+ tx:[["_","Drenaje bajo sedación, lavado con solución salina y dejar abierto o con drenaje"],["amoxclav","5–7 días"],["_","Analgesia según dolor"]],
+ ref:"BSAVA Manual of Canine and Feline Wound Management (3.ª ed.)"});
+ADD({id:"saco_anal",n:"Absceso o saculitis de sacos anales (perianal)",c:"GEN-DER-176",sys:"piel",sp:["c","f"],k:["arrastre","bulto","pus"],
+ s:{arrastre:25,bulto:15,pus:15,nodef:5,fieb:5},
+ r:[["zonap",["perianal"],30,"Lesión junto al ano"],["especie",["c"],5,""]],
+ need:{s:["arrastre"],a:[["zonap",["perianal"]]],pen:-25,txt:"Sin signos en la zona anal"},
+ why:"Arrastre, lamido y dolor perianal; bulto o fístula a las 4 u 8 en punto del ano. Diferenciar de fístula perianal y neoplasia de sacos anales.",
+ lab:["citologia","hemograma"],
+ tx:[["_","Vaciar y lavar los sacos anales; si hay absceso, drenar y lavar"],["amoxclav","7–10 días"],["_","Analgesia según dolor"]],
+ ref:"Miller, Griffin & Campbell, Muller & Kirk's Small Animal Dermatology (7.ª ed.)"});
+ADD({id:"dapp",n:"Dermatitis alérgica por pulgas",c:"GEN-DER-440",sys:"piel",sp:["c","f"],k:["prur","erup","alop"],
+ s:{prur:20,erup:10,alop:10},
+ r:[["zonap",["dorso"],35,"Lesiones en dorso, base de la cola y muslos"],["garr",["si"],10,"Ectoparásitos en el examen"],["zonap",["orejas","cara"],-10,""]],
+ why:"Prurito intenso en la zona dorsolumbar y la base de la cola; en gatos, dermatitis miliar. Puede no verse la pulga: buscar heces de pulga.",
+ lab:["citologia"],
+ tx:[["_","Control de pulgas en el paciente y todos los animales de la casa, y en el ambiente"],["_","Si hay pioderma secundaria: ver pioderma"]],
+ ref:"WAVD / ISCAID guidelines; Muller & Kirk's Small Animal Dermatology"});
+ADD({id:"sarna",n:"Sarna sarcóptica",c:"GEN-DER-058",sys:"piel",sp:["c"],z:true,k:["prur","erup","alop"],
+ s:{prur:25,erup:10,alop:10},
+ r:[["zonap",["orejas"],35,"Bordes de orejas, codos y abdomen"],["edad",["e0","e1","e2"],5,""],["zonap",["dorso"],-10,""]],
+ why:"Prurito muy intenso con costras en bordes de las orejas (reflejo otopodal positivo), codos y abdomen. Contagiosa y zoonótica.",
+ lab:["citologia"],
+ tx:[["_","Acaricida sistémico según formulario (isoxazolina o lactona macrocíclica) y tratar a los contactos"],["_","Advertir al propietario: puede causar lesiones en personas"]],
+ ref:"Muller & Kirk's Small Animal Dermatology (7.ª ed.)"});
+ADD({id:"pioderma",n:"Pioderma (superficial o profunda)",c:"GEN-DER-155",sys:"piel",sp:["c","f"],k:["erup","pus"],
+ s:{erup:25,pus:20,prur:10,alop:5,fieb:5},
+ r:[["zonap",["gen"],5,""]],
+ why:"Pápulas, pústulas y collaretes epidérmicos; la profunda drena pus y duele. Casi siempre es secundaria: buscar alergia, ectoparásitos o endocrinopatía.",
+ lab:["citologia","cultivo"],
+ tx:[["_","Champú de clorhexidina 2–4% dos o tres veces por semana"],["amoxclav","Solo si es extensa o profunda (3 semanas o 1 semana más allá de la curación)"]],
+ ref:"ISCAID: Guidelines for the diagnosis and treatment of canine superficial bacterial folliculitis (2020)"});
+ADD({id:"alergia_piel",n:"Dermatitis alérgica (atópica o alimentaria)",c:"GEN-DER-034",sys:"piel",sp:["c","f"],k:["prur","erup"],
+ s:{prur:20,erup:10,alop:5},
+ r:[["zonap",["cara"],30,"Cara, patas, axilas e ingles"],["edad",["e1","e2"],5,"Inicio en adultos jóvenes"],["zonap",["orejas","dorso"],-10,""]],
+ why:"Prurito en cara, patas, axilas e ingles, con otitis recurrente. Diagnóstico por exclusión (ectoparásitos e infección) y dieta de eliminación.",
+ lab:["citologia"],
+ tx:[["_","Controlar pulgas e infección secundaria; plan diagnóstico por consulta externa"],["prednisolona","Solo a corto plazo para el prurito intenso; no combinar con AINE"]],
+ ref:"ICADA: Treatment of canine atopic dermatitis (2015 update)"});
+ADD({id:"tina",n:"Dermatofitosis (tiña)",c:"GEN-DER-327",sys:"piel",sp:["c","f"],z:true,k:["alop","erup"],
+ s:{alop:20,erup:10,prur:5},
+ r:[["zonap",["circ"],35,"Zonas circulares sin pelo"],["edad",["e0","e1"],10,"Cachorro o gatito"],["especie",["f"],5,""]],
+ why:"Alopecia circular con descamación, poco prurito; frecuente en gatitos. Zoonótica.",
+ lab:["koh","citologia"],
+ tx:[["_","Antifúngico tópico y sistémico según formulario; limpiar el ambiente"],["_","Advertir al propietario: contagiosa para personas"]],
+ ref:"WAVD: Clinical consensus guidelines for dermatophytosis (2017)"});
+ADD({id:"miasis",n:"Miasis cutánea (gusanera)",c:"GEN-DER-348",sys:"piel",sp:["c","f"],k:["larvas"],
+ s:{larvas:50,herida:10,pus:10,letar:5},
+ why:"Larvas de mosca en heridas, pliegues o zona perianal. Revisar todo el cuerpo: puede haber lesiones profundas y toxemia.",
+ lab:["hemograma"],
+ tx:[["_","Retirar las larvas, cortar el pelo, lavar y desbridar bajo sedación"],["_","Antiparasitario sistémico según formulario"],["amoxclav","Si hay infección secundaria"],["_","Analgesia según dolor"]],
+ ref:"BSAVA Manual of Canine and Feline Wound Management"});
+const ana=DX.find(x=>x.id==="anafilaxia"); if(ana) ana.r.push(["bultoq",["subito"],20,"Edema súbito en cara o párpados"]);
+})();
 const ST = {hxs:new Set(),motivo2:null,soapSel:new Set(),openSys:new Set(),motivo:null,esp:null,peso:null,edad:null,sexo:null,hemo:null,vac:new Set(),signs:new Set(),ans:{},open:new Set(),
   fl:{tipo:"rl",desh:"0",horas:"24",perd:0,form:"b",ped:false,na:"",iris:{crea:"",sdma:"",upc:"",pas:""}}};
 
@@ -2199,8 +2295,7 @@ function renderS2(){
    <input class="ssearch" id="sbusca" type="search" placeholder="Buscar signo (p. ej., vóm, conv, tos)" value="${esc(q)}" oninput="ST.sbusca=this.value;sBuscar()" autocomplete="off">
    <div class="sres" id="sres"></div>
    <div class="sgroup"><div class="sgroup-t">Signos del motivo de consulta${M.pre&&M.pre.length?` <span class="prekey">Amarillo = marcado por el motivo</span>`:""}</div><div class="sgrid">${main.map(chip).join("")}</div></div>
-   <div class="sgroup-t" style="margin-top:12px">Otros signos por sistema</div>
-   ${Object.entries(grupos).map(([g,l])=>{const n=l.filter(s=>ST.signs.has(s)).length;return `<details class="sgrp" ${n||ST.openSys.has("sg_"+g)?"open":""} ontoggle="toggleSys('sg_${g}',this.open)"><summary>${esc(g)}${n?`<span class="cnt-on">${n} marcado${n>1?"s":""}</span>`:""}</summary><div class="sgrid">${l.map(chip).join("")}</div></details>`}).join("")}`;
+   ${(()=>{const nAll=Object.values(grupos).flat().filter(x=>ST.signs.has(x)).length;return `<details class="sgall" ${nAll||ST.openSys.has("sg_all")?"open":""} ontoggle="toggleSys('sg_all',this.open)"><summary><span class="sg-ar" aria-hidden="true"></span><span class="sg-t">Otros signos por sistema</span>${nAll?`<span class="cnt-on">${nAll} marcado${nAll>1?"s":""}</span>`:""}<span class="sg-hint"><span class="sg-ver">Ver sistemas</span><span class="sg-ocu">Ocultar</span></span></summary>`})()}${Object.entries(grupos).map(([g,l])=>{const n=l.filter(s=>ST.signs.has(s)).length;return `<details class="sgrp" ${n||ST.openSys.has("sg_"+g)?"open":""} ontoggle="toggleSys('sg_${g}',this.open)"><summary><span class="sg-ar" aria-hidden="true"></span><span class="sg-t">${esc(g)}</span>${n?`<span class="cnt-on">${n} marcado${n>1?"s":""}</span>`:""}<span class="sg-hint"><span class="sg-ver">Ver signos</span><span class="sg-ocu">Ocultar</span></span></summary><div class="sgrid">${l.map(chip).join("")}</div></details>`}).join("")}</details>`;
   sBuscar();
 }
 function sBuscar(){
