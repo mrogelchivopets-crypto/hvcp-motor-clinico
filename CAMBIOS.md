@@ -31,6 +31,11 @@ Origen: `HVCP_ER_Motor_Clinico_v7_9_6.html` actualizado por el hospital (19/11/2
 ### Guía rápida de auscultación pulmonar
 - Recuadro desplegable justo debajo de «Auscultación pulmonar»: qué opción marcar según el tipo de estertor y a qué orienta, más la localización. La pregunta «¿Auscultación torácica?» tiene la misma ayuda resumida.
 
+### Aviso visible de datos obligatorios
+- Auscultación cardíaca y pulmonar pasan a ser obligatorias (no se exigen en paro).
+- Al elegir el motivo de consulta con datos obligatorios pendientes se abre un cuadro con la lista de lo que falta: «Completar datos» lleva al primer campo pendiente; «Elegir motivo de todos modos» permite continuar en una urgencia.
+- Si se intenta generar la nota SOAP sin esos datos aparece el cuadro «No se generó la nota SOAP» con la lista de faltantes; la nota no se genera ni se registra el caso.
+
 ### Motivo «Dolor», «Piel y herida» y coherencia con el motivo
 - Motivo nuevo «Dolor (miembro, columna o abdomen)» con el grupo de signos «Dolor y aparato locomotor»: cojera o dolor en un miembro, no apoya un miembro, articulación inflamada o caliente, se queja o agrede al tocarlo, además de dolor de columna, abdominal, paresia y parálisis aguda de posteriores.
 - Preguntas nuevas: dónde está el dolor y cómo comenzó.
