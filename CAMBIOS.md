@@ -31,6 +31,12 @@ Origen: `HVCP_ER_Motor_Clinico_v7_9_6.html` actualizado por el hospital (19/11/2
 ### Guía rápida de auscultación pulmonar
 - Recuadro desplegable justo debajo de «Auscultación pulmonar»: qué opción marcar según el tipo de estertor y a qué orienta, más la localización. La pregunta «¿Auscultación torácica?» tiene la misma ayuda resumida.
 
+### Descarga vulvar, muerte y maceración fetal, muela carnicera y SOAP sin caracteres especiales
+- La nota SOAP ya no incluye «/», «&» ni comillas: las fechas usan guiones, las fracciones «de», las unidades «por» (mg por kg) y las alternativas «o».
+- Preguntas nuevas en hembras: tipo de descarga vulvar, gestación o parto reciente y días desde la monta; opción nueva en ecografía «Fetos sin latido o gas en útero o fetos».
+- Diagnósticos nuevos: muerte fetal (GEN-REP-505) y maceración fetal (GEN-REP-506), códigos nuevos en el clasificador, y metritis posparto (GEN-REP-343). Piometra y distocia usan el tipo de descarga.
+- Signo nuevo «Fístula o herida que drena debajo del ojo (maxilar)» y diagnóstico absceso del cuarto premolar superior, muela carnicera (GEN-DEN-507, código nuevo).
+
 ### Aviso visible de datos obligatorios
 - Auscultación cardíaca y pulmonar pasan a ser obligatorias (no se exigen en paro).
 - Al elegir el motivo de consulta con datos obligatorios pendientes se abre un cuadro con la lista de lo que falta: «Completar datos» lleva al primer campo pendiente; «Elegir motivo de todos modos» permite continuar en una urgencia.
