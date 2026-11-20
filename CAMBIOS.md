@@ -31,6 +31,14 @@ Origen: `HVCP_ER_Motor_Clinico_v7_9_6.html` actualizado por el hospital (19/11/2
 ### Guía rápida de auscultación pulmonar
 - Recuadro desplegable justo debajo de «Auscultación pulmonar»: qué opción marcar según el tipo de estertor y a qué orienta, más la localización. La pregunta «¿Auscultación torácica?» tiene la misma ayuda resumida.
 
+### Motivo «Dolor», «Piel y herida» y coherencia con el motivo
+- Motivo nuevo «Dolor (miembro, columna o abdomen)» con el grupo de signos «Dolor y aparato locomotor»: cojera o dolor en un miembro, no apoya un miembro, articulación inflamada o caliente, se queja o agrede al tocarlo, además de dolor de columna, abdominal, paresia y parálisis aguda de posteriores.
+- Preguntas nuevas: dónde está el dolor y cómo comenzó.
+- Diagnósticos nuevos: ruptura de ligamento cruzado craneal (GEN-MUS-504, código nuevo en el clasificador), artrosis (GEN-MUS-016), osteosarcoma (GEN-NEO-378), poliartritis (GEN-MUS-252) y artritis séptica (GEN-MUS-330). Fractura, IVDD y tromboembolismo felino usan las preguntas nuevas.
+- «Herida, piel o dolor» pasa a llamarse «Piel y herida» y ya no incluye los signos de dolor.
+- La condición corporal 2/5 ya no se registra sola como «Pérdida de peso» (solo la 1/5); la pérdida de peso referida la marca el médico.
+- Coherencia con el motivo: un diagnóstico de otro sistema que solo se apoya en signos generales (fiebre, pérdida de peso, letargo, anorexia, linfonodos, hipotermia, respiración rápida) baja al 60 % de su puntaje. No aplica a sepsis, shock, anafilaxia, golpe de calor, politrauma ni a diagnósticos cardiovasculares con el paciente en shock.
+
 ### Piel, trauma y signos desplegables
 - El motivo «Trauma, herida o dolor» se separa en «Trauma (atropello, caída, golpe o pelea)» y «Herida, piel o dolor».
 - Grupo nuevo de signos «Piel y tejido subcutáneo»: bulto bajo la piel, secreción purulenta o fístula, larvas en una herida, prurito, erupción, alopecia y arrastre o lamido anal; «Herida o mordedura» pasa a este grupo.
