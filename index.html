@@ -237,6 +237,16 @@ textarea,input,select{font-size:16px}
 .regsync{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-bottom:12px}
 .regsync a.opt{text-decoration:none}
 .reg-t td,.reg-t th{padding:6px 6px;vertical-align:top}
+details.ausg{grid-column:1/-1;border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin:0 0 4px;background:var(--surface2)}
+details.ausg>summary{cursor:pointer;font-size:12.5px;font-weight:600;color:#C6DAFF}
+details.ausg[open]>summary{margin-bottom:8px}
+details.ausg table{width:100%;border-collapse:collapse;font-size:12px}
+details.ausg th{color:var(--sub);font-weight:500;text-align:left;border-bottom:1px solid var(--border2);padding:4px 6px}
+details.ausg td{border-bottom:1px solid var(--border);padding:5px 6px;vertical-align:top}
+details.ausg td:nth-child(2){font-weight:600;white-space:nowrap}
+.ausn{font-size:12px;color:var(--sub);margin-top:8px;line-height:1.45}
+:root[data-theme="light"] details.ausg>summary{color:#1F5FD6}
+@media (max-width:600px){details.ausg table,details.ausg tbody,details.ausg tr,details.ausg td{display:block;width:100%}details.ausg tr:first-child{display:none}details.ausg tr{border-bottom:1px solid var(--border);padding:6px 0}details.ausg td{border:none;padding:1px 0;white-space:normal!important}details.ausg td:nth-child(2)::before{content:"Elija: ";font-weight:400;color:var(--sub)}details.ausg td:nth-child(3)::before{content:"Orienta a: ";color:var(--sub)}}
 
 /* ── Interfaz para ER (v7.9.6) ── */
 .stepnav{display:none}
@@ -474,7 +484,7 @@ const QS = [
  {id:"evento",s:"res",t:"¿Hubo un evento inmediato antes de la dificultad respiratoria?",h:"",w:["disn","taqp","cian"],o:[["elec","Mordió un cable (electrocución)","r"],["agua","Casi ahogamiento","r"],["obst","Obstrucción o estrangulamiento de vías altas","r"],["conv","Convulsión prolongada","y"],["no","Ninguno","g"]]},
  {id:"vomtipo",s:"dig",t:"¿Cómo es el vómito?",h:"",w:["vom"],o:[["comun","Alimento o líquido sin características especiales","g"],["alim","Alimento sin digerir horas después de comer","y"],["bilis","Bilioso (amarillo), sobre todo en ayunas","y"],["sangre","Con sangre fresca o en «pozo de café»","r"],["fecal","Fecaloide (olor a heces)","r"],["espuma","Espumoso o solo arcadas","y"]]},
  {id:"secr",s:"res",t:"¿Cómo es la secreción?",h:"",w:["secnas","secoc"],o:[["ser","Serosa (transparente)","y"],["muco","Mucopurulenta (amarilla o verde)","r"],["sang","Con sangre","r"],["leche","Sale leche o alimento por la nariz","r"]]},
- {id:"alim",s:"res",t:"¿Cómo se alimenta?",h:"En cachorros y gatitos: el biberón, la jeringa y el paladar hendido predisponen a neumonía por aspiración",w:["disn","tos","taqp","secnas","regurg"],o:[["madre","Solo leche materna","g"],["biber","Biberón o jeringa (además de la madre o solo)","y"],["tose","Tose o sale leche por la nariz al comer","r"],["solido","Alimento sólido, sin problemas al comer","g"]]},
+ {id:"alim",ag:["e0"],s:"res",t:"¿Cómo se alimenta?",h:"En cachorros y gatitos: el biberón, la jeringa y el paladar hendido predisponen a neumonía por aspiración",w:["disn","tos","taqp","secnas","regurg"],o:[["madre","Solo leche materna","g"],["biber","Biberón o jeringa (además de la madre o solo)","y"],["tose","Tose o sale leche por la nariz al comer","r"],["solido","Alimento sólido, sin problemas al comer","g"]]},
  {id:"prost",sp:["c"],sx:["me","mc"],s:"uro",t:"¿Próstata a la palpación rectal?",h:"Machos: la HPB es casi universal en enteros > 5 años y rara vez obstruye; próstata grande en castrado: sospechar neoplasia",w:["estr","nodef","hemu","prep","olig"],o:[["dolor","Aumentada y dolorosa","r"],["aum","Aumentada, no dolorosa","y"],["n","Normal","g"]]},
  {id:"contagio",s:"dig",t:"¿Contacto con animales enfermos o antecedente de parvovirus o moquillo en el hogar?",h:"El parvovirus persiste meses en el ambiente; un cachorro puede llegar decaído antes de vomitar",tf:"¿Contacto con gatos enfermos o antecedente de panleucopenia, gripe felina o FeLV/FIV en el hogar?",hf:"El virus de la panleucopenia persiste meses en el ambiente; un gatito puede llegar decaído antes de vomitar",w:["letar","anor","vom","diar","hemq","fieb","tos"],o:[["si","Sí","r"],["no","No","g"]]},
  {id:"plaq",lab:true,s:"cv",t:"¿Plaquetas (hemograma)?",h:"Trombocitopenia con signos inespecíficos: pensar en hemoparásitos aunque el 4Dx sea negativo",w:["letar","anor","fieb","petq","pali","epist","diar","vom","icter"],o:[["bajo","Trombocitopenia","r"],["n","Normales","g"]]},
@@ -519,7 +529,7 @@ const QS = [
    ["mixto","Esfuerzo en ambas fases con crepitaciones o tos húmeda","r"],
    ["kuss","Profunda, amplia y regular (tipo Kussmaul)","y"],
    ["jadeo","Rápida o jadeante con auscultación pulmonar normal","y"]]},
- {id:"ausc",s:"res",t:"¿Auscultación torácica?",h:"",w:["disn","taqp","tos","cian","colap","dist","regurg","debej"],o:[["sv","Silencio ventral (bilateral o unilateral)","r"],["sd","Silencio dorsal","r"],["crep","Crepitaciones","r"],["sib","Sibilancias","y"],["apag","Ruidos cardíacos apagados","r"],["n","Normal","g"]]},
+ {id:"ausc",s:"res",t:"¿Auscultación torácica?",h:"«Estertores» finos, húmedos o gruesos: marque Crepitaciones. Estertores secos o silbido espiratorio: Sibilancias. Estridor de vía alta: no es pulmonar (signo «Ruido respiratorio audible»)",w:["disn","taqp","tos","cian","colap","dist","regurg","debej"],o:[["sv","Silencio ventral (bilateral o unilateral)","r"],["sd","Silencio dorsal","r"],["crep","Crepitaciones","r"],["sib","Sibilancias","y"],["apag","Ruidos cardíacos apagados","r"],["n","Normal","g"]]},
  {id:"card",s:"res",t:"¿Cardiopatía conocida o soplo auscultado?",h:"",w:["disn","taqp","tos","cian","colap","pptr","sinc","regurg","debej"],o:[["si","Sí","y"],["no","No / desconocido","g"]]},
  {id:"razar",s:"res",t:"¿Tipo de raza?",h:"",w:["disn","ruido","tos","cian","calor","ojo"],o:[["braq","Braquicefálica","y"],["toy","Toy o miniatura","y"],["grande_ger","Grande y geriátrica","y"],["otra","Otra / mestizo","g"]]},
  {id:"perf",s:"cv",t:"¿Perfusión?",h:"Mucosas rojas con TLLC < 1 s y pulso saltón: shock hiperdinámico (sepsis, golpe de calor, anafilaxia)",w:["colap","pali","tlc","hipot","fieb","letar","taqp","dist","herida","sinc"],o:[["hipo","Hipoperfusión: pulso débil, extremidades frías, mentación deprimida","r"],["hiper","Hiperdinámica: mucosas rojas, pulso saltón","r"],["n","Normal","g"]]},
@@ -1808,6 +1818,23 @@ const D=id=>DX.find(x=>x.id===id), R=(id,q,vals,dl,txt)=>{const d=D(id); if(d) d
 ["urolit_c","obs_uret_f","hpb","prostatitis"].forEach(id=>R(id,"orinq",["oligo"],-20,""));
 R("uroabd","orinq",["oligo"],5,"");
 })();
+
+// ═══ v7.9.6 — Caso MC-BANPER: bronconeumonía con crepitaciones (antecedente respiratorio, leucocitosis, taponamiento) ═══
+const DX_EQUIV={"GEN-RES-025":"GEN-RES-166"}; // Bronconeumonía ≡ Neumonía bacteriana / por aspiración (indicadores del registro)
+(function(){
+const D=id=>DX.find(x=>x.id===id), R=(id,q,vals,dl,txt)=>{const d=D(id); if(d) d.r.push([q,vals,dl,txt||""])};
+R("neumonia","ant",["resp"],15,"Cuadro respiratorio previo o en tratamiento");
+R("neumonia","leuco",["alto"],20,"Leucocitosis");
+R("colap_traq","ant",["traq"],25,"Colapso traqueal o bronquitis crónica conocidos"); R("colap_traq","ant",["resp"],5,"");
+R("asma","ant",["traq"],15,"Bronquitis crónica conocida"); R("asma","ant",["resp"],10,"Cuadro respiratorio previo");
+R("cirdc","ant",["resp"],5,"");
+R("icc","card",["no"],-15,"Sin cardiopatía ni soplo conocidos");
+R("icc","leuco",["alto"],-5,"");
+R("taponamiento","ausc",["crep","sib"],-25,"Crepitaciones o sibilancias: el taponamiento cursa con pulmones limpios");
+R("taponamiento","card",["si"],-10,"");
+R("shock_hipo","ausc",["crep","sib"],-15,"Hallazgos pulmonares: la palidez y el TLLC prolongado pueden ser por hipoxemia o sepsis");
+const q=QS.find(x=>x.id==="leuco"); if(q) ["disn","taqp","cian"].forEach(x=>{if(!q.w.includes(x))q.w.push(x)});
+})();
 const ST = {hxs:new Set(),motivo2:null,soapSel:new Set(),openSys:new Set(),motivo:null,esp:null,peso:null,edad:null,sexo:null,hemo:null,vac:new Set(),signs:new Set(),ans:{},open:new Set(),
   fl:{tipo:"rl",desh:"0",horas:"24",perd:0,form:"b",ped:false,na:"",iris:{crea:"",sdma:"",upc:"",pas:""}}};
 
@@ -1837,7 +1864,7 @@ function answers(){
     if(hx.length&&A.hx===undefined)A.hx=hx; if(H.includes("card")&&A.card===undefined)A.card="si"; if(H.includes("dm")&&A.dm===undefined)A.dm="si"; if(H.includes("epi")&&A.convhx===undefined)A.convhx="epi";}   // signos utilizables en reglas combinadas
   return A;
 }
-function visibleQs(){const g=SG();return QS.filter(q=>(!q.sp||!ST.esp||q.sp.includes(ST.esp))&&(!q.sx||!ST.sexo||q.sx.includes(ST.sexo))&&q.w.some(s=>g.has(s)))}
+function visibleQs(){const g=SG();return QS.filter(q=>(!q.ag||!ST.edad||q.ag.includes(ST.edad))&&(!q.sp||!ST.esp||q.sp.includes(ST.esp))&&(!q.sx||!ST.sexo||q.sx.includes(ST.sexo))&&q.w.some(s=>g.has(s)))}
 function qT(q){return ST.esp==="f"&&q.tf?q.tf:q.t}
 function qH(q){return ST.esp==="f"&&q.hf?q.hf:q.h}
 function ruleMatch(vals,v){
@@ -1894,7 +1921,7 @@ const EX_PULSO=[["n","Normal (fuerte y regular)"],["deb","Débil o filiforme"],[
 const EX_DH=[["0","< 5%"],["5","5–6%"],["7","6–8%"],["9","8–10%"],["11","10–12%"],["12","> 12% (shock)"]];
 const EX_CARD=[["n","Normal"],["soplo","Soplo"],["galope","Ritmo de galope"],["arrit","Arritmia"],["apag","Ruidos apagados"]];
 const EX_VEJ=[["n","Normal"],["grande","Distendida y firme"],["peq","Pequeña o no palpable"]];
-const HXS=[["ninguno","Ningún antecedente"],["hemopar","Hemoparásitos tratados"],["erc","Enfermedad renal crónica"],["card","Cardiopatía"],["dm","Diabetes"],["endo","Hipotiroidismo / Cushing / Addison"],["hep","Hepatopatía"],["neo","Neoplasia"],["epi","Epilepsia"],["retro","FeLV o FIV positivo"],["aine","AINE o corticoides recientes"],["cx","Cirugía reciente"],["obsu","Obstrucción de vías urinarias previa"]];
+const HXS=[["ninguno","Ningún antecedente"],["hemopar","Hemoparásitos tratados"],["erc","Enfermedad renal crónica"],["card","Cardiopatía"],["dm","Diabetes"],["endo","Hipotiroidismo / Cushing / Addison"],["hep","Hepatopatía"],["neo","Neoplasia"],["epi","Epilepsia"],["retro","FeLV o FIV positivo"],["aine","AINE o corticoides recientes"],["cx","Cirugía reciente"],["obsu","Obstrucción de vías urinarias previa"],["resp","Enfermedad respiratoria previa o tos crónica"],["traq","Colapso traqueal o bronquitis crónica conocidos"]];
 ["obs_uret_f","urolit_c","cif","retencion"].forEach(id=>{const d=DX.find(x=>x.id===id);if(d)d.r.push(["ant",["obsu"],15,"Obstrucción urinaria previa (riesgo de recurrencia)"])});
 (function(){
 const D=id=>DX.find(x=>x.id===id), S=(id,k,w)=>{D(id).s[k]=w};
@@ -2030,7 +2057,7 @@ function examHtml(){
   return `<div class="field" id="exfis"><span class="flabel">Examen físico (constantes y hallazgos)</span>
    <div class="fl-grid">${num("fc","FC (lpm)","lpm")}${num("fr","FR (rpm)","rpm")}${tempField()}${num("gluc","Glucemia (mg/dL)","glucómetro")}
    ${sel("muc","Color de mucosas",EX_MUC)}${sel("tllc","TLLC",EX_TLLC)}${sel("pulso","Pulso femoral",EX_PULSO)}${sel("dh","Deshidratación (%DH)",EX_DH)}
-   ${sel("dolor","Dolor (escala de Glasgow / muecas felinas)",EX_DOL)}${sel("cc","Condición corporal (CC, escala 1–5)",cc)}${sel("card","Auscultación cardíaca",EX_CARD)}${sel("pulm","Auscultación pulmonar",EX_PULM)}
+   ${sel("dolor","Dolor (escala de Glasgow / muecas felinas)",EX_DOL)}${sel("cc","Condición corporal (CC, escala 1–5)",cc)}${sel("card","Auscultación cardíaca",EX_CARD)}${sel("pulm","Auscultación pulmonar",EX_PULM)}<details class="ausg"><summary>¿Escuchó «estertores»? Guía rápida para elegir la auscultación pulmonar</summary><table><tr><th>Lo que escucha</th><th>Elija</th><th>Orienta a</th></tr><tr><td><b>Estertores finos o húmedos</b>: chasquidos cortos, como frotar cabello junto al oído; en la inspiración</td><td>Crepitaciones</td><td>Neumonía, edema pulmonar, contusión</td></tr><tr><td><b>Estertores gruesos o roncus</b>: burbujeo o ronquido por secreciones; cambian al toser</td><td>Crepitaciones</td><td>Neumonía o bronconeumonía, bronquitis</td></tr><tr><td><b>Estertores secos</b>: silbido, sobre todo en la espiración</td><td>Sibilancias</td><td>Asma felina, bronquitis</td></tr><tr><td><b>Estridor o ronquido</b> que se oye sin estetoscopio, en la inspiración (vía alta)</td><td>Normal + signo «Ruido respiratorio audible»</td><td>Colapso traqueal, parálisis laríngea, braquicefálico</td></tr><tr><td>No se oyen ruidos en la parte baja del tórax</td><td>Silencio ventral</td><td>Derrame pleural</td></tr><tr><td>No se oyen ruidos en la parte alta del tórax</td><td>Silencio dorsal</td><td>Neumotórax</td></tr></table><div class="ausn">Anote también <b>dónde</b> se escuchan: craneoventral orienta a neumonía (aspiración o bacteriana); perihiliar o dorsocaudal, a edema cardiogénico en el perro; difuso, a edema no cardiogénico o ICC felina; focal o de un lado, a contusión, neumonía lobar o neoplasia.</div></details>
    ${sel("vej","Vejiga a la palpación",EX_VEJ)}${sel("abm","Masa abdominal / esplenomegalia",[["no","No"],["si","Sí"]])}${["me","mc"].includes(ST.sexo)?"":sel("mam","Glándulas mamarias",[["no","Normales"],["si","Nódulos o masas"]])}
    ${sel("linf","Linfonodos",[["no","Normales"],["loc","Aumento localizado"],["gen","Aumento generalizado"]])}${sel("ecto","Ectoparásitos",[["no","No se observan"],["garr","Garrapatas"],["pulg","Pulgas"],["ambos","Garrapatas y pulgas"]])}</div>
    <div class="muted">Los hallazgos anormales se agregan solos como signos (p. ej., mucosas pálidas, fiebre, bradicardia) y responden las preguntas de temperatura, perfusión y auscultación.</div></div>`;
@@ -2743,8 +2770,8 @@ function wilson(k,n){if(!n)return null;const z=1.96,p=k/n,d=1+z*z/n,c=(p+z*z/(2*
 function pct(k,n){return n?Math.round(k/n*100)+"%":"—"}
 function regEval(){
   return REG.casos.map(c=>{const k=REG.cierres.get(c.id);if(!k||!k.dx||!k.conf)return null;
-    const d=k.dx.c,top=c.sal.top.map(t=>t.c);
-    return {c,k,d,h1:!!d&&top[0]===d,h3:!!d&&top.slice(0,3).includes(d),hs:!!d&&c.sal.soap.includes(d),hA:!!d&&c.sal.alta.includes(d),inM:!!d&&MOTOR_C.has(d),obj:CONF_OBJ.has(k.conf),cap:k.dx.cap||"",insuf:c.sal.insuf}
+    const EQ=x=>DX_EQUIV[x]||x, d=EQ(k.dx.c),top=c.sal.top.map(t=>EQ(t.c)),soap=c.sal.soap.map(EQ),alta=c.sal.alta.map(EQ);
+    return {c,k,d,h1:!!d&&top[0]===d,h3:!!d&&top.slice(0,3).includes(d),hs:!!d&&soap.includes(d),hA:!!d&&alta.includes(d),inM:!!d&&MOTOR_C.has(d),obj:CONF_OBJ.has(k.conf),cap:k.dx.cap||"",insuf:c.sal.insuf}
   }).filter(Boolean);
 }
 function regStats(){
