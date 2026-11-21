@@ -31,6 +31,12 @@ Origen: `HVCP_ER_Motor_Clinico_v7_9_6.html` actualizado por el hospital (19/11/2
 ### Guía rápida de auscultación pulmonar
 - Recuadro desplegable justo debajo de «Auscultación pulmonar»: qué opción marcar según el tipo de estertor y a qué orienta, más la localización. La pregunta «¿Auscultación torácica?» tiene la misma ayuda resumida.
 
+### Reevaluaciones, aviso de FR y motivo ocular
+- Casilla «Reevaluación de un paciente ya registrado» (con el código anterior opcional): genera la nota SOAP pero no crea un caso nuevo, para no duplicar pacientes en el registro.
+- Aviso «Verifique la FR» cuando la FR pasa de 100 rpm y no hay FC registrada.
+- Con el motivo «Problema en los ojos», los diagnósticos oculares suman 20 puntos.
+- scripts/Registro_MC_a_Drive.gs: Google Apps Script que copia cada hora el registro en línea a una hoja de Google y a un .xlsx en Drive.
+
 ### Descarga vulvar, muerte y maceración fetal, muela carnicera y SOAP sin caracteres especiales
 - La nota SOAP ya no incluye «/», «&» ni comillas: las fechas usan guiones, las fracciones «de», las unidades «por» (mg por kg) y las alternativas «o».
 - Preguntas nuevas en hembras: tipo de descarga vulvar, gestación o parto reciente y días desde la monta; opción nueva en ecografía «Fetos sin latido o gas en útero o fetos».

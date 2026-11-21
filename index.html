@@ -387,7 +387,7 @@ details[open]>summary .sg-ocu{display:inline}
     <div class="card"><div class="card-h">Exámenes sugeridos</div><div class="card-b" id="labs"></div></div>
     <div class="card" id="secSoap"><div class="card-h">Nota SOAP para el expediente</div><div class="card-b"><div class="opts" style="margin-bottom:10px"><button class="opt on" onclick="genSOAP()">Generar nota SOAP</button><button class="opt" onclick="copySOAP()">Copiar</button><span class="muted" id="soapmsg" style="align-self:center"></span></div>
       <textarea id="soap" class="soap" spellcheck="false" placeholder="Complete paciente, motivo y signos, y pulse «Generar nota SOAP». Puede editar el texto antes de copiarlo."></textarea>
-      <div class="regsoap"><div class="wt" style="flex-wrap:wrap"><label class="muted reg-no"><input type="checkbox" id="regno"> No registrar (prueba o docencia)</label></div><div id="regmsg" class="regmsg"></div></div>
+      <div class="regsoap"><div class="wt" style="flex-wrap:wrap"><label class="muted reg-no"><input type="checkbox" id="regno"> No registrar (prueba o docencia)</label><label class="muted reg-no"><input type="checkbox" id="regre" onchange="regReToggle()"> Reevaluación de un paciente ya registrado</label><input id="regrecod" class="reg-in" style="display:none;max-width:230px" maxlength="9" placeholder="Código anterior MC-…, opcional" autocomplete="off"></div><div id="regmsg" class="regmsg"></div></div>
     </div></div>
     <div class="card"><div class="card-h">Fluidoterapia</div><div class="card-b" id="fluids"></div></div>
     <div class="card" id="iriscard" style="display:none"><div class="card-h">Estadificación IRIS (ERC)</div><div class="card-b"></div></div>
@@ -2168,6 +2168,16 @@ ADD({id:"abs_carn",n:"Absceso del cuarto premolar superior (muela carnicera)",c:
 const ab=DX.find(x=>x.id==="absceso"); if(ab) ab.s.fistmax=-15;
 const pe=DX.find(x=>x.id==="periodontal"); if(pe) pe.s.fistmax=10;
 })();
+
+// ═══ Reevaluación del mismo paciente (no duplica casos) y avisos de captura ═══
+function regReToggle(){const c=document.getElementById("regre"),i=document.getElementById("regrecod");if(i){i.style.display=c&&c.checked?"":"none";if(c&&c.checked)i.focus()}}
+function regReeval(){
+  const c=document.getElementById("regre"); if(!c||!c.checked) return false;
+  const i=document.getElementById("regrecod"), cod=(i&&i.value||"").trim().toUpperCase(), ok=/^MC-[A-HJ-NP-Z2-9]{6}$/.test(cod);
+  const t=document.getElementById("soap"); if(t) t.value+=`\nReevaluación${ok?" del caso "+cod:" de un paciente ya registrado"}: no se crea un caso nuevo.`;
+  regMsg(ok?`Reevaluación del caso ${cod}: no se crea un caso nuevo. Agregue los resultados en ese caso desde «Registro de casos».`:"Reevaluación: no se crea un caso nuevo.");
+  return true;
+}
 const ST = {hxs:new Set(),motivo2:null,soapSel:new Set(),openSys:new Set(),motivo:null,esp:null,peso:null,edad:null,sexo:null,hemo:null,vac:new Set(),signs:new Set(),ans:{},open:new Set(),
   fl:{tipo:"rl",desh:"0",horas:"24",perd:0,form:"b",ped:false,na:"",iris:{crea:"",sdma:"",upc:"",pas:""}}};
 
@@ -2230,6 +2240,7 @@ function scoreDx(){
     d.r.forEach(([q,vals,dl,txt,cond])=>{
       if(ruleMatch(vals,A[q]) && (!cond||ruleMatch(cond[1],A[cond[0]]))){sc+=dl;if(dl>0)nr++;if(dl>=30&&LABQ.has(q)&&(q!=="ant"||dl>=40))labHit=true;if(txt){(dl>0?pos:neg).push(txt)}}
     });
+    if(ST.motivo&&d.sys==="oft"&&[ST.motivo,ST.motivo2].includes("oft")){sc+=20;pos.push("Motivo de consulta ocular")}
     // Coherencia con el motivo: un diagnóstico de otro sistema que solo se apoya en signos generales baja de peso
     if(!labHit&&ST.motivo){const MS=[ST.motivo,ST.motivo2].filter(Boolean).map(id=>(MOTIVOS.find(m=>m.id===id)||{}).sys);
       if(MS.every(Boolean)&&!MS.includes(d.sys)&&!DX_SISTEMICOS.has(d.id)&&!(d.sys==="cv"&&["comp","desc","pcr"].includes(HEMO()))&&!d.k.some(k=>SGX.has(k)&&!SIG_GEN.has(k))){sc=Math.round(sc*0.6);neg.push("Solo lo apoyan signos generales (fiebre, pérdida de peso, letargo) y no corresponde al motivo de consulta")}}
@@ -2515,6 +2526,7 @@ function renderAlerts(){
   const A=answers(), s=SG(), al=[];
   {const fx=faltantes(), imp=fx.filter(x=>x.imp), vac=fx.filter(x=>!x.imp);
    if(imp.length) al.push(["r","Valor imposible en el examen físico",imp.map(x=>x.l+": "+x.imp).join(" · ")+". Corrija el dato: no se usa en el análisis ni permite generar la nota SOAP."]);
+   {const e0=ST.ex||{}, fr0=parseFloat(e0.fr); if(!isNaN(fr0)&&fr0>100&&(e0.fc==null||e0.fc==="")) al.push(["y","Verifique la FR",`FR de ${fr0} rpm sin FC registrada: ¿se escribió la frecuencia cardíaca en el campo de FR?`]);}
    if(vac.length&&(ST.motivo||ST.valTried)) al.push(["y","Datos obligatorios pendientes",vac.map(x=>x.l).join(", ")+". Son necesarios para generar la nota SOAP."]);}
   {const hi=hemoInfo(), L=x=>(P_HEMO.find(p=>p[0]===x)||[,"sin marcar"])[1].toLowerCase();
    if(hi.cambio==="baja") al.push(["y","Estado hemodinámico no concuerda con las constantes",`Marcó ${L(hi.sel)}, pero ${hi.motivo} están en rango normal. El motor analiza al paciente como ESTABLE (diagnósticos, fluidos y AINE). Si el shock es real, reevalúe y registre las constantes alteradas.`]);
@@ -2950,6 +2962,7 @@ function regSnapshot(){
   }));
 }
 function regTrasSOAP(){
+  if(regReeval()) return;
   const prueba=document.getElementById("regno").checked;
   if(!ST.signs.size&&!ST.motivo){regMsg("Sin motivo ni signos: no se registra.");return}
   if(!REG.cur){const d=new Date();REG.cur={id:nuevoId(),f:d.toISOString()}}
@@ -2968,7 +2981,7 @@ async function regGuardar(prueba){
   else if(r.ok)regMsg(`Caso ${c.id} registrado. El código queda en la nota SOAP del expediente.`,"ok");
   else regMsg(`Caso ${c.id} guardado en este dispositivo: se enviará al registro en cuanto haya conexión. El código ya está en la nota SOAP.`,"warn");
 }
-function regReset(){if(REG.cur||ST.motivo||ST.esp)regEvento("nuevo_paciente");REG.cur=null;const n=document.getElementById("regno");if(n)n.checked=false;regMsg("")}
+function regReset(){if(REG.cur||ST.motivo||ST.esp)regEvento("nuevo_paciente");REG.cur=null;const n=document.getElementById("regno");if(n)n.checked=false;const re1=document.getElementById("regre");if(re1)re1.checked=false;const rc=document.getElementById("regrecod");if(rc){rc.value="";rc.style.display="none"}regMsg("")}
 // ─── Vista del registro ───
 function regToggle(on){
   const app=document.querySelector(".app"),rv=document.getElementById("regview"),b=document.getElementById("regbtn");
