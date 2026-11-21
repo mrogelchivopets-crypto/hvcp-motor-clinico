@@ -186,6 +186,23 @@ Del Excel anterior no se pueden recuperar:
 
 Todas excluyen los casos anulados y los de prueba o docencia. La hora es la de El Salvador. Si los turnos del hospital son otros, ajuste la función `turno_de`.
 
+## Excel automático en OneDrive y análisis diario
+
+- **Exportación cada 15 minutos.** La tarea de Windows «HVCP Motor - Exportar registro» (`scripts/programar_exportacion.ps1`) corre `scripts/exportar_registro.mjs` y guarda en `Documentos\Motor\Registro del motor`:
+  - `Registro_Motor_Clinico_HVCP.xlsx`: el Excel vigente, con las mismas hojas que «Exportar a Excel» del panel.
+  - `historico\`: una copia por día.
+  - `datos\registro.json`: los datos en bruto para el análisis.
+  - `exportacion.log`: el resultado de cada ejecución.
+- **Requisitos de la exportación:**
+  - la computadora encendida con la sesión de Windows iniciada;
+  - el archivo `.env.exportacion` lleno (plantilla en `.env.exportacion.ejemplo`; no se sube a GitHub).
+- **Si el Excel está abierto:** Excel lo bloquea y esa actualización se salta. La siguiente lo actualiza.
+- **Análisis diario a las 10 a. m.** Una tarea programada de Claude («Motor Clínico HVCP · análisis diario») lee los datos y escribe `Reportes\Reporte_Motor_AAAA-MM-DD.html`:
+  - uso, cierre de casos, acierto del motor y propuestas de corrección;
+  - solo propone. Los cambios al motor se aplican con aprobación y pruebas;
+  - corre con la aplicación de Claude abierta. Si está cerrada a esa hora, corre al abrirla.
+- **Cuenta de solo lectura (recomendado).** La migración `20261120000600_rol_lector.sql` agrega el rol «lector»: puede leer el registro, pero no anular ni modificar nada. Así la contraseña guardada en la computadora no da permisos de administrador. Mientras no se aplique, la exportación usa la cuenta de administrador.
+
 ## Actualizar medicamentos, exámenes e inventario
 
 El catálogo (formulario de medicamentos, faltantes con su sustituto y exámenes) vive dentro de `index.html`. Se edita en Excel y se carga con dos comandos. **Los diagnósticos, signos y puntajes no se cambian así**: son lógica clínica y se validan aparte.
