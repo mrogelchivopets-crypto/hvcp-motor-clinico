@@ -9,3 +9,4 @@ supabase/.branches/
 *.xlsx
 tests/fixtures/anterior.html
 catalogo/informe_revision.md
+!.env.exportacion.ejemplo

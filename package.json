@@ -12,7 +12,8 @@
     "servir": "node scripts/servir.mjs",
     "catalogo:exportar": "node scripts/catalogo_exportar.mjs",
     "catalogo:importar": "node scripts/catalogo_importar.mjs",
-    "guia": "node scripts/exportar_guia.mjs"
+    "guia": "node scripts/exportar_guia.mjs",
+    "registro:exportar": "node scripts/exportar_registro.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.64.1",
