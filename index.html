@@ -2178,6 +2178,33 @@ function regReeval(){
   regMsg(ok?`Reevaluación del caso ${cod}: no se crea un caso nuevo. Agregue los resultados en ese caso desde «Registro de casos».`:"Reevaluación: no se crea un caso nuevo.");
   return true;
 }
+
+// ═══ Ajustes del registro 21/11: retención neurogénica, bronquitis crónica, barro biliar (v7.9.7) ═══
+(function(){
+const D=id=>DX.find(x=>x.id===id), R=(id,q,v,dl,t)=>{const d=D(id); if(d) d.r.push([q,v,dl,t||""])};
+const rt=D("retencion"); if(rt) rt.need={s:["estr","olig","incont"],a:[["vejiga",["grande"]]],pen:-35,txt:"Sin signos urinarios: con paresia sola, pensar primero en IVDD"};
+QS.push({id:"tosdur",s:"res",t:"¿Desde cuándo tose?",h:"Tos de más de 2 meses en un perro adulto sin fiebre: bronquitis crónica o colapso traqueal",w:["tos"],o:[["ag","Menos de 2 semanas","y"],["sem","De 2 semanas a 2 meses","y"],["cron","Más de 2 meses","r"]]});
+const eco=QS.find(q=>q.id==="eco"); if(eco) eco.o.splice(eco.o.length-1,0,["vesic","Vesícula con barro, mucocele o pared engrosada","r"]);
+const ADD=o=>DX.push(Object.assign({b:0,fl:"mant",z:false,r:[],lab:[]},o));
+ADD({id:"bronq_cron",n:"Bronquitis crónica canina",c:"GEN-RES-384",sys:"res",sp:["c"],k:["tos"],
+ s:{tos:20,disn:5,ruido:5},
+ r:[["tosdur",["cron"],35,"Tos de más de 2 meses"],["tosdur",["ag"],-20,""],["ausc",["crep","sib"],15,"Crepitaciones o sibilancias"],["ant",["traq"],20,"Bronquitis o colapso traqueal conocidos"],["ant",["resp"],10,"Cuadro respiratorio previo"],["edad",["e3","e4","e5"],10,"Adulto o geriátrico"],["temp",["alto","vhi"],-15,"La fiebre orienta a infección"],["card",["si"],-10,""]],
+ why:"Tos diaria de más de 2 meses, a menudo productiva y con arcadas al final, en perros adultos de razas pequeñas o con sobrepeso, sin fiebre. Radiografía con patrón bronquial; descartar ICC, colapso traqueal, neumonía y parásitos pulmonares.",
+ lab:["rx_torax","hemograma","citologia"],
+ tx:[["_","Evitar humo, collar (usar pechera) y sobrepeso"],["prednisolona","Antiinflamatoria solo con infección descartada; no combinar con AINE"],["salbutamol","Si hay broncoespasmo (sibilancias)"],["_","Antibiótico solo si hay infección confirmada"]],
+ ref:"Ettinger, Feldman & Côté, Textbook of Veterinary Internal Medicine (9.ª ed.); BSAVA Manual of Canine and Feline Cardiorespiratory Medicine"});
+R("cirdc","tosdur",["ag"],10,"Tos aguda"); R("cirdc","tosdur",["cron"],-20,"");
+R("colap_traq","tosdur",["cron"],10,"Tos crónica");
+ADD({id:"barro_biliar",n:"Barro biliar, mucocele o colecistitis",c:"GEN-HEP-023",sys:"hep",sp:["c","f"],k:["dabd","vom","anor","icter"],
+ s:{dabd:15,icter:15,vom:10,anor:5,fieb:5},
+ r:[["eco",["vesic"],45,"Vesícula con barro, mucocele o pared engrosada"],["hep_lab",["alta"],15,"ALT o bilirrubina elevadas"],["edad",["e3","e4","e5"],5,""]],
+ need:{s:["icter"],a:[["eco",["vesic"]]],pen:-20,txt:"Sin ecografía de vesícula ni ictericia"},
+ why:"Dolor abdominal craneal, vómito y anorexia, a veces con ictericia y fiebre (colecistitis). La ecografía muestra barro biliar, mucocele (patrón en kiwi) o pared engrosada. Riesgo de ruptura y peritonitis biliar.",
+ lab:["!eco_abd","hepatico","hemograma"],
+ tx:[["_","Analgesia según dolor y antiemético"],["ceftriaxona","Si hay colecistitis (fiebre, leucocitosis)"],["_","Mucocele, obstrucción o ruptura: colecistectomía; ácido ursodesoxicólico no está en el formulario"]],
+ ref:"Ettinger, Feldman & Côté, Textbook of Veterinary Internal Medicine (9.ª ed.)"});
+R("pancreatitis","eco",["vesic"],-15,"");
+})();
 const ST = {hxs:new Set(),motivo2:null,soapSel:new Set(),openSys:new Set(),motivo:null,esp:null,peso:null,edad:null,sexo:null,hemo:null,vac:new Set(),signs:new Set(),ans:{},open:new Set(),
   fl:{tipo:"rl",desh:"0",horas:"24",perd:0,form:"b",ped:false,na:"",iris:{crea:"",sdma:"",upc:"",pas:""}}};
 
@@ -2359,7 +2386,7 @@ function exDerive(){
   const e=ST.ex||{}, sg=new Set(), a={}, cat=ST.esp==="f";
   const VR=(k)=>{const n=parseFloat(e[k]),R=RANGO[k];return R&&(n<R[0]||n>R[1])?NaN:n}, t=VR("temp"), fc=VR("fc"), fr=VR("fr");
   if(!isNaN(t)){a.temp=t<37.5?"bajo":t<39.5?"n":t<=41?"alto":"vhi"; const tc=tempCls(t); if(tc&&tc.k==="fiebre")sg.add("fieb"); if(t<37.5)sg.add("hipot")}
-  if(!isNaN(fc)&&ST.esp){ const kg=parseFloat(ST.peso), shk=["comp","desc"].includes(HEMO()); const lim=cat?(shk?160:140):(shk?100:(kg&&kg<10?80:60)); if(fc<lim) sg.add("brad") }
+  if(!isNaN(fc)&&ST.esp){ const kg=parseFloat(ST.peso), shk=["comp","desc"].includes(HEMO()); const lim=cat?(shk?160:120):(shk?100:(kg&&kg<10?80:60)); if(fc<lim) sg.add("brad") }
   if(!isNaN(fr)&&fr>40) sg.add("taqp");
   const gl=parseFloat(e.gluc); if(!isNaN(gl)) a.gluc=gl<60?"lo":gl<=180?"n":gl<=300?"hi":"vhi";
   if(e.muc==="pali"||e.muc==="gris") sg.add("pali");
@@ -2526,7 +2553,9 @@ function renderAlerts(){
   const A=answers(), s=SG(), al=[];
   {const fx=faltantes(), imp=fx.filter(x=>x.imp), vac=fx.filter(x=>!x.imp);
    if(imp.length) al.push(["r","Valor imposible en el examen físico",imp.map(x=>x.l+": "+x.imp).join(" · ")+". Corrija el dato: no se usa en el análisis ni permite generar la nota SOAP."]);
-   {const e0=ST.ex||{}, fr0=parseFloat(e0.fr); if(!isNaN(fr0)&&fr0>100&&(e0.fc==null||e0.fc==="")) al.push(["y","Verifique la FR",`FR de ${fr0} rpm sin FC registrada: ¿se escribió la frecuencia cardíaca en el campo de FR?`]);}
+   {const e0=ST.ex||{}, fr0=parseFloat(e0.fr), fc0=parseFloat(e0.fc); if(!isNaN(fr0)&&fr0>100&&(e0.fc==null||e0.fc==="")) al.push(["y","Verifique la FR",`FR de ${fr0} rpm sin FC registrada: ¿se escribió la frecuencia cardíaca en el campo de FR?`]);
+    if(!isNaN(fc0)&&!isNaN(fr0)&&fc0<40&&fr0>60) al.push(["y","¿Intercambió FC y FR?",`FC ${fc0} lpm y FR ${fr0} rpm: parece que los valores están en el campo equivocado. Revise antes de continuar.`]);
+    else if(!isNaN(fc0)&&!isNaN(fr0)&&fc0===fr0) al.push(["y","FC y FR iguales",`FC y FR registradas con el mismo valor (${fc0}): confirme que no se copió el mismo número en ambos campos.`]);}
    if(vac.length&&(ST.motivo||ST.valTried)) al.push(["y","Datos obligatorios pendientes",vac.map(x=>x.l).join(", ")+". Son necesarios para generar la nota SOAP."]);}
   {const hi=hemoInfo(), L=x=>(P_HEMO.find(p=>p[0]===x)||[,"sin marcar"])[1].toLowerCase();
    if(hi.cambio==="baja") al.push(["y","Estado hemodinámico no concuerda con las constantes",`Marcó ${L(hi.sel)}, pero ${hi.motivo} están en rango normal. El motor analiza al paciente como ESTABLE (diagnósticos, fluidos y AINE). Si el shock es real, reevalúe y registre las constantes alteradas.`]);
@@ -3030,7 +3059,7 @@ function regLista(){
   const q=REG.busca.trim().toUpperCase();
   const vis=q?rows.filter(x=>x.id.includes(q)):rows;
   const nP=REG.casos.filter(x=>!cerrado(REG.cierres.get(x.id))).length;
-  return `<div class="reg-tools"><div class="opts">${[["pend",`Pendientes (${nP})`],["cerr","Cerrados"],["todos","Todos"]].map(([v,n])=>`<button class="opt ${REG.filtro===v?"on":""}" onclick="regSet('filtro','${v}')">${n}</button>`).join("")}</div>
+  return `<div class="reg-tools"><div class="opts">${[["pend",`Pendientes (${nP})`],["cerr",`Cerrados (${REG.casos.length-nP})`],["todos",`Todos (${REG.casos.length})`]].map(([v,n])=>`<button class="opt ${REG.filtro===v?"on":""}" onclick="regSet('filtro','${v}')">${n}</button>`).join("")}</div>
    <div class="wt" style="flex-wrap:wrap"><input id="regbusca" value="${esc(REG.busca)}" placeholder="Código MC (ej. MC-7K3PQ2)" style="width:240px;font-family:var(--sans)" onkeydown="if(event.key==='Enter')regBuscar()"><button class="opt" onclick="regBuscar()">Buscar</button>${q?`<button class="opt" onclick="REG.busca='';regRender()">Limpiar</button>`:""}</div></div>
    ${vis.length?`<div class="reg-list">${vis.map(x=>{const k=REG.cierres.get(x.id),t=x.sal.top[0],e=x.ent;
      return `<button class="reg-row" onclick="regAbrir('${x.id}')"><span class="code">${esc(x.id)}</span><span class="reg-rf">${esc(fCorta(x.f))}</span>

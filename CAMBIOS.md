@@ -31,6 +31,14 @@ Origen: `HVCP_ER_Motor_Clinico_v7_9_6.html` actualizado por el hospital (19/11/2
 ### Guía rápida de auscultación pulmonar
 - Recuadro desplegable justo debajo de «Auscultación pulmonar»: qué opción marcar según el tipo de estertor y a qué orienta, más la localización. La pregunta «¿Auscultación torácica?» tiene la misma ayuda resumida.
 
+### Ajustes por el registro del 21/11
+- Registro: los filtros muestran la cantidad en «Pendientes», «Cerrados» y «Todos».
+- Bradicardia felina por debajo de 120 lpm (160 en shock); antes 140.
+- Avisos «¿Intercambió FC y FR?» (FC < 40 con FR > 60) y «FC y FR iguales».
+- La retención urinaria neurogénica exige un signo urinario (esfuerzo sin resultado, poca orina, goteo o vejiga distendida); con paresia sola sube la IVDD.
+- Pregunta nueva «¿Desde cuándo tose?» y diagnóstico bronquitis crónica canina (GEN-RES-384).
+- Opción de ecografía «Vesícula con barro, mucocele o pared engrosada» y diagnóstico barro biliar, mucocele o colecistitis (GEN-HEP-023).
+
 ### Reevaluaciones, aviso de FR y motivo ocular
 - Casilla «Reevaluación de un paciente ya registrado» (con el código anterior opcional): genera la nota SOAP pero no crea un caso nuevo, para no duplicar pacientes en el registro.
 - Aviso «Verifique la FR» cuando la FR pasa de 100 rpm y no hay FC registrada.
