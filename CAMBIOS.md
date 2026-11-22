@@ -31,6 +31,13 @@ Origen: `HVCP_ER_Motor_Clinico_v7_9_6.html` actualizado por el hospital (19/11/2
 ### Guía rápida de auscultación pulmonar
 - Recuadro desplegable justo debajo de «Auscultación pulmonar»: qué opción marcar según el tipo de estertor y a qué orienta, más la localización. La pregunta «¿Auscultación torácica?» tiene la misma ayuda resumida.
 
+### Nota SOAP según la práctica del hospital, ascitis y lipidosis
+- SOAP: «A — Análisis» lleva la interpretación de los exámenes ingresados, el diagnóstico presuntivo y los exámenes por realizar; «P — Plan» lleva fluidoterapia, tratamiento y líneas para completar procedimientos realizados, hospitalización o alta y lo explicado al propietario.
+- El buscador del diagnóstico definitivo también busca en los sinónimos (p. ej., «esteatosis hepática» o «hígado graso» encuentran Lipidosis hepática felina).
+- Signo nuevo «Ascitis o líquido libre abdominal» (motivos de dolor o distensión abdominal y de decaimiento); suma a PIF efusiva, uroabdomen, hemoabdomen, peritonitis y hepatopatía.
+- Antecedente nuevo «Tratamiento prolongado reciente (antibióticos u otros)».
+- Lipidosis hepática felina: más peso a la anorexia prolongada, la obesidad y el tratamiento prolongado reciente. Addison baja más en gatos.
+
 ### Ajustes por el registro del 21/11
 - Registro: los filtros muestran la cantidad en «Pendientes», «Cerrados» y «Todos».
 - Bradicardia felina por debajo de 120 lpm (160 en shock); antes 140.
