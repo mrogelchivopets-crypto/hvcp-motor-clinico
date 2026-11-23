@@ -359,12 +359,15 @@ details[open]>summary .sg-ocu{display:inline}
 .av-bts button{min-height:40px;border-radius:8px;padding:8px 14px;font-size:14px;font-weight:600;border:1px solid var(--border2);background:var(--surface2);cursor:pointer}
 .av-bts button.av-pri{background:var(--accent);border-color:var(--accent);color:#fff}
 :root[data-theme="light"] .av-fondo{background:rgba(20,24,36,.35)}
+.hclock{font-family:var(--mono);font-size:12px;color:var(--accent);white-space:nowrap;margin-top:2px}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:#1E7A46;color:#fff;font-weight:600;font-size:15px;padding:12px 22px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:9999;max-width:calc(100vw - 32px);text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
 <header>
   <span class="badge">HVCP ER</span>
-  <div><div class="htitle">Motor Clínico de Urgencias v7.9.7 · registro en línea</div><div class="hsub">Signos → sistemas implicados → diagnósticos presuntivos · Codificación VetCIE-1</div></div>
+  <div><div class="htitle">Motor Clínico de Urgencias v7.9.7 · registro en línea</div><div class="hsub">Signos → sistemas implicados → diagnósticos presuntivos · Codificación VetCIE-1</div><div class="hclock" id="hclock" aria-label="Fecha y hora"></div></div>
   <span class="hspace"></span>
   <span class="netst" id="netst" role="status" aria-live="polite"></span>
   <button class="reset" id="themebtn" onclick="toggleTheme()" title="Cambiar a modo claro u oscuro">Modo claro</button>
@@ -1883,7 +1886,7 @@ const q=QS.find(x=>x.id==="leuco"); if(q) ["disn","taqp","cian"].forEach(x=>{if(
 })();
 
 // ═══ Datos obligatorios y botón de información (v7.9.7) ═══
-const REQ={esp:["Especie","pac"],edad:["Edad","pac"],sexo:["Sexo","pac"],vac:["Vacunación","pac"],fc:["FC","ex"],fr:["FR","ex"],temp:["Temperatura","ex"],muc:["Color de mucosas","ex"],tllc:["TLLC","ex"],card:["Auscultación cardíaca","ex"],pulm:["Auscultación pulmonar","ex"]};
+const REQ={esp:["Especie","pac"],edad:["Edad","pac"],sexo:["Sexo","pac"],vac:["Vacunación","pac"],fc:["FC","ex"],fr:["FR","ex"],temp:["Temperatura","ex"],muc:["Color de mucosas","ex"],tllc:["TLLC","ex"],dh:["% deshidratación","ex"],card:["Auscultación cardíaca","ex"],pulm:["Auscultación pulmonar","ex"]};
 const RANGO={fc:[20,350,"lpm"],fr:[4,150,"rpm"],temp:[30,44,"°C"]};
 function faltantes(){
   const e=ST.ex||{}, out=[], pcr=ST.hemo==="pcr";
@@ -2216,6 +2219,32 @@ const li=D("lipidosis"); if(li){li.r.push(["dur",["d2","d3"],10,""]);li.r.push([
 R("hepatopatia","ant",["txprol"],10,"Tratamiento prolongado: considerar hepatotoxicidad");
 R("addison","especie",["f"],-20,"");
 })();
+
+(()=>{ /* ── v7.9.7: aliento urémico, inflamación, pancreatitis, reloj, aviso guardado y FC=FR ── */
+  SIGNS.alurem=["Aliento urémico (olor a orina o amoníaco)","Metabólico y urinario",{uro:5,met:1,oral:1}];
+  SIGNS.inflam=["Inflamación o aumento de volumen (cara, miembros o cuerpo)","Piel y tejido subcutáneo",{tra:3,piel:2}];
+  if(SIGNS.hinch)SIGNS.hinch[0]="Aumento de volumen o inflamación en la cara o debajo del ojo";
+  const M=id=>MOTIVOS.find(m=>m.id===id), addS=(id,arr)=>{const m=M(id);if(m)arr.forEach(x=>{if(!m.signs.includes(x))m.signs.push(x)})};
+  ["gen","dig","met","uro"].forEach(id=>addS(id,["alurem","ulcoral"])); addS("oral",["alurem"]);
+  ["tra","dolor","piel"].forEach(id=>addS(id,["inflam"]));
+  const D=id=>DX.find(d=>d.id===id), up=(id,k,s)=>{const d=D(id);if(!d)return;k.forEach(x=>{if(!d.k.includes(x))d.k.push(x)});Object.entries(s).forEach(([x,w])=>d.s[x]=w)};
+  up("erc",["alurem"],{alurem:25,ulcoral:10});
+  up("ira",["alurem"],{alurem:20,ulcoral:10});
+  up("estom_urem",[],{alurem:15});
+  ["politrauma","fractura","mordedura","absceso"].forEach(id=>up(id,[],{inflam:10}));
+  const crea=QS.find(q=>q.id==="crea"); if(crea&&crea.w)["alurem","ulcoral"].forEach(x=>{if(!crea.w.includes(x))crea.w.push(x)});
+  const P=D("pancreatitis"); if(P)P.r.push(["eco",["vesic","utero","ce","vej"],-25,"La ecografía muestra otra causa del dolor abdominal"]);
+})();
+function fcfrAviso(){const e=ST.ex||{},fc=parseFloat(e.fc),fr=parseFloat(e.fr);if(isNaN(fc)||isNaN(fr))return "";
+  if(fc===fr)return `<div class="alert y" style="margin-top:8px"><b>FC y FR con el mismo valor (${fc})</b>Confirme que no copió el mismo número en ambos campos.</div>`;
+  if(fc<40&&fr>60)return `<div class="alert y" style="margin-top:8px"><b>¿Intercambió FC y FR?</b>FC ${fc} lpm y FR ${fr} rpm: parecen estar en el campo equivocado.</div>`;return ""}
+function toastMsg(t){let el=document.getElementById("toast");if(!el){el=document.createElement("div");el.id="toast";el.className="toast";el.setAttribute("role","status");el.setAttribute("aria-live","polite");document.body.appendChild(el)}
+  el.textContent=t;el.classList.add("on");clearTimeout(toastMsg._t);toastMsg._t=setTimeout(()=>el.classList.remove("on"),2600)}
+function relojHVCP(){const el=document.getElementById("hclock");if(!el)return;const d=new Date();
+  const W=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"],Mn=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+  let hh=d.getHours(),mm=String(d.getMinutes()).padStart(2,"0"),ap=hh<12?"a. m.":"p. m.";hh=hh%12||12;
+  el.textContent=`${W[d.getDay()]} ${d.getDate()} ${Mn[d.getMonth()]} ${d.getFullYear()} · ${hh}:${mm} ${ap}`;el.title=d.toLocaleString("es-SV")}
+relojHVCP();setInterval(relojHVCP,15000);
 const ST = {hxs:new Set(),motivo2:null,soapSel:new Set(),openSys:new Set(),motivo:null,esp:null,peso:null,edad:null,sexo:null,hemo:null,vac:new Set(),signs:new Set(),ans:{},open:new Set(),
   fl:{tipo:"rl",desh:"0",horas:"24",perd:0,form:"b",ped:false,na:"",iris:{crea:"",sdma:"",upc:"",pas:""}}};
 
@@ -2447,7 +2476,7 @@ function examHtml(){
    ${sel("dolor","Dolor (escala de Glasgow / muecas felinas)",EX_DOL)}${sel("cc","Condición corporal (CC, escala 1–5)",cc)}${sel("card","Auscultación cardíaca",EX_CARD)}${sel("pulm","Auscultación pulmonar",EX_PULM)}<details class="ausg"><summary>¿Escuchó «estertores»? Guía rápida para elegir la auscultación pulmonar</summary><table><tr><th>Lo que escucha</th><th>Elija</th><th>Orienta a</th></tr><tr><td><b>Estertores finos o húmedos</b>: chasquidos cortos, como frotar cabello junto al oído; en la inspiración</td><td>Crepitaciones</td><td>Neumonía, edema pulmonar, contusión</td></tr><tr><td><b>Estertores gruesos o roncus</b>: burbujeo o ronquido por secreciones; cambian al toser</td><td>Crepitaciones</td><td>Neumonía o bronconeumonía, bronquitis</td></tr><tr><td><b>Estertores secos</b>: silbido, sobre todo en la espiración</td><td>Sibilancias</td><td>Asma felina, bronquitis</td></tr><tr><td><b>Estridor o ronquido</b> que se oye sin estetoscopio, en la inspiración (vía alta)</td><td>Normal + signo «Ruido respiratorio audible»</td><td>Colapso traqueal, parálisis laríngea, braquicefálico</td></tr><tr><td>No se oyen ruidos en la parte baja del tórax</td><td>Silencio ventral</td><td>Derrame pleural</td></tr><tr><td>No se oyen ruidos en la parte alta del tórax</td><td>Silencio dorsal</td><td>Neumotórax</td></tr></table><div class="ausn">Anote también <b>dónde</b> se escuchan: craneoventral orienta a neumonía (aspiración o bacteriana); perihiliar o dorsocaudal, a edema cardiogénico en el perro; difuso, a edema no cardiogénico o ICC felina; focal o de un lado, a contusión, neumonía lobar o neoplasia.</div></details>
    ${sel("vej","Vejiga a la palpación",EX_VEJ)}${sel("abm","Masa abdominal / esplenomegalia",[["no","No"],["si","Sí"]])}${["me","mc"].includes(ST.sexo)?"":sel("mam","Glándulas mamarias",[["no","Normales"],["si","Nódulos o masas"]])}
    ${sel("linf","Linfonodos",[["no","Normales"],["loc","Aumento localizado"],["gen","Aumento generalizado"]])}${sel("ecto","Ectoparásitos",[["no","No se observan"],["garr","Garrapatas"],["pulg","Pulgas"],["ambos","Garrapatas y pulgas"]])}</div>
-   <div class="muted">Los hallazgos anormales se agregan solos como signos (p. ej., mucosas pálidas, fiebre, bradicardia) y responden las preguntas de temperatura, perfusión y auscultación.</div></div>`;
+   ${fcfrAviso()}<div class="muted">Los hallazgos anormales se agregan solos como signos (p. ej., mucosas pálidas, fiebre, bradicardia) y responden las preguntas de temperatura, perfusión y auscultación.</div></div>`;
 }
 
 function renderS1(){
@@ -2585,6 +2614,7 @@ function renderAlerts(){
    if(false) al.push(["y","Verifique el estado hemodinámico","Marcó shock, pero FC, TLLC y mucosas registradas están en rango normal; esto cambia la fluidoterapia (bolos)."]);
    if(e.vej==="grande"&&!["estr","olig","hemu","nodef","incont"].some(x=>s.has(x))) al.push(["y","Vejiga distendida sin signos urinarios","Confirme si orina: descartar retención (neurogénica, dolor, sedación) u obstrucción."]);}
   if(A.gluc===undefined&&["conv","colap","ment","temb","fasc"].some(x=>s.has(x))) al.push(["y","Medir glucemia ahora","Convulsiones, colapso o alteración de conciencia: descartar hipoglucemia con glucómetro antes de continuar."]);
+  if(A.crea===undefined&&(s.has("alurem")||(s.has("ulcoral")&&A.lesloc==="punta"))) al.push(["y","Aliento urémico: medir creatinina","Aliento urémico o úlceras en la punta de la lengua sugieren azotemia marcada (en ERC estable suele ser IRIS 3–4; también IRA). Medir creatinina, BUN, K⁺, fósforo y densidad urinaria; valorar hidratación antes de estadificar."]);
   if(A.gluc==="lo") al.push(["r","Hipoglucemia","Dextrosa 50% 0.5–1 mL/kg IV diluida 1:2–1:4 en 1–2 min; luego suero mixto (2.5–5%) en CRI y glucemia cada 1–2 h."]);
   if(inA(A.nak,"hiperk")||((s.has("brad")||s.has("hipot"))&&(s.has("estr")||s.has("olig")||A.vejiga==="grande"))) al.push(["r","Posible hiperkalemia","ECG ahora. Tratamiento de referencia: gluconato de calcio 10% 0.5–1.5 mL/kg IV lento con ECG, insulina regular 0.1–0.25 UI/kg IV + dextrosa 50% diluida, solución salina 0.9% y resolver la causa (desobstrucción)."]);
   if(A.temp==="vhi") al.push(["r","Hipertermia > 41 °C","Enfriamiento activo con agua a temperatura ambiente y ventilador; detener a 39.5 °C."]);
@@ -3157,7 +3187,7 @@ async function regGuardarCierre(){
   if(!REG.sb){REG.edMsg="Sin conexión con el registro. Intente de nuevo cuando haya red.";regRender();return}
   try{const {data,error}=await REG.sb.rpc("guardar_cierre",{p_codigo:x.id,p:doc});if(error)throw error;
     const k=data||doc;REG.cierres.set(x.id,k);if(REG.cierresTodos&&REG.cierresTodos!==REG.cierres)REG.cierresTodos.set(x.id,k);
-    REG.edMsg=cerrado(k)?"Caso cerrado.":"Guardado. El caso sigue pendiente hasta registrar el diagnóstico definitivo (o «sin diagnóstico definitivo»)."}
+    toastMsg("Información guardada");REG.edMsg=cerrado(k)?"Caso cerrado.":"Guardado. El caso sigue pendiente hasta registrar el diagnóstico definitivo (o «sin diagnóstico definitivo»)."}
   catch(e){REG.edMsg=/falta_confirmacion/.test(e&&e.message)?"Indique la base de la confirmación del diagnóstico.":/caso_no_encontrado/.test(e&&e.message)?"El caso ya no existe o fue anulado.":"No se pudo guardar. Revise la conexión e intente de nuevo."}
   regRender();
 }

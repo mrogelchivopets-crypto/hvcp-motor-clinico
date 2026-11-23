@@ -31,6 +31,15 @@ Origen: `HVCP_ER_Motor_Clinico_v7_9_6.html` actualizado por el hospital (19/11/2
 ### Guía rápida de auscultación pulmonar
 - Recuadro desplegable justo debajo de «Auscultación pulmonar»: qué opción marcar según el tipo de estertor y a qué orienta, más la localización. La pregunta «¿Auscultación torácica?» tiene la misma ayuda resumida.
 
+### Aliento urémico, deshidratación obligatoria y ajustes por el registro del 23/11
+- Signo nuevo «Aliento urémico (olor a orina o amoníaco)»; junto con las úlceras orales aparece en los motivos de decaimiento, vómito o diarrea, metabólico y urinario. Suma a ERC agudizada, IRA y estomatitis urémica, y genera la alerta «Aliento urémico: medir creatinina» si no hay creatinina ingresada.
+- Signo nuevo «Inflamación o aumento de volumen (cara, miembros o cuerpo)» en trauma, dolor y piel; suma a politrauma, fractura, mordedura y absceso.
+- Pancreatitis baja 25 puntos si la ecografía muestra otra causa (vesícula, útero, cuerpo extraño o vejiga).
+- El aviso de FC y FR iguales (o intercambiadas) también aparece debajo de las constantes.
+- El % de deshidratación pasa a ser dato obligatorio («< 5%» cuenta como respondido).
+- Fecha y hora debajo del título de la página principal.
+- Mensaje «Información guardada» al guardar el cierre del caso.
+
 ### Nota SOAP según la práctica del hospital, ascitis y lipidosis
 - SOAP: «A — Análisis» lleva la interpretación de los exámenes ingresados, el diagnóstico presuntivo y los exámenes por realizar; «P — Plan» lleva fluidoterapia, tratamiento y líneas para completar procedimientos realizados, hospitalización o alta y lo explicado al propietario.
 - El buscador del diagnóstico definitivo también busca en los sinónimos (p. ej., «esteatosis hepática» o «hígado graso» encuentran Lipidosis hepática felina).
