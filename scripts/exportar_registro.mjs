@@ -3,18 +3,34 @@
 //   historico/Registro_..._AAAA-MM-DD.xlsx  → copia del día (queda la última versión de cada día)
 //   datos/registro.json                     → casos, cierres y sesiones en bruto, para el análisis diario
 //   exportacion.log                         → una línea por ejecución
+//   Tablero_Motor_Clinico.html y Reportes/tablero/casos.json → el tablero, regenerado en cada exportación
 // Uso:  node scripts/exportar_registro.mjs            (lee .env.exportacion, ver .env.exportacion.ejemplo)
 // Lo programa el Programador de tareas de Windows cada 15 minutos (scripts/programar_exportacion.ps1).
 // Usa una cuenta con rol «lector»: puede leer el registro pero no anular ni modificar nada.
 import { chromium } from "@playwright/test";
 import { readFile, writeFile, mkdir, rename, rm, mkdtemp, appendFile, stat } from "node:fs/promises";
 import { existsSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { homedir } from "node:os";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const RAIZ = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const NOMBRE = "Registro_Motor_Clinico_HVCP";
+// Scripts del tablero (los aprobados de la tarea de análisis). Con cada exportación se regeneran
+// Reportes/tablero/casos.json y Tablero_Motor_Clinico.html, así el tablero queda al día junto con el Excel.
+const DIR_TABLERO = process.env.TABLERO_SCRIPTS || join(homedir(), ".claude", "scheduled-tasks", "hvcp-analisis-diario-motor");
+
+function generarTablero(carpeta) {
+  const g1 = join(DIR_TABLERO, "generar_tablero.py"), g2 = join(DIR_TABLERO, "generar_tablero_html.py");
+  if (!existsSync(g1) || !existsSync(g2)) return "tablero: no se encontraron los scripts";
+  const dt = join(carpeta, "Reportes", "tablero");
+  const py = (args) => execFileSync(process.env.PYTHON || "python", ["-I", ...args], { stdio: "pipe", timeout: 120000 });
+  py([g1, join(carpeta, "datos", "registro.json"), join(RAIZ, "index.html"), join(dt, "casos.json")]);
+  py([g2, join(dt, "casos.json"), join(dt, "propuestas.json"), join(carpeta, "Tablero_Motor_Clinico.html")]);
+  return "tablero actualizado";
+}
 
 async function leerConfig() {
   const ruta = process.env.EXPORT_ENV || join(RAIZ, ".env.exportacion");
@@ -88,6 +104,7 @@ async function main() {
   const carpeta = cfg.CARPETA;
   await mkdir(join(carpeta, "historico"), { recursive: true });
   await mkdir(join(carpeta, "datos"), { recursive: true });
+  await mkdir(join(carpeta, "Reportes", "tablero"), { recursive: true });
   const log = join(carpeta, "exportacion.log");
   try {
     const r = await exportar(cfg);
@@ -95,7 +112,9 @@ async function main() {
     const ok = await escribirSeguro(join(carpeta, `${NOMBRE}.xlsx`), xlsx);
     await escribirSeguro(join(carpeta, "historico", `${NOMBRE}_${hoySV()}.xlsx`), xlsx);
     await escribirSeguro(join(carpeta, "datos", "registro.json"), JSON.stringify(r.datos));
-    const linea = `${ahoraSV()} · OK · ${r.n} casos (${r.cerrados} cerrados)${ok ? "" : " · el Excel principal estaba abierto: se actualizará en la próxima ejecución"}`;
+    let tab;
+    try { tab = generarTablero(carpeta); } catch (e) { tab = "tablero: ERROR " + String(e.stderr || e.message).trim().split(/\r?\n/).pop(); }
+    const linea = `${ahoraSV()} · OK · ${r.n} casos (${r.cerrados} cerrados) · ${tab}${ok ? "" : " · el Excel principal estaba abierto: se actualizará en la próxima ejecución"}`;
     await appendFile(log, linea + "\n");
     console.log(linea);
   } catch (e) {
