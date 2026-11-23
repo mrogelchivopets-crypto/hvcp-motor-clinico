@@ -197,8 +197,9 @@ Todas excluyen los casos anulados y los de prueba o docencia. La hora es la de E
   - la computadora encendida con la sesión de Windows iniciada;
   - el archivo `.env.exportacion` lleno (plantilla en `.env.exportacion.ejemplo`; no se sube a GitHub).
 - **Si el Excel está abierto:** Excel lo bloquea y esa actualización se salta. La siguiente lo actualiza.
-- **Análisis diario a las 10 a. m.** Una tarea programada de Claude («Motor Clínico HVCP · análisis diario») lee los datos y escribe `Reportes\Reporte_Motor_AAAA-MM-DD.html`:
+- **Análisis a las 10:30 a. m. y 4:30 p. m.** Una tarea programada de Claude («Motor Clínico HVCP · análisis») lee los datos de la exportación anterior y escribe `Reportes\Reporte_Motor_AAAA-MM-DD.html` (en la tarde, `…_tarde.html`):
   - uso, cierre de casos, acierto del motor y propuestas de corrección;
+  - retroalimentación por caso (`scripts/retroalimentacion.mjs`): `Retroalimentacion_AAAA-MM-DD.html` (o `…_tarde.html`) y `propuestas.json`. Cada caso se reporta una sola vez;
   - solo propone. Los cambios al motor se aplican con aprobación y pruebas;
   - corre con la aplicación de Claude abierta. Si está cerrada a esa hora, corre al abrirla.
 - **Cuenta de solo lectura (recomendado).** La migración `20261120000600_rol_lector.sql` agrega el rol «lector»: puede leer el registro, pero no anular ni modificar nada. Así la contraseña guardada en la computadora no da permisos de administrador. Mientras no se aplique, la exportación usa la cuenta de administrador.
