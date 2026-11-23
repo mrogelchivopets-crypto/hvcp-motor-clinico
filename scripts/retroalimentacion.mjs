@@ -3,7 +3,7 @@
 //
 // Uso: node scripts/retroalimentacion.mjs [--carpeta "…\Registro del motor"] [--todos]
 //   Lee   datos/registro.json (lo genera exportar_registro.mjs)
-//   Escribe Reportes/Retroalimentacion_AAAA-MM-DD.html, Reportes/propuestas.json,
+//   Escribe Reportes/Retroalimentacion_AAAA-MM-DD.html (o …_tarde.html desde las 12:00), Reportes/propuestas.json,
 //           Reportes/retro_procesados.json (casos ya reportados) y Reportes/retro_resumen.json (para el reporte diario)
 //
 // Clasificación de cada diferencia:
@@ -35,6 +35,8 @@ async function carpetaRegistro() {
 }
 const leerJSON = async (r, def) => { try { return JSON.parse(await readFile(r, "utf8")); } catch { return def; } };
 const hoySV = () => new Intl.DateTimeFormat("en-CA", { timeZone: "America/El_Salvador" }).format(new Date());
+// Dos corridas al día: la de la tarde (desde las 12:00) usa el sufijo «_tarde» para no sobrescribir la de la mañana.
+const corridaSV = () => (parseInt(new Intl.DateTimeFormat("en-US", { timeZone: "America/El_Salvador", hour: "numeric", hourCycle: "h23" }).format(new Date())) >= 12 ? "_tarde" : "");
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const disp = (uid) => "disp. " + String(uid || "").replace(/-/g, "").slice(0, 4).toUpperCase();
 const cerrado = (k) => !!(k && (k.sinDx || (k.dx && k.conf)));
@@ -211,7 +213,7 @@ async function main() {
     nota: "Propuestas pendientes de aprobación. Para decidir, llene «decision» (aprobada/rechazada) y «nota_decision». Nada se aplica solo.", propuestas }, null, 2));
 
   // HTML
-  const fecha = hoySV();
+  const fecha = hoySV(), sufijo = corridaSV();
   const TIT = { a: "a) Omisión de datos", b: "b) Ajuste del motor", c: "c) Fuera del catálogo del motor", d: "d) Cierre inconsistente", cercano: "Diferencial cercano (2.º o 3.º con los datos registrados)" };
   const pos = (p) => (p ? `${p}.º` : "fuera de la lista");
   const ficha = (f) => {
@@ -232,21 +234,21 @@ async function main() {
   };
   const seccion = (lista, t) => { const g = lista.filter((f) => f.tipo === t); return g.length ? `<h3>${TIT[t]} · ${g.length}</h3>${g.map(ficha).join("")}` : ""; };
   const tabla = (rs) => rs.length ? `<table><tr><th>Dato no registrado</th><th>Casos</th></tr>${rs.slice(0, 15).map(([k, n]) => `<tr><td>${esc(k)}</td><td class="n">${n}</td></tr>`).join("")}</table>` : `<p class="m">Sin omisiones que cambien el resultado.</p>`;
-  const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Retroalimentación ${fecha}</title>
+  const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Retroalimentación ${fecha}${sufijo ? " (tarde)" : ""}</title>
 <style>body{font:15px/1.5 system-ui,Segoe UI,Arial,sans-serif;color:#1d2433;background:#f6f7fb;margin:0;padding:16px}main{max-width:900px;margin:auto}h1{font-size:22px;margin:0 0 4px}h2{font-size:18px;margin:24px 0 8px;color:#0f2a3d}h3{font-size:15px;margin:18px 0 8px;color:#3d4a66}
 .caso{background:#fff;border:1px solid #dfe4ee;border-radius:10px;padding:10px 14px;margin:8px 0}.caso .h{font-size:13px;color:#5a6478}.t{color:#5a6478;font-size:13px}.m{color:#5a6478}ul{padding-left:20px;margin:6px 0}li{margin:3px 0}
 table{border-collapse:collapse;width:100%;background:#fff}td,th{border-bottom:1px solid #dfe4ee;padding:6px 8px;text-align:left;font-size:14px}td.n{text-align:right;font-variant-numeric:tabular-nums}.aviso{background:#fff6d6;border:1px solid #f0d77a;border-radius:10px;padding:10px 14px}</style></head><body><main>
-<h1>Retroalimentación de casos · ${fecha}</h1><p class="m">Motor v${esc(res.motorVer)} · casos cerrados con diagnóstico definitivo codificado que no quedaron en el 1.er lugar del motor. ${TODOS ? "Todos los casos del registro." : "Casos nuevos desde el reporte anterior."}</p>
+<h1>Retroalimentación de casos · ${fecha}${sufijo ? " · tarde" : ""}</h1><p class="m">Motor v${esc(res.motorVer)} · casos cerrados con diagnóstico definitivo codificado que no quedaron en el 1.er lugar del motor. ${TODOS ? "Todos los casos del registro." : "Casos nuevos desde el reporte anterior."}</p>
 <p class="aviso">Material formativo. El motor no distingue un dato ausente de uno no registrado: «no se registró» no significa que el médico no lo evaluó. Los casos se identifican por código MC y dispositivo, sin nombres.</p>
 <h2>Casos (${nuevos.length})</h2>${nuevos.length ? ["a", "b", "cercano", "c", "d"].map((t) => seccion(nuevos, t)).join("") : `<p class="m">No hay casos nuevos con diferencias.</p>`}
 <h2>Datos que más se omiten</h2><h3>En este reporte</h3>${tabla(resumenHoy)}<h3>Acumulado del registro (${filas.length} diferencias)</h3>${tabla(resumenAcum)}
 <p class="m">Tipos en el acumulado: ${["a", "b", "cercano", "c", "d"].map((t) => `${TIT[t].split(" (")[0]}: ${filas.filter((f) => f.tipo === t).length}`).join(" · ")}. Propuestas de ajuste en propuestas.json (umbral: ${UMBRAL} casos con confirmación objetiva por diagnóstico).</p>
 </main></body></html>`;
-  const rutaHtml = join(dirRep, `Retroalimentacion_${fecha}.html`);
+  const rutaHtml = join(dirRep, `Retroalimentacion_${fecha}${sufijo}.html`);
   await writeFile(rutaHtml, html);
   nuevos.forEach((f) => { procesados[f.codigo] = fecha; });
   await writeFile(join(dirRep, "retro_procesados.json"), JSON.stringify(procesados, null, 1));
-  const resumen = { fecha, motor: res.motorVer, casos_nuevos: nuevos.length, por_tipo_nuevos: Object.fromEntries(["a", "b", "cercano", "c", "d"].map((t) => [t, nuevos.filter((f) => f.tipo === t).length])),
+  const resumen = { fecha, corrida: sufijo ? "tarde" : "mañana", motor: res.motorVer, casos_nuevos: nuevos.length, por_tipo_nuevos: Object.fromEntries(["a", "b", "cercano", "c", "d"].map((t) => [t, nuevos.filter((f) => f.tipo === t).length])),
     por_tipo_acumulado: Object.fromEntries(["a", "b", "cercano", "c", "d"].map((t) => [t, filas.filter((f) => f.tipo === t).length])),
     mas_omitidos_hoy: resumenHoy.slice(0, 10), mas_omitidos_acumulado: resumenAcum.slice(0, 10), propuestas: propuestas.length, archivo: rutaHtml };
   await writeFile(join(dirRep, "retro_resumen.json"), JSON.stringify(resumen, null, 1));

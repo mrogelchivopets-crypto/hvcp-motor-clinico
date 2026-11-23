@@ -188,7 +188,7 @@ Todas excluyen los casos anulados y los de prueba o docencia. La hora es la de E
 
 ## Excel automático en OneDrive y análisis diario
 
-- **Exportación cada 15 minutos.** La tarea de Windows «HVCP Motor - Exportar registro» (`scripts/programar_exportacion.ps1`) corre `scripts/exportar_registro.mjs` y guarda en `Documentos\Motor\Registro del motor`:
+- **Exportación dos veces al día (10:00 y 16:00).** La tarea de Windows «HVCP Motor - Exportar registro» (`scripts/programar_exportacion.ps1`) corre `scripts/exportar_registro.mjs` y guarda en `Documentos\Motor\Registro del motor`:
   - `Registro_Motor_Clinico_HVCP.xlsx`: el Excel vigente, con las mismas hojas que «Exportar a Excel» del panel.
   - `historico\`: una copia por día.
   - `datos\registro.json`: los datos en bruto para el análisis.
