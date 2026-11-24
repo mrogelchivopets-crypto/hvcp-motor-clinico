@@ -237,6 +237,16 @@ textarea,input,select{font-size:16px}
 .regsync{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-bottom:12px}
 .regsync a.opt{text-decoration:none}
 .reg-t td,.reg-t th{padding:6px 6px;vertical-align:top}
+details.ausg{grid-column:1/-1;border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin:0 0 4px;background:var(--surface2)}
+details.ausg>summary{cursor:pointer;font-size:12.5px;font-weight:600;color:#C6DAFF}
+details.ausg[open]>summary{margin-bottom:8px}
+details.ausg table{width:100%;border-collapse:collapse;font-size:12px}
+details.ausg th{color:var(--sub);font-weight:500;text-align:left;border-bottom:1px solid var(--border2);padding:4px 6px}
+details.ausg td{border-bottom:1px solid var(--border);padding:5px 6px;vertical-align:top}
+details.ausg td:nth-child(2){font-weight:600;white-space:nowrap}
+.ausn{font-size:12px;color:var(--sub);margin-top:8px;line-height:1.45}
+:root[data-theme="light"] details.ausg>summary{color:#1F5FD6}
+@media (max-width:600px){details.ausg table,details.ausg tbody,details.ausg tr,details.ausg td{display:block;width:100%}details.ausg tr:first-child{display:none}details.ausg tr{border-bottom:1px solid var(--border);padding:6px 0}details.ausg td{border:none;padding:1px 0;white-space:normal!important}details.ausg td:nth-child(2)::before{content:"Elija: ";font-weight:400;color:var(--sub)}details.ausg td:nth-child(3)::before{content:"Orienta a: ";color:var(--sub)}}
 
 /* ── Interfaz para ER (v7.9.6) ── */
 .stepnav{display:none}
@@ -305,12 +315,59 @@ details.sgrp[open]>summary{margin-bottom:8px}
 .reg-acc{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;align-items:start}
 .reg-acc .field input{margin-bottom:6px}
 .lk.t{background:var(--surface3);color:var(--sub)}
+
+/* ── Datos obligatorios e información (v7.9.7) ── */
+.lbt{display:inline}
+.req{color:#F87171;font-weight:700;margin-left:3px}
+.ib{position:relative;display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;margin-left:5px;border-radius:50%;border:1px solid var(--sub);background:transparent;color:var(--sub);font:italic 600 9px/1 Georgia,'Times New Roman',serif;cursor:pointer;padding:0;flex-shrink:0;opacity:.85;touch-action:manipulation;vertical-align:-1px}
+.ib::before{content:'';position:absolute;inset:-9px}
+.ib:hover,.ib:focus-visible{border-color:var(--accent);color:var(--accent);opacity:1}
+.ib[aria-expanded="true"]{background:var(--accent);border-color:var(--accent);color:#fff;opacity:1}
+.ipop{position:absolute;z-index:200;max-width:320px;background:var(--surface);color:var(--text);border:1px solid var(--accent);border-radius:10px;padding:10px 32px 10px 12px;font-size:12.5px;line-height:1.45;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.ipop b{display:block;margin-bottom:3px;font-size:13px}
+.ipop .ix{position:absolute;top:4px;right:6px;background:none;border:none;color:var(--sub);font-size:18px;line-height:1;cursor:pointer;padding:2px 4px}
+.field.miss>.flabel,label.miss{color:#F87171}
+.field.miss>.opts .opt{border-color:#7F2A2A}
+label.miss input,label.miss select{border-color:#EF4444;box-shadow:0 0 0 1px #EF4444}
+:root[data-theme="light"] .ipop{box-shadow:0 10px 30px rgba(0,0,0,.18)}
+
+/* ── Grupos de signos desplegables más visibles ── */
+details.sgrp{border-color:var(--border2)}
+details.sgall{margin-top:12px;border:1px solid var(--border2);border-radius:8px;padding:8px 10px}
+details.sgall[open]>summary{margin-bottom:8px}
+details.sgall>summary,details.sgrp>summary{list-style:none;cursor:pointer;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;min-height:30px}
+details.sgall>summary::-webkit-details-marker,details.sgrp>summary::-webkit-details-marker{display:none}
+details.sgall>summary:hover .sg-t,details.sgrp>summary:hover .sg-t{color:var(--accent)}
+.sg-ar{width:22px;height:22px;flex-shrink:0;border-radius:6px;background:var(--accent);position:relative}
+.sg-ar::after{content:"";position:absolute;left:8px;top:6px;border:solid #fff;border-width:0 2.5px 2.5px 0;padding:3.5px;transform:rotate(-45deg);transition:transform .15s}
+details[open]>summary .sg-ar::after{left:7px;top:5px;transform:rotate(45deg)}
+.sg-t{color:var(--text)}
+.sg-hint{margin-left:auto;font-size:12px;font-weight:600;color:var(--accent);white-space:nowrap}
+.sg-ocu{display:none}
+details[open]>summary .sg-ver{display:none}
+details[open]>summary .sg-ocu{display:inline}
+
+/* ── Aviso de datos obligatorios ── */
+.av-fondo{position:fixed;inset:0;z-index:300;background:rgba(5,8,15,.6);display:flex;align-items:center;justify-content:center;padding:16px}
+.av-caja{background:var(--surface);color:var(--text);border:1px solid var(--border2);border-top:5px solid #F59E0B;border-radius:12px;max-width:440px;width:100%;padding:18px 18px 16px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+.av-caja.r{border-top-color:#EF4444}
+.av-caja h3{font-size:16px;margin-bottom:6px}
+.av-caja p{font-size:13px;color:var(--sub);margin-bottom:10px;line-height:1.45}
+.av-caja ul{margin:0 0 14px 18px;font-size:14px;line-height:1.6}
+.av-caja li b{color:#F87171;font-weight:600}
+.av-bts{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.av-bts button{min-height:40px;border-radius:8px;padding:8px 14px;font-size:14px;font-weight:600;border:1px solid var(--border2);background:var(--surface2);cursor:pointer}
+.av-bts button.av-pri{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="light"] .av-fondo{background:rgba(20,24,36,.35)}
+.hclock{font-family:var(--mono);font-size:12px;color:var(--accent);white-space:nowrap;margin-top:2px}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:#1E7A46;color:#fff;font-weight:600;font-size:15px;padding:12px 22px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:9999;max-width:calc(100vw - 32px);text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
 <header>
   <span class="badge">HVCP ER</span>
-  <div><div class="htitle">Motor Clínico de Urgencias v7.9.7 · registro en línea</div><div class="hsub">Signos → sistemas implicados → diagnósticos presuntivos · Codificación VetCIE-1</div></div>
+  <div><div class="htitle">Motor Clínico de Urgencias v7.9.7 · registro en línea</div><div class="hsub">Signos → sistemas implicados → diagnósticos presuntivos · Codificación VetCIE-1</div><div class="hclock" id="hclock" aria-label="Fecha y hora"></div></div>
   <span class="hspace"></span>
   <span class="netst" id="netst" role="status" aria-live="polite"></span>
   <button class="reset" id="themebtn" onclick="toggleTheme()" title="Cambiar a modo claro u oscuro">Modo claro</button>
@@ -333,7 +390,7 @@ details.sgrp[open]>summary{margin-bottom:8px}
     <div class="card"><div class="card-h">Exámenes sugeridos</div><div class="card-b" id="labs"></div></div>
     <div class="card" id="secSoap"><div class="card-h">Nota SOAP para el expediente</div><div class="card-b"><div class="opts" style="margin-bottom:10px"><button class="opt on" onclick="genSOAP()">Generar nota SOAP</button><button class="opt" onclick="copySOAP()">Copiar</button><span class="muted" id="soapmsg" style="align-self:center"></span></div>
       <textarea id="soap" class="soap" spellcheck="false" placeholder="Complete paciente, motivo y signos, y pulse «Generar nota SOAP». Puede editar el texto antes de copiarlo."></textarea>
-      <div class="regsoap"><div class="wt" style="flex-wrap:wrap"><label class="muted reg-no"><input type="checkbox" id="regno"> No registrar (prueba o docencia)</label></div><div id="regmsg" class="regmsg"></div></div>
+      <div class="regsoap"><div class="wt" style="flex-wrap:wrap"><label class="muted reg-no"><input type="checkbox" id="regno"> No registrar (prueba o docencia)</label><label class="muted reg-no"><input type="checkbox" id="regre" onchange="regReToggle()"> Reevaluación de un paciente ya registrado</label><input id="regrecod" class="reg-in" style="display:none;max-width:230px" maxlength="9" placeholder="Código anterior MC-…, opcional" autocomplete="off"></div><div id="regmsg" class="regmsg"></div></div>
     </div></div>
     <div class="card"><div class="card-h">Fluidoterapia</div><div class="card-b" id="fluids"></div></div>
     <div class="card" id="iriscard" style="display:none"><div class="card-h">Estadificación IRIS (ERC)</div><div class="card-b"></div></div>
@@ -441,8 +498,8 @@ const SIGNS = {
  incont:["Goteo de orina o incontinencia","Metabólico y urinario",{uro:2,neu:2,tox:2}],
  hiperest:["Hiperestesia o sobresalto exagerado a estímulos","Neurológico",{neu:3,tox:3}],
  traum:["Trauma reciente","Sistémico y otros",{tra:6}],
- herida:["Herida o mordedura","Sistémico y otros",{tra:4}],
- cojera:["Cojera o dolor musculoesquelético","Sistémico y otros",{tra:4}],
+ herida:["Herida o mordedura","Piel y tejido subcutáneo",{tra:4,piel:3}],
+ cojera:["Cojera o dolor en un miembro","Dolor y aparato locomotor",{tra:4}],
  masaab:["Masa abdominal o esplenomegalia palpable","Sistémico y otros",{cv:3,dig:2}],
  masamam:["Masas o nódulos mamarios","Sistémico y otros",{uro:3}],
  linfad:["Linfonodos aumentados","Sistémico y otros",{cv:3}],
@@ -474,7 +531,7 @@ const QS = [
  {id:"evento",s:"res",t:"¿Hubo un evento inmediato antes de la dificultad respiratoria?",h:"",w:["disn","taqp","cian"],o:[["elec","Mordió un cable (electrocución)","r"],["agua","Casi ahogamiento","r"],["obst","Obstrucción o estrangulamiento de vías altas","r"],["conv","Convulsión prolongada","y"],["no","Ninguno","g"]]},
  {id:"vomtipo",s:"dig",t:"¿Cómo es el vómito?",h:"",w:["vom"],o:[["comun","Alimento o líquido sin características especiales","g"],["alim","Alimento sin digerir horas después de comer","y"],["bilis","Bilioso (amarillo), sobre todo en ayunas","y"],["sangre","Con sangre fresca o en «pozo de café»","r"],["fecal","Fecaloide (olor a heces)","r"],["espuma","Espumoso o solo arcadas","y"]]},
  {id:"secr",s:"res",t:"¿Cómo es la secreción?",h:"",w:["secnas","secoc"],o:[["ser","Serosa (transparente)","y"],["muco","Mucopurulenta (amarilla o verde)","r"],["sang","Con sangre","r"],["leche","Sale leche o alimento por la nariz","r"]]},
- {id:"alim",s:"res",t:"¿Cómo se alimenta?",h:"En cachorros y gatitos: el biberón, la jeringa y el paladar hendido predisponen a neumonía por aspiración",w:["disn","tos","taqp","secnas","regurg"],o:[["madre","Solo leche materna","g"],["biber","Biberón o jeringa (además de la madre o solo)","y"],["tose","Tose o sale leche por la nariz al comer","r"],["solido","Alimento sólido, sin problemas al comer","g"]]},
+ {id:"alim",ag:["e0"],s:"res",t:"¿Cómo se alimenta?",h:"En cachorros y gatitos: el biberón, la jeringa y el paladar hendido predisponen a neumonía por aspiración",w:["disn","tos","taqp","secnas","regurg"],o:[["madre","Solo leche materna","g"],["biber","Biberón o jeringa (además de la madre o solo)","y"],["tose","Tose o sale leche por la nariz al comer","r"],["solido","Alimento sólido, sin problemas al comer","g"]]},
  {id:"prost",sp:["c"],sx:["me","mc"],s:"uro",t:"¿Próstata a la palpación rectal?",h:"Machos: la HPB es casi universal en enteros > 5 años y rara vez obstruye; próstata grande en castrado: sospechar neoplasia",w:["estr","nodef","hemu","prep","olig"],o:[["dolor","Aumentada y dolorosa","r"],["aum","Aumentada, no dolorosa","y"],["n","Normal","g"]]},
  {id:"contagio",s:"dig",t:"¿Contacto con animales enfermos o antecedente de parvovirus o moquillo en el hogar?",h:"El parvovirus persiste meses en el ambiente; un cachorro puede llegar decaído antes de vomitar",tf:"¿Contacto con gatos enfermos o antecedente de panleucopenia, gripe felina o FeLV/FIV en el hogar?",hf:"El virus de la panleucopenia persiste meses en el ambiente; un gatito puede llegar decaído antes de vomitar",w:["letar","anor","vom","diar","hemq","fieb","tos"],o:[["si","Sí","r"],["no","No","g"]]},
  {id:"plaq",lab:true,s:"cv",t:"¿Plaquetas (hemograma)?",h:"Trombocitopenia con signos inespecíficos: pensar en hemoparásitos aunque el 4Dx sea negativo",w:["letar","anor","fieb","petq","pali","epist","diar","vom","icter"],o:[["bajo","Trombocitopenia","r"],["n","Normales","g"]]},
@@ -519,7 +576,7 @@ const QS = [
    ["mixto","Esfuerzo en ambas fases con crepitaciones o tos húmeda","r"],
    ["kuss","Profunda, amplia y regular (tipo Kussmaul)","y"],
    ["jadeo","Rápida o jadeante con auscultación pulmonar normal","y"]]},
- {id:"ausc",s:"res",t:"¿Auscultación torácica?",h:"",w:["disn","taqp","tos","cian","colap","dist","regurg","debej"],o:[["sv","Silencio ventral (bilateral o unilateral)","r"],["sd","Silencio dorsal","r"],["crep","Crepitaciones","r"],["sib","Sibilancias","y"],["apag","Ruidos cardíacos apagados","r"],["n","Normal","g"]]},
+ {id:"ausc",s:"res",t:"¿Auscultación torácica?",h:"«Estertores» finos, húmedos o gruesos: marque Crepitaciones. Estertores secos o silbido espiratorio: Sibilancias. Estridor de vía alta: no es pulmonar (signo «Ruido respiratorio audible»)",w:["disn","taqp","tos","cian","colap","dist","regurg","debej"],o:[["sv","Silencio ventral (bilateral o unilateral)","r"],["sd","Silencio dorsal","r"],["crep","Crepitaciones","r"],["sib","Sibilancias","y"],["apag","Ruidos cardíacos apagados","r"],["n","Normal","g"]]},
  {id:"card",s:"res",t:"¿Cardiopatía conocida o soplo auscultado?",h:"",w:["disn","taqp","tos","cian","colap","pptr","sinc","regurg","debej"],o:[["si","Sí","y"],["no","No / desconocido","g"]]},
  {id:"razar",s:"res",t:"¿Tipo de raza?",h:"",w:["disn","ruido","tos","cian","calor","ojo"],o:[["braq","Braquicefálica","y"],["toy","Toy o miniatura","y"],["grande_ger","Grande y geriátrica","y"],["otra","Otra / mestizo","g"]]},
  {id:"perf",s:"cv",t:"¿Perfusión?",h:"Mucosas rojas con TLLC < 1 s y pulso saltón: shock hiperdinámico (sepsis, golpe de calor, anafilaxia)",w:["colap","pali","tlc","hipot","fieb","letar","taqp","dist","herida","sinc"],o:[["hipo","Hipoperfusión: pulso débil, extremidades frías, mentación deprimida","r"],["hiper","Hiperdinámica: mucosas rojas, pulso saltón","r"],["n","Normal","g"]]},
@@ -543,7 +600,7 @@ const QS = [
 // Motivo principal de consulta: despliega el sistema a evaluar y sus signos asociados
 const MOTIVOS = [
  {id:"oft",n:"Problema en los ojos",sys:"oft",pre:["ojo"],signs:["ojo","secoc","traum","ment","pali"]},
- {id:"rep",n:"Parto, posparto o glándula mamaria",sys:"uro",pre:[],signs:["parto","mastit","desv","temb","fasc","fieb","letar","anor","masamam","dabd"]},
+ {id:"rep",n:"Parto, posparto o glándula mamaria",sys:"uro",pre:[],signs:["parto","desv","mastit","temb","fasc","fieb","letar","anor","masamam","dabd"]},
  {id:"gen",n:"Decaimiento, anorexia o letargo",sys:null,pre:[],signs:["letar","anor","fieb","pesop","pali","icter","petq","epist","vom","diar","pupd","dabd","colap","sial","debej","masaab","linfad","methb"]},
  {id:"dig",n:"Vómito o diarrea",sys:"dig",pre:[],signs:["vom","hemat","regurg","diar","nodef","hemq","mel","arc","anor","dabd","dist","sial","pupd","icter","olig","cet","pesop","fieb","letar","hilo"]},
  {id:"res",n:"Dificultad respiratoria o tos",sys:"res",pre:["disn"],signs:["disn","taqp","tos","secnas","secoc","regurg","cian","ruido","epist","arrit","colap","fieb","dabd","dvert","cojera","traum","calor","methb"]},
@@ -555,7 +612,9 @@ const MOTIVOS = [
  {id:"met",n:"Bebe y orina mucho, ictericia o pérdida de peso",sys:"met",pre:[],signs:["pupd","icter","pesop","cet","anor","letar","vom","diar","ment"]},
  {id:"hem",n:"Sangrado o mucosas pálidas",sys:"cv",pre:[],signs:["petq","pali","epist","mel","hemu","icter","fieb","letar","colap"]},
  {id:"tox",n:"Intoxicación o exposición a tóxico",sys:"tox",pre:["expt"],signs:["expt","atax","incont","hiperest","sial","temb","fasc","mios","midr","conv","vom","diar","petq","herida","cian","urtic","ment","methb","bocaroja"]},
- {id:"tra",n:"Trauma, herida o dolor",sys:"tra",pre:[],signs:["traum","ojo","herida","cojera","dvert","paresia","disn","pali","dabd","ment","calor"]}
+ {id:"tra",n:"Trauma (atropello, caída, golpe o pelea)",sys:"tra",pre:["traum"],signs:["traum","herida","cojera","dvert","paresia","disn","pali","dabd","ment","ojo","calor"]},
+{id:"piel",n:"Piel y herida",sys:"piel",pre:[],signs:["herida","bulto","pus","fistmax","larvas","prur","erup","alop","arrastre","urtic","fieb","letar","linfad","anor"]},
+{id:"dolor",n:"Dolor (miembro, columna o abdomen)",sys:"tra",pre:[],signs:["cojera","noapoya","artinf","dolmanip","dvert","dabd","paresia","pptr","hiperest","traum","fieb","letar","anor"]}
 ];
 // ═══════════════════════════════════════════════════════════════
 // DIAGNÓSTICOS PRESUNTIVOS
@@ -1712,7 +1771,7 @@ Object.assign(SIGNS,{
  masaor:["Masa en la boca","Boca y dientes",{oral:5}],
  hinch:["Aumento de volumen en la cara o debajo del ojo","Boca y dientes",{oral:4}]
 });
-MOTIVOS.push({id:"oral",n:"Boca, dientes o mal aliento",sys:"oral",pre:[],signs:["halit","dfloj","ulcoral","sangoral","disfag","masaor","hinch","sial","hilo","bocaroja","secnas","secoc","fieb","anor","pesop","pupd","vom","letar","expt"]});
+MOTIVOS.push({id:"oral",n:"Boca, dientes o mal aliento",sys:"oral",pre:[],signs:["halit","dfloj","fistmax","ulcoral","sangoral","disfag","masaor","hinch","sial","hilo","bocaroja","secnas","secoc","fieb","anor","pesop","pupd","vom","letar","expt"]});
 const ORAL=["halit","dfloj","ulcoral","sangoral","disfag","masaor","hinch"];
 QS.push(
  {id:"lesloc",s:"oral",t:"¿Dónde están las úlceras o la necrosis?",h:"Punta y bordes de la lengua con halitosis amoniacal: uremia. Base de la lengua o frenillo: revisar debajo de la lengua (hilo o liga)",w:["ulcoral"],o:[["punta","Punta o bordes de la lengua","r"],["base","Base de la lengua o frenillo (debajo)","r"],["encia","Encías junto a dientes con sarro o flojos","y"],["fauces","Fondo de la boca, a los lados de las fauces (gato)","y"],["dorso","Dorso de la lengua o paladar, varias úlceras","y"]]},
@@ -1778,7 +1837,7 @@ ADD({id:"neo_oral",n:"Neoplasia oral (melanoma, carcinoma escamoso, fibrosarcoma
 
 // ═══ v7.9.7 — Estado hemodinámico efectivo: concordancia entre el triaje marcado y las constantes ═══
 function hemoInfo(){
-  const sel=ST.hemo||"", e=ST.ex||{}, cat=ST.esp==="f", kg=parseFloat(ST.peso), fc=parseFloat(e.fc), t=parseFloat(e.temp), pas=(ST.ans||{}).pas;
+  const sel=ST.hemo||"", e=ST.ex||{}, cat=ST.esp==="f", kg=parseFloat(ST.peso), fc=(n=>n<RANGO.fc[0]||n>RANGO.fc[1]?NaN:n)(parseFloat(e.fc)), t=(n=>n<RANGO.temp[0]||n>RANGO.temp[1]?NaN:n)(parseFloat(e.temp)), pas=(ST.ans||{}).pas;
   const out={sel,eff:sel,cambio:"",motivo:""};
   if(sel==="pcr"||!ST.esp) return out;
   const fcOk=!isNaN(fc), taq=fcOk&&(cat?fc>220:fc>(ST.edad==="e0"?200:(kg&&kg<10?160:140)));
@@ -1808,6 +1867,384 @@ const D=id=>DX.find(x=>x.id===id), R=(id,q,vals,dl,txt)=>{const d=D(id); if(d) d
 ["urolit_c","obs_uret_f","hpb","prostatitis"].forEach(id=>R(id,"orinq",["oligo"],-20,""));
 R("uroabd","orinq",["oligo"],5,"");
 })();
+
+// ═══ v7.9.6 — Caso MC-BANPER: bronconeumonía con crepitaciones (antecedente respiratorio, leucocitosis, taponamiento) ═══
+const DX_EQUIV={"GEN-RES-025":"GEN-RES-166"}; // Bronconeumonía ≡ Neumonía bacteriana / por aspiración (indicadores del registro)
+(function(){
+const D=id=>DX.find(x=>x.id===id), R=(id,q,vals,dl,txt)=>{const d=D(id); if(d) d.r.push([q,vals,dl,txt||""])};
+R("neumonia","ant",["resp"],15,"Cuadro respiratorio previo o en tratamiento");
+R("neumonia","leuco",["alto"],20,"Leucocitosis");
+R("colap_traq","ant",["traq"],25,"Colapso traqueal o bronquitis crónica conocidos"); R("colap_traq","ant",["resp"],5,"");
+R("asma","ant",["traq"],15,"Bronquitis crónica conocida"); R("asma","ant",["resp"],10,"Cuadro respiratorio previo");
+R("cirdc","ant",["resp"],5,"");
+R("icc","card",["no"],-15,"Sin cardiopatía ni soplo conocidos");
+R("icc","leuco",["alto"],-5,"");
+R("taponamiento","ausc",["crep","sib"],-25,"Crepitaciones o sibilancias: el taponamiento cursa con pulmones limpios");
+R("taponamiento","card",["si"],-10,"");
+R("shock_hipo","ausc",["crep","sib"],-15,"Hallazgos pulmonares: la palidez y el TLLC prolongado pueden ser por hipoxemia o sepsis");
+const q=QS.find(x=>x.id==="leuco"); if(q) ["disn","taqp","cian"].forEach(x=>{if(!q.w.includes(x))q.w.push(x)});
+})();
+
+// ═══ Datos obligatorios y botón de información (v7.9.7) ═══
+const REQ={esp:["Especie","pac"],edad:["Edad","pac"],sexo:["Sexo","pac"],vac:["Vacunación","pac"],fc:["FC","ex"],fr:["FR","ex"],temp:["Temperatura","ex"],muc:["Color de mucosas","ex"],tllc:["TLLC","ex"],dh:["% deshidratación","ex"],card:["Auscultación cardíaca","ex"],pulm:["Auscultación pulmonar","ex"]};
+const RANGO={fc:[20,350,"lpm"],fr:[4,150,"rpm"],temp:[30,44,"°C"]};
+function faltantes(){
+  const e=ST.ex||{}, out=[], pcr=ST.hemo==="pcr";
+  for(const k in REQ){
+    const [l,g]=REQ[k];
+    if(g==="ex"&&pcr) continue;
+    let v; if(k==="esp")v=ST.esp; else if(k==="edad")v=ST.edad; else if(k==="sexo")v=ST.sexo; else if(k==="vac")v=ST.vac&&ST.vac.size?1:""; else v=e[k];
+    if(v==null||v===""){out.push({k,l,g});continue}
+    if(RANGO[k]){const n=parseFloat(v),[a,b,u]=RANGO[k]; if(isNaN(n)||n<a||n>b) out.push({k,l,g,imp:`${v} ${u} (rango posible ${a}–${b})`})}
+  }
+  return out;
+}
+function missC(k){if(!REQ[k])return ""; const f=faltantes().find(x=>x.k===k); return f&&(f.imp||ST.valTried)?" miss":""}
+const INFO={
+ esp:"Define rangos normales, dosis y qué diagnósticos son posibles (algunos son exclusivos de perro o de gato).",
+ peso:"Peso actual en kg. Se usa para calcular dosis y fluidos; sin peso el motor no calcula volúmenes.",
+ edad:"Cambia la probabilidad de los diagnósticos (p. ej., parvovirus en cachorros, neoplasias en geriátricos) y las preguntas que se muestran.",
+ sexo:"Habilita diagnósticos propios del sexo y estado reproductivo: piometra, distocia, eclampsia, prostatitis, hiperplasia prostática.",
+ vac:"Marque lo que conste en la cartilla. «Esquema al día» = vacunas anuales vigentes. Sin vacunas o vencidas aumenta la sospecha de parvovirus, moquillo, panleucopenia, leptospirosis y rabia.",
+ hemo:"Impresión al ingreso. Shock compensado: taquicardia, TLLC ≈ 2 s, mucosas rojas o algo pálidas, pulso presente. Descompensado: pulso débil, mucosas pálidas o grises, hipotermia, depresión. El motor lo contrasta con las constantes.",
+ hx:"Enfermedades previas o tratamientos recientes que cambian el diagnóstico o el tratamiento. Si no hay, marque «Ningún antecedente».",
+ fc:"Latidos por minuto (contar 15 s × 4). Normal: perro 60–140 (razas pequeñas hasta 160, cachorros hasta 200); gato 140–220. En el gato en shock es frecuente la bradicardia.",
+ fr:"Respiraciones por minuto en reposo, sin jadeo (contar movimientos del tórax). Normal: perro 10–30; gato 20–40. Más de 40 en reposo indica dificultad respiratoria.",
+ temp:"Temperatura rectal. Normal 37.5–39.2 °C. Fiebre > 39.5 °C; hipertermia grave > 41 °C (golpe de calor); hipotermia < 37.5 °C.",
+ gluc:"Glucómetro. Normal 70–150 mg/dL. < 60: hipoglucemia (bolo de dextrosa). > 250 con cetonas: cetoacidosis diabética.",
+ muc:"Encías o conjuntiva. Rosadas: normal. Pálidas: anemia o vasoconstricción. Rojas: shock temprano, sepsis, golpe de calor. Grises o cianóticas: hipoxemia. Amarillas: ictericia. Marrón: metahemoglobina (paracetamol en gatos).",
+ tllc:"Tiempo de llenado capilar: presione la encía hasta blanquearla y cuente cuánto tarda en volver el color. Normal 1–2 s. < 1 s: shock hiperdinámico o fiebre. > 2 s: hipoperfusión.",
+ pulso:"Arteria femoral, cara interna del muslo. Débil o ausente: hipoperfusión. Ausente en un solo miembro o en ambos posteriores en un gato: tromboembolismo.",
+ dh:"Estimación clínica. < 5%: no detectable. 5–6%: mucosas pegajosas. 6–8%: pliegue cutáneo lento. 8–10%: ojos hundidos. 10–12%: pliegue persistente y signos de shock.",
+ dolor:"Escala de Glasgow abreviada en perros (0–24) o de muecas felinas en gatos (0–10). Define la analgesia: leve, moderado o intenso.",
+ cc:"Condición corporal 1–5. 1 caquéctico, 3 ideal (costillas palpables con presión ligera), 5 obeso.",
+ card:"Soplo, arritmia o ruidos apagados. Ruidos apagados con yugulares distendidas: derrame pericárdico. Soplo en perro pequeño con tos: insuficiencia cardíaca.",
+ pulm:"Elija según lo que escucha. Si escuchó «estertores», abra la guía rápida que está justo debajo.",
+ vej:"Palpación del abdomen caudal. Grande y firme sin poder orinar: obstrucción o retención. Pequeña o no palpable con poca orina: falla renal o uroabdomen.",
+ abm:"Masa palpable o bazo aumentado: neoplasia, hemoabdomen, torsión esplénica.",
+ mam:"Nódulos o masas en las glándulas mamarias. Caliente y dolorosa en lactancia: mastitis. Firme e indolora: neoplasia.",
+ linf:"Submandibulares, preescapulares y poplíteos. Aumento generalizado: linfoma, ehrlichiosis o infección sistémica.",
+ ecto:"Garrapatas: hemoparásitos (Ehrlichia, Anaplasma, Babesia). Pulgas: anemia en cachorros, Mycoplasma en gatos, Dipylidium."
+};
+function lb(k,l){return `<span class="lbt">${l}${REQ[k]?'<span class="req" title="Dato obligatorio">*</span>':""}${INFO[k]?`<button type="button" class="ib" aria-label="Información: ${l.replace(/"/g,"")}" onclick="infoPop(event,'${k}')">i</button>`:""}</span>`}
+function infoCerrar(){const p=document.getElementById("ipop");if(p)p.remove()}
+function infoPop(ev,k){
+  ev.preventDefault();ev.stopPropagation();
+  const prev=document.getElementById("ipop"); if(prev&&prev.dataset.k===k){prev.remove();return} infoCerrar();
+  const b=ev.currentTarget, r=b.getBoundingClientRect(), p=document.createElement("div");
+  p.id="ipop";p.className="ipop";p.dataset.k=k;p.setAttribute("role","dialog");
+  const t=(b.parentElement&&b.parentElement.firstChild&&b.parentElement.firstChild.textContent||"").trim();
+  p.innerHTML=`<button class="ix" aria-label="Cerrar" onclick="infoCerrar()">×</button>${t?`<b>${esc(t)}</b>`:""}${esc(INFO[k])}`;
+  document.body.appendChild(p);
+  const w=Math.min(320,window.innerWidth-24); p.style.maxWidth=w+"px";
+  let x=r.left+window.scrollX-8; x=Math.max(12+window.scrollX,Math.min(x,window.scrollX+window.innerWidth-p.offsetWidth-12));
+  let y=r.bottom+window.scrollY+6; if(r.bottom+p.offsetHeight+12>window.innerHeight&&r.top>p.offsetHeight+12) y=r.top+window.scrollY-p.offsetHeight-6;
+  p.style.left=x+"px";p.style.top=y+"px";
+}
+document.addEventListener("click",ev=>{const p=document.getElementById("ipop");if(p&&!p.contains(ev.target))p.remove()});
+document.addEventListener("keydown",ev=>{if(ev.key==="Escape")infoCerrar()});
+const _genSOAPorig=genSOAP;
+genSOAP=function(){
+  const fx=faltantes();
+  if(fx.length){
+    ST.valTried=true; renderAll();
+    const m=document.getElementById("soapmsg"); if(m) m.textContent="Faltan datos obligatorios: "+fx.map(x=>x.l+(x.imp?" (valor imposible)":"")).join(", ");
+    setTimeout(()=>avisoFaltan(fx,"soap"),0);
+    return;
+  }
+  ST.valTried=false; const _r=_genSOAPorig.apply(this,arguments); const _el=document.getElementById("soap"); if(_el) _el.value=limpiaSOAP(_el.value); return _r;
+};
+
+// ═══ Piel y tejido subcutáneo: abscesos, erupciones y prurito (v7.9.7) ═══
+(function(){
+SYS.piel={n:"Piel y tejido subcutáneo",col:"#D97706"};
+const G="Piel y tejido subcutáneo";
+Object.assign(SIGNS,{
+ bulto:["Aumento de volumen o bulto bajo la piel",G,{piel:5}],
+ pus:["Secreción purulenta, fístula o mal olor en la piel",G,{piel:5}],
+ larvas:["Larvas en una herida (gusanera)",G,{piel:6}],
+ prur:["Prurito (se rasca, lame o muerde)",G,{piel:4}],
+ erup:["Erupción: pápulas, pústulas, costras o enrojecimiento",G,{piel:4}],
+ alop:["Alopecia (pérdida de pelo)",G,{piel:3}],
+ arrastre:["Se arrastra o se lame la zona anal",G,{piel:3,dig:1}]
+});
+QS.push(
+ {id:"bultoq",s:"piel",t:"¿Cómo es el aumento de volumen?",h:"Fluctuante, caliente y doloroso, días después de una pelea: absceso. Súbito en cara o párpados: reacción alérgica (angioedema)",w:["bulto","hinch"],o:[["fluct","Blando o fluctuante, caliente y doloroso","r"],["firme","Firme y no doloroso","y"],["subito","Apareció de golpe en cara, párpados o cuello","r"],["crep","Crepita al tocarlo (aire bajo la piel)","r"],["reduc","Se reduce al presionarlo (posible hernia)","y"]]},
+ {id:"pelea",s:"piel",t:"¿Pelea, mordedura o herida punzante en los últimos 3–10 días?",h:"Los abscesos por mordedura aparecen días después; frecuentes en gatos machos enteros que salen a la calle",w:["bulto","pus","herida","fieb","cojera"],o:[["si","Sí","r"],["no","No / desconocido","g"]]},
+ {id:"zonap",s:"piel",t:"¿Dónde están las lesiones de piel o el prurito?",h:"La distribución orienta la causa del prurito",w:["prur","erup","alop","pus"],o:[["dorso","Dorso, base de la cola y muslos","y"],["orejas","Bordes de las orejas, codos y abdomen","r"],["cara","Cara, patas, axilas e ingles","y"],["circ","Zonas circulares sin pelo (cara, orejas, patas)","y"],["perianal","Alrededor del ano","y"],["gen","Generalizada","y"]]}
+);
+const ADD=o=>DX.push(Object.assign({b:0,fl:"mant",z:false,r:[],lab:[]},o));
+ADD({id:"absceso",n:"Absceso subcutáneo o por mordedura",c:"GEN-TRA-436",sys:"piel",sp:["c","f"],k:["bulto","pus"],
+ s:{bulto:25,pus:25,herida:10,fieb:10,cojera:5,letar:5,anor:5},
+ r:[["bultoq",["fluct"],30,"Fluctuante, caliente y doloroso"],["bultoq",["firme"],-20,""],["bultoq",["subito"],-25,""],["bultoq",["reduc"],-25,""],["pelea",["si"],20,"Pelea o mordedura reciente"],["sexo",["me"],5,""],["especie",["f"],5,"Frecuente en gatos que salen a la calle"]],
+ need:{s:["bulto","pus"],a:[],pen:-20,txt:"Sin bulto ni secreción purulenta"},
+ why:"Bulto fluctuante, caliente y doloroso, a veces con fiebre y cojera, 3–10 días después de una mordedura. Puede drenar pus fétido. En gatos, descartar FeLV/FIV.",
+ lab:["citologia","cultivo","hemograma","snap_felv"],
+ tx:[["_","Drenaje bajo sedación, lavado con solución salina y dejar abierto o con drenaje"],["amoxclav","5–7 días"],["_","Analgesia según dolor"]],
+ ref:"BSAVA Manual of Canine and Feline Wound Management (3.ª ed.)"});
+ADD({id:"saco_anal",n:"Absceso o saculitis de sacos anales (perianal)",c:"GEN-DER-176",sys:"piel",sp:["c","f"],k:["arrastre","bulto","pus"],
+ s:{arrastre:25,bulto:15,pus:15,nodef:5,fieb:5},
+ r:[["zonap",["perianal"],30,"Lesión junto al ano"],["especie",["c"],5,""]],
+ need:{s:["arrastre"],a:[["zonap",["perianal"]]],pen:-25,txt:"Sin signos en la zona anal"},
+ why:"Arrastre, lamido y dolor perianal; bulto o fístula a las 4 u 8 en punto del ano. Diferenciar de fístula perianal y neoplasia de sacos anales.",
+ lab:["citologia","hemograma"],
+ tx:[["_","Vaciar y lavar los sacos anales; si hay absceso, drenar y lavar"],["amoxclav","7–10 días"],["_","Analgesia según dolor"]],
+ ref:"Miller, Griffin & Campbell, Muller & Kirk's Small Animal Dermatology (7.ª ed.)"});
+ADD({id:"dapp",n:"Dermatitis alérgica por pulgas",c:"GEN-DER-440",sys:"piel",sp:["c","f"],k:["prur","erup","alop"],
+ s:{prur:20,erup:10,alop:10},
+ r:[["zonap",["dorso"],35,"Lesiones en dorso, base de la cola y muslos"],["garr",["si"],10,"Ectoparásitos en el examen"],["zonap",["orejas","cara"],-10,""]],
+ why:"Prurito intenso en la zona dorsolumbar y la base de la cola; en gatos, dermatitis miliar. Puede no verse la pulga: buscar heces de pulga.",
+ lab:["citologia"],
+ tx:[["_","Control de pulgas en el paciente y todos los animales de la casa, y en el ambiente"],["_","Si hay pioderma secundaria: ver pioderma"]],
+ ref:"WAVD / ISCAID guidelines; Muller & Kirk's Small Animal Dermatology"});
+ADD({id:"sarna",n:"Sarna sarcóptica",c:"GEN-DER-058",sys:"piel",sp:["c"],z:true,k:["prur","erup","alop"],
+ s:{prur:25,erup:10,alop:10},
+ r:[["zonap",["orejas"],35,"Bordes de orejas, codos y abdomen"],["edad",["e0","e1","e2"],5,""],["zonap",["dorso"],-10,""]],
+ why:"Prurito muy intenso con costras en bordes de las orejas (reflejo otopodal positivo), codos y abdomen. Contagiosa y zoonótica.",
+ lab:["citologia"],
+ tx:[["_","Acaricida sistémico según formulario (isoxazolina o lactona macrocíclica) y tratar a los contactos"],["_","Advertir al propietario: puede causar lesiones en personas"]],
+ ref:"Muller & Kirk's Small Animal Dermatology (7.ª ed.)"});
+ADD({id:"pioderma",n:"Pioderma (superficial o profunda)",c:"GEN-DER-155",sys:"piel",sp:["c","f"],k:["erup","pus"],
+ s:{erup:25,pus:20,prur:10,alop:5,fieb:5},
+ r:[["zonap",["gen"],5,""]],
+ why:"Pápulas, pústulas y collaretes epidérmicos; la profunda drena pus y duele. Casi siempre es secundaria: buscar alergia, ectoparásitos o endocrinopatía.",
+ lab:["citologia","cultivo"],
+ tx:[["_","Champú de clorhexidina 2–4% dos o tres veces por semana"],["amoxclav","Solo si es extensa o profunda (3 semanas o 1 semana más allá de la curación)"]],
+ ref:"ISCAID: Guidelines for the diagnosis and treatment of canine superficial bacterial folliculitis (2020)"});
+ADD({id:"alergia_piel",n:"Dermatitis alérgica (atópica o alimentaria)",c:"GEN-DER-034",sys:"piel",sp:["c","f"],k:["prur","erup"],
+ s:{prur:20,erup:10,alop:5},
+ r:[["zonap",["cara"],30,"Cara, patas, axilas e ingles"],["edad",["e1","e2"],5,"Inicio en adultos jóvenes"],["zonap",["orejas","dorso"],-10,""]],
+ why:"Prurito en cara, patas, axilas e ingles, con otitis recurrente. Diagnóstico por exclusión (ectoparásitos e infección) y dieta de eliminación.",
+ lab:["citologia"],
+ tx:[["_","Controlar pulgas e infección secundaria; plan diagnóstico por consulta externa"],["prednisolona","Solo a corto plazo para el prurito intenso; no combinar con AINE"]],
+ ref:"ICADA: Treatment of canine atopic dermatitis (2015 update)"});
+ADD({id:"tina",n:"Dermatofitosis (tiña)",c:"GEN-DER-327",sys:"piel",sp:["c","f"],z:true,k:["alop","erup"],
+ s:{alop:20,erup:10,prur:5},
+ r:[["zonap",["circ"],35,"Zonas circulares sin pelo"],["edad",["e0","e1"],10,"Cachorro o gatito"],["especie",["f"],5,""]],
+ why:"Alopecia circular con descamación, poco prurito; frecuente en gatitos. Zoonótica.",
+ lab:["koh","citologia"],
+ tx:[["_","Antifúngico tópico y sistémico según formulario; limpiar el ambiente"],["_","Advertir al propietario: contagiosa para personas"]],
+ ref:"WAVD: Clinical consensus guidelines for dermatophytosis (2017)"});
+ADD({id:"miasis",n:"Miasis cutánea (gusanera)",c:"GEN-DER-348",sys:"piel",sp:["c","f"],k:["larvas"],
+ s:{larvas:50,herida:10,pus:10,letar:5},
+ why:"Larvas de mosca en heridas, pliegues o zona perianal. Revisar todo el cuerpo: puede haber lesiones profundas y toxemia.",
+ lab:["hemograma"],
+ tx:[["_","Retirar las larvas, cortar el pelo, lavar y desbridar bajo sedación"],["_","Antiparasitario sistémico según formulario"],["amoxclav","Si hay infección secundaria"],["_","Analgesia según dolor"]],
+ ref:"BSAVA Manual of Canine and Feline Wound Management"});
+const ana=DX.find(x=>x.id==="anafilaxia"); if(ana) ana.r.push(["bultoq",["subito"],20,"Edema súbito en cara o párpados"]);
+})();
+
+// ═══ Motivo «Dolor»: miembros, articulaciones, columna y abdomen (v7.9.7) ═══
+(function(){
+const G="Dolor y aparato locomotor";
+Object.assign(SIGNS,{
+ noapoya:["No apoya un miembro",G,{tra:5}],
+ artinf:["Articulación inflamada o caliente",G,{tra:4}],
+ dolmanip:["Se queja o agrede al tocarlo o moverlo",G,{tra:3}]
+});
+const LOC=["cojera","noapoya","artinf","dolmanip"];
+QS.push(
+ {id:"dolloc",s:"tra",t:"¿Dónde está el dolor?",h:"Palpe de distal a proximal y compare con el miembro sano",w:[...LOC,"dvert"],o:[["ant","Un miembro anterior","y"],["post","Un miembro posterior","y"],["varios","Varias articulaciones o cambia de miembro","r"],["columna","Columna o cuello","r"],["abd","Abdomen","r"],["gen","Generalizado, no se localiza","y"]]},
+ {id:"dolinicio",s:"tra",t:"¿Cómo comenzó el dolor?",h:"",w:[...LOC,"dvert"],o:[["trauma","De golpe, tras trauma, caída o salto","r"],["subito","De golpe, sin trauma conocido","y"],["gradual","Gradual, en semanas o meses","y"]]}
+);
+const ADD=o=>DX.push(Object.assign({b:0,fl:"mant",z:false,r:[],lab:[]},o));
+ADD({id:"cruzado",n:"Ruptura de ligamento cruzado craneal",c:"GEN-MUS-504",sys:"tra",sp:["c"],k:["cojera","noapoya"],
+ s:{cojera:20,noapoya:20,dolmanip:5},
+ r:[["dolloc",["post"],25,"Miembro posterior"],["dolloc",["ant","varios","columna","abd"],-20,""],["dolinicio",["subito","trauma"],15,"Inicio súbito al correr o saltar"],["edad",["e2","e3","e4"],5,""]],
+ need:{s:[],a:[["dolloc",["post"]]],pen:-20,txt:"El dolor no está en un miembro posterior"},
+ why:"Cojera aguda de un miembro posterior, a menudo sin apoyo, tras correr o saltar; rodilla con derrame y movimiento de cajón o prueba de compresión tibial positivos. Frecuente en perros de razas grandes y con sobrepeso.",
+ lab:["rx_ext"],
+ tx:[["_","Reposo estricto y analgesia según dolor; referir a ortopedia (cirugía de estabilización)"],["meloxicam","Si no hay contraindicación para AINE"]],
+ ref:"Tobias & Johnston, Veterinary Surgery: Small Animal (2.ª ed.)"});
+ADD({id:"artrosis",n:"Artrosis u osteoartritis",c:"GEN-MUS-016",sys:"tra",sp:["c","f"],k:["cojera","dolmanip"],
+ s:{cojera:20,dolmanip:5},
+ r:[["dolinicio",["gradual"],30,"Inicio gradual"],["edad",["e3","e4","e5"],15,"Adulto o geriátrico"],["dolinicio",["trauma","subito"],-15,""],["dolloc",["abd","columna"],-15,""]],
+ why:"Cojera crónica o rigidez que empeora tras el reposo o el ejercicio, en pacientes mayores; en gatos se manifiesta como menor actividad y dificultad para saltar.",
+ lab:["rx_ext","quimica"],
+ tx:[["meloxicam","Si la función renal lo permite"],["gabapentina",""],["_","Control de peso y ejercicio controlado"]],
+ ref:"WSAVA Guidelines for the Recognition, Assessment and Treatment of Pain (2022)"});
+ADD({id:"osteosarcoma",n:"Osteosarcoma (neoplasia ósea)",c:"GEN-NEO-378",sys:"tra",sp:["c"],k:["cojera","noapoya"],
+ s:{cojera:15,noapoya:20,dolmanip:5,pesop:5},
+ r:[["dolinicio",["gradual"],20,"Cojera progresiva"],["edad",["e3","e4","e5"],15,"Adulto o geriátrico"],["razar",["grande_ger"],15,"Raza grande"],["dolloc",["varios","columna","abd"],-20,""]],
+ need:{s:[],a:[["dolinicio",["gradual"]],["razar",["grande_ger"]]],pen:-15,txt:"Sin cojera progresiva ni raza grande"},
+ why:"Cojera progresiva con aumento de volumen óseo doloroso cerca de la rodilla o lejos del codo («lejos del codo, cerca de la rodilla») en perros grandes y gigantes de mediana edad. Radiografía del miembro y de tórax (metástasis).",
+ lab:["rx_ext","rx_torax","hemograma","quimica"],
+ tx:[["_","Analgesia según dolor; referir a oncología (amputación y quimioterapia)"]],
+ ref:"Withrow & MacEwen's Small Animal Clinical Oncology (6.ª ed.)"});
+ADD({id:"poliartritis",n:"Poliartritis (inmunomediada o infecciosa)",c:"GEN-MUS-252",sys:"tra",sp:["c","f"],k:["artinf","cojera"],
+ s:{artinf:20,cojera:10,fieb:15,letar:5,dolmanip:5},
+ r:[["dolloc",["varios"],35,"Varias articulaciones o cojera que cambia de miembro"],["dolloc",["ant","post"],-10,""],["garr",["si"],10,"Garrapatas: descartar ehrlichiosis, anaplasmosis y Lyme"]],
+ why:"Fiebre, rigidez y varias articulaciones inflamadas o cojera que cambia de miembro. Descartar enfermedades transmitidas por garrapatas antes de inmunosuprimir; artrocentesis para confirmar.",
+ lab:["citologia","snap_4dx","hemograma","frotis_hp"],
+ tx:[["_","Analgesia según dolor"],["doxiciclina","Mientras se descartan enfermedades transmitidas por garrapatas"],["prednisolona","Solo con infección descartada; no combinar con AINE"]],
+ ref:"Ettinger, Feldman & Côté, Textbook of Veterinary Internal Medicine (9.ª ed.)"});
+ADD({id:"artritis_sep",n:"Artritis séptica",c:"GEN-MUS-330",sys:"tra",sp:["c","f"],k:["artinf"],
+ s:{artinf:25,fieb:15,noapoya:10,herida:10,cojera:5},
+ r:[["dolloc",["ant","post"],10,"Una sola articulación"],["dolloc",["varios"],-15,""]],
+ why:"Una sola articulación caliente, inflamada y muy dolorosa, con fiebre; a menudo tras una herida penetrante, cirugía o infiltración.",
+ lab:["citologia","cultivo","hemograma","rx_ext"],
+ tx:[["ceftriaxona","IV hasta tener cultivo"],["_","Lavado articular; analgesia según dolor"]],
+ ref:"Tobias & Johnston, Veterinary Surgery: Small Animal"});
+const R=(id,q,v,dl,t)=>{const d=DX.find(x=>x.id===id); if(d) d.r.push([q,v,dl,t||""])};
+R("fractura","dolinicio",["trauma"],20,"Tras trauma, caída o salto"); R("fractura","dolinicio",["gradual"],-20,"");
+R("ivdd","dolloc",["columna"],20,"Dolor de columna o cuello");
+R("tea","dolloc",["post"],10,"");
+})();
+
+// ═══ Aviso visible de datos obligatorios (motivo y SOAP) ═══
+function avisoCerrar(){const a=document.getElementById("aviso");if(a)a.remove()}
+function avisoIr(){avisoCerrar();ST.valTried=true;renderAll();const f=document.querySelector(".miss");if(f){if(f.scrollIntoView)f.scrollIntoView({behavior:"smooth",block:"center"});const c=f.querySelector("input,select,.opt");if(c)setTimeout(()=>c.focus({preventScroll:true}),350)}}
+function avisoFaltan(fx,modo,id){
+  avisoCerrar();
+  const imp=fx.some(x=>x.imp), d=document.createElement("div");
+  d.id="aviso";d.className="av-fondo";d.setAttribute("role","alertdialog");d.setAttribute("aria-modal","true");
+  const tit=modo==="soap"?"No se generó la nota SOAP":"Falta información obligatoria";
+  const txt=modo==="soap"?"Complete estos datos para generar la nota y registrar el caso:":"Antes de elegir el motivo de consulta complete estos datos del paciente y del examen físico:";
+  d.innerHTML=`<div class="av-caja ${imp?"r":""}"><h3>${tit}</h3><p>${txt}</p><ul>${fx.map(x=>`<li>${esc(x.l)}${x.imp?` — <b>valor imposible: ${esc(x.imp)}</b>`:""}</li>`).join("")}</ul>
+   <div class="av-bts">${modo==="motivo"?`<button onclick="avisoCerrar();ST.avisoMot=true;setMotivo('${id}')">Elegir motivo de todos modos</button>`:`<button onclick="avisoCerrar()">Cerrar</button>`}<button class="av-pri" onclick="avisoIr()">Completar datos</button></div></div>`;
+  d.addEventListener("click",ev=>{if(ev.target===d)avisoCerrar()});
+  document.body.appendChild(d); const b=d.querySelector(".av-pri"); if(b) b.focus();
+}
+document.addEventListener("keydown",ev=>{if(ev.key==="Escape")avisoCerrar()});
+function pedirMotivo(id){
+  const fx=faltantes();
+  if(fx.length&&!ST.avisoMot){avisoFaltan(fx,"motivo",id);return}
+  setMotivo(id);
+}
+
+// ═══ Nota SOAP sin / & ni comillas (el expediente no los admite) ═══
+function limpiaSOAP(t){
+  return String(t)
+    .replace(/\b(\d{1,2})\/(\d{1,2})\/(\d{2,4})\b/g,"$1-$2-$3")
+    .replace(/(\d)\s*\/\s*(\d)/g,"$1 de $2")
+    .replace(/([A-Za-zµ°%²]+)\/(kg|h|min|día|dia|dL|mL|L|m²|24 ?h)\b/g,"$1 por $2")
+    .replace(/\s*\/\s*/g," o ")
+    .replace(/\s*&\s*/g," y ")
+    .replace(/[“”"«»]/g,"");
+}
+// ═══ Reproducción: tipo de descarga vulvar, muerte y maceración fetal; absceso de la muela carnicera (v7.9.7) ═══
+(function(){
+SIGNS.fistmax=["Fístula o herida que drena debajo del ojo (maxilar)","Boca y dientes",{oral:6,piel:2}];
+const H=["he","hl"];
+QS.push(
+ {id:"desvq",sx:H,s:"uro",t:"¿Cómo es la descarga vulvar?",h:"Verde oscura sin nacimientos: placenta desprendida, feto en riesgo. Marrón rojiza y fétida: feto muerto macerado o metritis",w:["desv","parto"],o:[["verde","Verde oscura, sin nacimientos","r"],["marron","Marrón rojiza, fétida o con restos de tejido","r"],["pus","Purulenta (amarilla o crema)","r"],["sangre","Sangre fresca abundante","r"],["loquio","Loquios normales tras parir (rojo oscuro o verdoso, sin olor)","g"],["mucosa","Mucosa transparente (preparto o celo)","g"]]},
+ {id:"gestq",sx:H,s:"uro",t:"¿Está gestante o parió recientemente?",h:"",w:["desv","parto","dabd","letar","anor","fieb","temb"],o:[["conf","Gestación confirmada (ecografía o radiografía)","y"],["prob","Gestación probable (monta hace menos de 70 días)","y"],["parida","Parió en los últimos 7 días","y"],["no","No / desconocido","g"]]},
+ {id:"diasg",sx:H,s:"uro",t:"¿Días desde la monta?",h:"Gestación normal: 58–65 días desde la monta (perra y gata)",w:["desv","parto","dabd"],o:[["lt58","Menos de 58 días","y"],["term","58–65 días (a término)","g"],["gt65","Más de 65 días (pasada la fecha)","r"],["ns","No se sabe","b"]]}
+);
+const eco=QS.find(q=>q.id==="eco"); if(eco){eco.o.splice(eco.o.length-1,0,["feto","Fetos sin latido o gas en útero o fetos","r"]); if(!eco.w.includes("parto")) eco.w.push("parto")}
+const ADD=o=>DX.push(Object.assign({b:0,fl:"mant",z:false,r:[],lab:[]},o));
+const MACHO=["sexo",["me","mc","hc"],-80,""];
+ADD({id:"muerte_fetal",n:"Muerte fetal",c:"GEN-REP-505",sys:"uro",sp:["c","f"],k:["desv","parto","dabd","anor","letar"],
+ s:{desv:15,parto:15,dabd:5,anor:5,letar:5},
+ r:[MACHO,["eco",["feto"],45,"Fetos sin latido en la ecografía"],["desvq",["verde"],25,"Descarga verde oscura sin nacimientos"],["diasg",["gt65"],20,"Gestación pasada de fecha"],["partoq",["inter","sin"],10,""],["gestq",["conf","prob"],15,"Gestante"],["desvq",["loquio","mucosa"],-20,""],["gestq",["parida","no"],-30,""]],
+ need:{s:[],a:[["gestq",["conf","prob"]],["eco",["feto"]]],pen:-40,txt:"Sin gestación conocida"},
+ why:"Fetos sin latido cardíaco en la ecografía (diagnóstico). Sospechar con descarga verde oscura sin nacimientos, gestación pasada de fecha o contracciones que cesan. Con el cuello uterino cerrado y sin infección puede momificarse; si se abre, se macera.",
+ lab:["!eco_abd","rx_abd","hemograma","quimica"],
+ tx:[["_","Confirmar con ecografía cuántos fetos están vivos; si quedan fetos vivos, manejar como distocia"],["_","Sin fetos vivos: cesárea u ovariohisterectomía programada; la vía médica es limitada (no hay oxitocina en el formulario)"],["_","Recomendar descartar Brucella canis (zoonosis; prueba no disponible en el catálogo)"]],
+ ref:"Johnston, Root Kustritz & Olson, Canine and Feline Theriogenology"});
+ADD({id:"maceracion",n:"Maceración fetal (feto muerto con infección uterina)",c:"GEN-REP-506",sys:"uro",sp:["c","f"],k:["desv","fieb","letar","dabd","anor"],prio:2,
+ s:{desv:20,fieb:15,letar:5,anor:5,dabd:5},
+ r:[MACHO,["desvq",["marron"],35,"Descarga marrón rojiza y fétida"],["eco",["feto"],20,"Fetos sin latido o gas intrauterino"],["gestq",["conf","prob"],15,"Gestante"],["diasg",["gt65"],10,""],["hemo",["comp","desc"],10,"Signos de sepsis"],["desvq",["loquio","mucosa"],-25,""],["gestq",["parida","no"],-30,""]],
+ need:{s:[],a:[["gestq",["conf","prob"]],["eco",["feto"]]],pen:-40,txt:"Sin gestación conocida"},
+ why:"Feto muerto con el cuello uterino abierto: descarga marrón rojiza y fétida, fiebre y decaimiento; en la radiografía, huesos fetales sueltos y gas. Riesgo alto de sepsis y peritonitis: urgencia quirúrgica.",
+ lab:["!eco_abd","!rx_abd","hemograma","quimica","lactato"],
+ tx:[["_","Estabilizar con fluidos; ovariohisterectomía de urgencia en cuanto sea posible"],["ceftriaxona","IV"],["metronidazol","IV"],["_","Recomendar descartar Brucella canis (zoonosis)"]],
+ fl:"rehid",ref:"Johnston, Root Kustritz & Olson, Canine and Feline Theriogenology"});
+ADD({id:"metritis",n:"Metritis posparto",c:"GEN-REP-343",sys:"uro",sp:["c","f"],k:["desv","fieb","letar","anor"],
+ s:{desv:20,fieb:15,letar:5,anor:5},
+ r:[MACHO,["gestq",["parida"],35,"Parto reciente"],["partoq",["ret"],25,"Decaimiento o descarga fétida tras parir"],["desvq",["marron","pus"],15,"Descarga fétida o purulenta"],["desvq",["loquio"],-25,"Loquios normales"],["gestq",["conf","prob"],-20,""]],
+ need:{s:[],a:[["gestq",["parida"]],["partoq",["ret"]]],pen:-40,txt:"Sin parto reciente"},
+ why:"En los primeros días tras el parto: fiebre, decaimiento, menos atención a las crías y descarga fétida o purulenta. Buscar fetos o placentas retenidas con ecografía.",
+ lab:["eco_abd","hemograma","citologia"],
+ tx:[["_","Fluidos y soporte; retirar las crías si la madre está séptica"],["amoxclav","Si está estable; ceftriaxona IV si hay sepsis"],["_","Ovariohisterectomía si hay feto o placenta retenida o no responde"]],
+ ref:"Johnston, Root Kustritz & Olson, Canine and Feline Theriogenology"});
+const R=(id,q,v,dl,t)=>{const d=DX.find(x=>x.id===id); if(d) d.r.push([q,v,dl,t||""])};
+R("piometra","desvq",["pus"],20,"Descarga purulenta"); R("piometra","desvq",["loquio","verde"],-20,""); R("piometra","gestq",["parida","conf"],-30,"");
+R("distocia","desvq",["verde"],15,"Descarga verde sin nacimientos"); R("distocia","diasg",["gt65"],10,"Pasada de fecha");
+ADD({id:"abs_carn",n:"Absceso del cuarto premolar superior (muela carnicera)",c:"GEN-DEN-507",sys:"oral",sp:["c","f"],k:["fistmax","hinch"],
+ s:{fistmax:40,hinch:25,dfloj:10,halit:5,disfag:5,secnas:5,secoc:5},
+ r:[["edad",["e3","e4","e5"],10,"Adulto o geriátrico"],["bultoq",["fluct"],10,""],["especie",["c"],5,""]],
+ why:"Absceso de la raíz del cuarto premolar superior por fractura del diente o enfermedad periodontal: aumento de volumen o fístula que drena debajo del ojo. El diente puede verse casi intacto; se confunde con una herida o un absceso de piel.",
+ lab:["rx_dental","prequir","hemograma"],
+ tx:[["_","Extracción o endodoncia bajo anestesia con radiografía dental"],["amoxclav","7–10 días"],["_","Analgesia según dolor"]],
+ ref:"AAHA Dental Care Guidelines (2019); BSAVA Manual of Canine and Feline Dentistry and Oral Surgery"});
+const ab=DX.find(x=>x.id==="absceso"); if(ab) ab.s.fistmax=-15;
+const pe=DX.find(x=>x.id==="periodontal"); if(pe) pe.s.fistmax=10;
+})();
+
+// ═══ Reevaluación del mismo paciente (no duplica casos) y avisos de captura ═══
+function regReToggle(){const c=document.getElementById("regre"),i=document.getElementById("regrecod");if(i){i.style.display=c&&c.checked?"":"none";if(c&&c.checked)i.focus()}}
+function regReeval(){
+  const c=document.getElementById("regre"); if(!c||!c.checked) return false;
+  const i=document.getElementById("regrecod"), cod=(i&&i.value||"").trim().toUpperCase(), ok=/^MC-[A-HJ-NP-Z2-9]{6}$/.test(cod);
+  const t=document.getElementById("soap"); if(t) t.value+=`\nReevaluación${ok?" del caso "+cod:" de un paciente ya registrado"}: no se crea un caso nuevo.`;
+  regMsg(ok?`Reevaluación del caso ${cod}: no se crea un caso nuevo. Agregue los resultados en ese caso desde «Registro de casos».`:"Reevaluación: no se crea un caso nuevo.");
+  return true;
+}
+
+// ═══ Ajustes del registro 21/11: retención neurogénica, bronquitis crónica, barro biliar (v7.9.7) ═══
+(function(){
+const D=id=>DX.find(x=>x.id===id), R=(id,q,v,dl,t)=>{const d=D(id); if(d) d.r.push([q,v,dl,t||""])};
+const rt=D("retencion"); if(rt) rt.need={s:["estr","olig","incont"],a:[["vejiga",["grande"]]],pen:-35,txt:"Sin signos urinarios: con paresia sola, pensar primero en IVDD"};
+QS.push({id:"tosdur",s:"res",t:"¿Desde cuándo tose?",h:"Tos de más de 2 meses en un perro adulto sin fiebre: bronquitis crónica o colapso traqueal",w:["tos"],o:[["ag","Menos de 2 semanas","y"],["sem","De 2 semanas a 2 meses","y"],["cron","Más de 2 meses","r"]]});
+const eco=QS.find(q=>q.id==="eco"); if(eco) eco.o.splice(eco.o.length-1,0,["vesic","Vesícula con barro, mucocele o pared engrosada","r"]);
+const ADD=o=>DX.push(Object.assign({b:0,fl:"mant",z:false,r:[],lab:[]},o));
+ADD({id:"bronq_cron",n:"Bronquitis crónica canina",c:"GEN-RES-384",sys:"res",sp:["c"],k:["tos"],
+ s:{tos:20,disn:5,ruido:5},
+ r:[["tosdur",["cron"],35,"Tos de más de 2 meses"],["tosdur",["ag"],-20,""],["ausc",["crep","sib"],15,"Crepitaciones o sibilancias"],["ant",["traq"],20,"Bronquitis o colapso traqueal conocidos"],["ant",["resp"],10,"Cuadro respiratorio previo"],["edad",["e3","e4","e5"],10,"Adulto o geriátrico"],["temp",["alto","vhi"],-15,"La fiebre orienta a infección"],["card",["si"],-10,""]],
+ why:"Tos diaria de más de 2 meses, a menudo productiva y con arcadas al final, en perros adultos de razas pequeñas o con sobrepeso, sin fiebre. Radiografía con patrón bronquial; descartar ICC, colapso traqueal, neumonía y parásitos pulmonares.",
+ lab:["rx_torax","hemograma","citologia"],
+ tx:[["_","Evitar humo, collar (usar pechera) y sobrepeso"],["prednisolona","Antiinflamatoria solo con infección descartada; no combinar con AINE"],["salbutamol","Si hay broncoespasmo (sibilancias)"],["_","Antibiótico solo si hay infección confirmada"]],
+ ref:"Ettinger, Feldman & Côté, Textbook of Veterinary Internal Medicine (9.ª ed.); BSAVA Manual of Canine and Feline Cardiorespiratory Medicine"});
+R("cirdc","tosdur",["ag"],10,"Tos aguda"); R("cirdc","tosdur",["cron"],-20,"");
+R("colap_traq","tosdur",["cron"],10,"Tos crónica");
+ADD({id:"barro_biliar",n:"Barro biliar, mucocele o colecistitis",c:"GEN-HEP-023",sys:"hep",sp:["c","f"],k:["dabd","vom","anor","icter"],
+ s:{dabd:15,icter:15,vom:10,anor:5,fieb:5},
+ r:[["eco",["vesic"],45,"Vesícula con barro, mucocele o pared engrosada"],["hep_lab",["alta"],15,"ALT o bilirrubina elevadas"],["edad",["e3","e4","e5"],5,""]],
+ need:{s:["icter"],a:[["eco",["vesic"]]],pen:-20,txt:"Sin ecografía de vesícula ni ictericia"},
+ why:"Dolor abdominal craneal, vómito y anorexia, a veces con ictericia y fiebre (colecistitis). La ecografía muestra barro biliar, mucocele (patrón en kiwi) o pared engrosada. Riesgo de ruptura y peritonitis biliar.",
+ lab:["!eco_abd","hepatico","hemograma"],
+ tx:[["_","Analgesia según dolor y antiemético"],["ceftriaxona","Si hay colecistitis (fiebre, leucocitosis)"],["_","Mucocele, obstrucción o ruptura: colecistectomía; ácido ursodesoxicólico no está en el formulario"]],
+ ref:"Ettinger, Feldman & Côté, Textbook of Veterinary Internal Medicine (9.ª ed.)"});
+R("pancreatitis","eco",["vesic"],-15,"");
+})();
+
+// ═══ Ajustes 22/11: ascitis, lipidosis, Addison felino, tratamiento prolongado (v7.9.7) ═══
+(function(){
+const D=id=>DX.find(x=>x.id===id), R=(id,q,v,dl,t)=>{const d=D(id); if(d) d.r.push([q,v,dl,t||""])};
+SIGNS.ascitis=["Ascitis o líquido libre abdominal","Digestivo",{dig:3,hep:3,cv:2,uro:2}];
+["abd","hep","gen"].forEach(id=>{const m=MOTIVOS.find(x=>x.id===id); if(m&&!m.signs.includes("ascitis")) m.signs.splice(1,0,"ascitis")});
+[["pif",30],["uroabd",25],["hemoabd",25],["peritonitis",20],["hepatopatia",15]].forEach(([id,w])=>{const d=D(id); if(d){d.s.ascitis=w; if(!d.k.includes("ascitis")) d.k.push("ascitis")}});
+const li=D("lipidosis"); if(li){li.r.push(["dur",["d2","d3"],10,""]);li.r.push(["cc",["obeso"],10,"Sobrepeso u obesidad"]);li.r.push(["ant",["txprol"],10,"Enfermedad o tratamiento prolongado reciente con anorexia"])}
+R("hepatopatia","ant",["txprol"],10,"Tratamiento prolongado: considerar hepatotoxicidad");
+R("addison","especie",["f"],-20,"");
+})();
+
+(()=>{ /* ── v7.9.7: aliento urémico, inflamación, pancreatitis, reloj, aviso guardado y FC=FR ── */
+  SIGNS.alurem=["Aliento urémico (olor a orina o amoníaco)","Metabólico y urinario",{uro:5,met:1,oral:1}];
+  SIGNS.inflam=["Inflamación o aumento de volumen (cara, miembros o cuerpo)","Piel y tejido subcutáneo",{tra:3,piel:2}];
+  if(SIGNS.hinch)SIGNS.hinch[0]="Aumento de volumen o inflamación en la cara o debajo del ojo";
+  const M=id=>MOTIVOS.find(m=>m.id===id), addS=(id,arr)=>{const m=M(id);if(m)arr.forEach(x=>{if(!m.signs.includes(x))m.signs.push(x)})};
+  ["gen","dig","met","uro"].forEach(id=>addS(id,["alurem","ulcoral"])); addS("oral",["alurem"]);
+  ["tra","dolor","piel"].forEach(id=>addS(id,["inflam"]));
+  const D=id=>DX.find(d=>d.id===id), up=(id,k,s)=>{const d=D(id);if(!d)return;k.forEach(x=>{if(!d.k.includes(x))d.k.push(x)});Object.entries(s).forEach(([x,w])=>d.s[x]=w)};
+  up("erc",["alurem"],{alurem:25,ulcoral:10});
+  up("ira",["alurem"],{alurem:20,ulcoral:10});
+  up("estom_urem",[],{alurem:15});
+  ["politrauma","fractura","mordedura","absceso"].forEach(id=>up(id,[],{inflam:10}));
+  const crea=QS.find(q=>q.id==="crea"); if(crea&&crea.w)["alurem","ulcoral"].forEach(x=>{if(!crea.w.includes(x))crea.w.push(x)});
+  const P=D("pancreatitis"); if(P)P.r.push(["eco",["vesic","utero","ce","vej"],-25,"La ecografía muestra otra causa del dolor abdominal"]);
+})();
+function fcfrAviso(){const e=ST.ex||{},fc=parseFloat(e.fc),fr=parseFloat(e.fr);if(isNaN(fc)||isNaN(fr))return "";
+  if(fc===fr)return `<div class="alert y" style="margin-top:8px"><b>FC y FR con el mismo valor (${fc})</b>Confirme que no copió el mismo número en ambos campos.</div>`;
+  if(fc<40&&fr>60)return `<div class="alert y" style="margin-top:8px"><b>¿Intercambió FC y FR?</b>FC ${fc} lpm y FR ${fr} rpm: parecen estar en el campo equivocado.</div>`;return ""}
+function toastMsg(t){let el=document.getElementById("toast");if(!el){el=document.createElement("div");el.id="toast";el.className="toast";el.setAttribute("role","status");el.setAttribute("aria-live","polite");document.body.appendChild(el)}
+  el.textContent=t;el.classList.add("on");clearTimeout(toastMsg._t);toastMsg._t=setTimeout(()=>el.classList.remove("on"),2600)}
+function relojHVCP(){const el=document.getElementById("hclock");if(!el)return;const d=new Date();
+  const W=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"],Mn=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+  let hh=d.getHours(),mm=String(d.getMinutes()).padStart(2,"0"),ap=hh<12?"a. m.":"p. m.";hh=hh%12||12;
+  el.textContent=`${W[d.getDay()]} ${d.getDate()} ${Mn[d.getMonth()]} ${d.getFullYear()} · ${hh}:${mm} ${ap}`;el.title=d.toLocaleString("es-SV")}
+relojHVCP();setInterval(relojHVCP,15000);
 const ST = {hxs:new Set(),motivo2:null,soapSel:new Set(),openSys:new Set(),motivo:null,esp:null,peso:null,edad:null,sexo:null,hemo:null,vac:new Set(),signs:new Set(),ans:{},open:new Set(),
   fl:{tipo:"rl",desh:"0",horas:"24",perd:0,form:"b",ped:false,na:"",iris:{crea:"",sdma:"",upc:"",pas:""}}};
 
@@ -1837,7 +2274,7 @@ function answers(){
     if(hx.length&&A.hx===undefined)A.hx=hx; if(H.includes("card")&&A.card===undefined)A.card="si"; if(H.includes("dm")&&A.dm===undefined)A.dm="si"; if(H.includes("epi")&&A.convhx===undefined)A.convhx="epi";}   // signos utilizables en reglas combinadas
   return A;
 }
-function visibleQs(){const g=SG();return QS.filter(q=>(!q.sp||!ST.esp||q.sp.includes(ST.esp))&&(!q.sx||!ST.sexo||q.sx.includes(ST.sexo))&&q.w.some(s=>g.has(s)))}
+function visibleQs(){const g=SG();return QS.filter(q=>(!q.ag||!ST.edad||q.ag.includes(ST.edad))&&(!q.sp||!ST.esp||q.sp.includes(ST.esp))&&(!q.sx||!ST.sexo||q.sx.includes(ST.sexo))&&q.w.some(s=>g.has(s)))}
 function qT(q){return ST.esp==="f"&&q.tf?q.tf:q.t}
 function qH(q){return ST.esp==="f"&&q.hf?q.hf:q.h}
 function ruleMatch(vals,v){
@@ -1847,6 +2284,8 @@ function ruleMatch(vals,v){
   return vals.includes(v);
 }
 const LABQ=new Set([...QS.filter(q=>q.lab).map(q=>q.id),"ant"]);
+const DX_SISTEMICOS=new Set(["sepsis","shock_hipo","anafilaxia","golpe_calor","politrauma","dolor_pseudo"]);
+const SIG_GEN=new Set(["fieb","pesop","letar","anor","linfad","hipot","taqp"]);
 function scoreDx(){
   const A=answers(), out=[]; const SGX=SG();
   DX.forEach(d=>{
@@ -1868,6 +2307,10 @@ function scoreDx(){
     d.r.forEach(([q,vals,dl,txt,cond])=>{
       if(ruleMatch(vals,A[q]) && (!cond||ruleMatch(cond[1],A[cond[0]]))){sc+=dl;if(dl>0)nr++;if(dl>=30&&LABQ.has(q)&&(q!=="ant"||dl>=40))labHit=true;if(txt){(dl>0?pos:neg).push(txt)}}
     });
+    if(ST.motivo&&d.sys==="oft"&&[ST.motivo,ST.motivo2].includes("oft")){sc+=20;pos.push("Motivo de consulta ocular")}
+    // Coherencia con el motivo: un diagnóstico de otro sistema que solo se apoya en signos generales baja de peso
+    if(!labHit&&ST.motivo){const MS=[ST.motivo,ST.motivo2].filter(Boolean).map(id=>(MOTIVOS.find(m=>m.id===id)||{}).sys);
+      if(MS.every(Boolean)&&!MS.includes(d.sys)&&!DX_SISTEMICOS.has(d.id)&&!(d.sys==="cv"&&["comp","desc","pcr"].includes(HEMO()))&&!d.k.some(k=>SGX.has(k)&&!SIG_GEN.has(k))){sc=Math.round(sc*0.6);neg.push("Solo lo apoyan signos generales (fiebre, pérdida de peso, letargo) y no corresponde al motivo de consulta")}}
     if(sc>=8) out.push({d,sc,pos,neg,sg,nr,labHit});
   });
   // desempate: más hallazgos a favor, luego mayor urgencia (prio)
@@ -1894,7 +2337,7 @@ const EX_PULSO=[["n","Normal (fuerte y regular)"],["deb","Débil o filiforme"],[
 const EX_DH=[["0","< 5%"],["5","5–6%"],["7","6–8%"],["9","8–10%"],["11","10–12%"],["12","> 12% (shock)"]];
 const EX_CARD=[["n","Normal"],["soplo","Soplo"],["galope","Ritmo de galope"],["arrit","Arritmia"],["apag","Ruidos apagados"]];
 const EX_VEJ=[["n","Normal"],["grande","Distendida y firme"],["peq","Pequeña o no palpable"]];
-const HXS=[["ninguno","Ningún antecedente"],["hemopar","Hemoparásitos tratados"],["erc","Enfermedad renal crónica"],["card","Cardiopatía"],["dm","Diabetes"],["endo","Hipotiroidismo / Cushing / Addison"],["hep","Hepatopatía"],["neo","Neoplasia"],["epi","Epilepsia"],["retro","FeLV o FIV positivo"],["aine","AINE o corticoides recientes"],["cx","Cirugía reciente"],["obsu","Obstrucción de vías urinarias previa"]];
+const HXS=[["ninguno","Ningún antecedente"],["hemopar","Hemoparásitos tratados"],["erc","Enfermedad renal crónica"],["card","Cardiopatía"],["dm","Diabetes"],["endo","Hipotiroidismo / Cushing / Addison"],["hep","Hepatopatía"],["neo","Neoplasia"],["epi","Epilepsia"],["retro","FeLV o FIV positivo"],["aine","AINE o corticoides recientes"],["cx","Cirugía reciente"],["obsu","Obstrucción de vías urinarias previa"],["resp","Enfermedad respiratoria previa o tos crónica"],["traq","Colapso traqueal o bronquitis crónica conocidos"],["txprol","Tratamiento prolongado reciente (antibióticos u otros)"]];
 ["obs_uret_f","urolit_c","cif","retencion"].forEach(id=>{const d=DX.find(x=>x.id===id);if(d)d.r.push(["ant",["obsu"],15,"Obstrucción urinaria previa (riesgo de recurrencia)"])});
 (function(){
 const D=id=>DX.find(x=>x.id===id), S=(id,k,w)=>{D(id).s[k]=w};
@@ -1981,9 +2424,9 @@ const EX_DOL=[["0","Sin dolor"],["1","Leve (Glasgow ≤ 5/24 · muecas felinas �
 const EX_PULM=[["n","Normal"],["crep","Crepitaciones"],["sib","Sibilancias"],["sv","Silencio ventral"],["sd","Silencio dorsal"]];
 function exDerive(){
   const e=ST.ex||{}, sg=new Set(), a={}, cat=ST.esp==="f";
-  const t=parseFloat(e.temp), fc=parseFloat(e.fc), fr=parseFloat(e.fr);
+  const VR=(k)=>{const n=parseFloat(e[k]),R=RANGO[k];return R&&(n<R[0]||n>R[1])?NaN:n}, t=VR("temp"), fc=VR("fc"), fr=VR("fr");
   if(!isNaN(t)){a.temp=t<37.5?"bajo":t<39.5?"n":t<=41?"alto":"vhi"; const tc=tempCls(t); if(tc&&tc.k==="fiebre")sg.add("fieb"); if(t<37.5)sg.add("hipot")}
-  if(!isNaN(fc)&&ST.esp){ const kg=parseFloat(ST.peso), shk=["comp","desc"].includes(HEMO()); const lim=cat?(shk?160:140):(shk?100:(kg&&kg<10?80:60)); if(fc<lim) sg.add("brad") }
+  if(!isNaN(fc)&&ST.esp){ const kg=parseFloat(ST.peso), shk=["comp","desc"].includes(HEMO()); const lim=cat?(shk?160:120):(shk?100:(kg&&kg<10?80:60)); if(fc<lim) sg.add("brad") }
   if(!isNaN(fr)&&fr>40) sg.add("taqp");
   const gl=parseFloat(e.gluc); if(!isNaN(gl)) a.gluc=gl<60?"lo":gl<=180?"n":gl<=300?"hi":"vhi";
   if(e.muc==="pali"||e.muc==="gris") sg.add("pali");
@@ -2001,7 +2444,7 @@ function exDerive(){
   if(ST.signs&&ST.signs.has("olig")&&!ST.signs.has("estr")){const A=ST.ans||{};if(A.orinq==="obst"||e.vej==="grande"||A.vejiga==="grande")sg.add("estr")}
   if(e.mam==="si") sg.add("masamam"); if(e.linf==="gen") sg.add("linfad"); if(e.abm==="si") sg.add("masaab");
   if(e.ecto&&e.ecto!=="no") a.garr="si";
-  if(e.cc){const c=parseInt(e.cc); a.cc=c<=2?"del":c>=4?"obeso":"ideal"; if(c<=2) sg.add("pesop")}
+  if(e.cc){const c=parseInt(e.cc); a.cc=c<=2?"del":c>=4?"obeso":"ideal"; if(c<=1) sg.add("pesop")}
   return {sg,a};
 }
 function hxDerive(){const H=[...(ST.hxs||[])],a={};if(H.includes("ninguno"))a.hx="ninguno";if(H.includes("card"))a.card="si";if(H.includes("dm"))a.dm="si";if(H.includes("epi"))a.convhx="epi";const hx=H.find(x=>["hep","endo","erc","neo","aine"].includes(x));if(hx)a.hx={hep:"hep",endo:"hipot",erc:"renal",neo:"neo",aine:"cort"}[hx];return a}
@@ -2021,32 +2464,32 @@ function tempCls(t){
   return {k:"hiper",lbl:"Hipertermia severa (> 41 °C)",s:"hipertermia severa",c:"r"};
 }
 function tempField(){const e=ST.ex||{},tc=tempCls(e.temp),col={g:"#86EFAC",y:"#FCD28A",r:"#FCA5A5"};
-  return `<label>Temperatura (°C)<input type="number" step="0.1" inputmode="decimal" value="${e.temp!=null?e.temp:""}" placeholder="°C" onchange="setEx('temp',this.value)">${tc?`<span style="font-size:11.5px;color:${col[tc.c]}">${esc(tc.lbl)}</span>`:""}</label>`}
+  return `<label class="${missC("temp")}">${lb("temp","Temperatura (°C)")}<input type="number" step="0.1" inputmode="decimal" value="${e.temp!=null?e.temp:""}" placeholder="°C" onchange="setEx('temp',this.value)">${tc?`<span style="font-size:11.5px;color:${col[tc.c]}">${esc(tc.lbl)}</span>`:""}</label>`}
 function examHtml(){
   const e=ST.ex||{};
-  const num=(k,l,ph)=>`<label>${l}<input type="number" step="0.1" inputmode="decimal" value="${e[k]!=null?e[k]:""}" placeholder="${ph}" onchange="setEx('${k}',this.value)"></label>`;
-  const sel=(k,l,opts)=>`<label>${l}<select onchange="setEx('${k}',this.value)"><option value="">—</option>${opts.map(o=>`<option value="${o[0]}" ${e[k]===o[0]?"selected":""}>${o[1]}</option>`).join("")}</select></label>`;
+  const num=(k,l,ph)=>`<label class="${missC(k)}">${lb(k,l)}<input type="number" step="0.1" inputmode="decimal" value="${e[k]!=null?e[k]:""}" placeholder="${ph}" onchange="setEx('${k}',this.value)"></label>`;
+  const sel=(k,l,opts)=>`<label class="${missC(k)}">${lb(k,l)}<select onchange="setEx('${k}',this.value)"><option value="">—</option>${opts.map(o=>`<option value="${o[0]}" ${e[k]===o[0]?"selected":""}>${o[1]}</option>`).join("")}</select></label>`;
   const cc=[["1","1/5 caquéctico"],["2","2/5 delgado"],["3","3/5 ideal"],["4","4/5 sobrepeso"],["5","5/5 obeso"]];
   return `<div class="field" id="exfis"><span class="flabel">Examen físico (constantes y hallazgos)</span>
    <div class="fl-grid">${num("fc","FC (lpm)","lpm")}${num("fr","FR (rpm)","rpm")}${tempField()}${num("gluc","Glucemia (mg/dL)","glucómetro")}
    ${sel("muc","Color de mucosas",EX_MUC)}${sel("tllc","TLLC",EX_TLLC)}${sel("pulso","Pulso femoral",EX_PULSO)}${sel("dh","Deshidratación (%DH)",EX_DH)}
-   ${sel("dolor","Dolor (escala de Glasgow / muecas felinas)",EX_DOL)}${sel("cc","Condición corporal (CC, escala 1–5)",cc)}${sel("card","Auscultación cardíaca",EX_CARD)}${sel("pulm","Auscultación pulmonar",EX_PULM)}
+   ${sel("dolor","Dolor (escala de Glasgow / muecas felinas)",EX_DOL)}${sel("cc","Condición corporal (CC, escala 1–5)",cc)}${sel("card","Auscultación cardíaca",EX_CARD)}${sel("pulm","Auscultación pulmonar",EX_PULM)}<details class="ausg"><summary>¿Escuchó «estertores»? Guía rápida para elegir la auscultación pulmonar</summary><table><tr><th>Lo que escucha</th><th>Elija</th><th>Orienta a</th></tr><tr><td><b>Estertores finos o húmedos</b>: chasquidos cortos, como frotar cabello junto al oído; en la inspiración</td><td>Crepitaciones</td><td>Neumonía, edema pulmonar, contusión</td></tr><tr><td><b>Estertores gruesos o roncus</b>: burbujeo o ronquido por secreciones; cambian al toser</td><td>Crepitaciones</td><td>Neumonía o bronconeumonía, bronquitis</td></tr><tr><td><b>Estertores secos</b>: silbido, sobre todo en la espiración</td><td>Sibilancias</td><td>Asma felina, bronquitis</td></tr><tr><td><b>Estridor o ronquido</b> que se oye sin estetoscopio, en la inspiración (vía alta)</td><td>Normal + signo «Ruido respiratorio audible»</td><td>Colapso traqueal, parálisis laríngea, braquicefálico</td></tr><tr><td>No se oyen ruidos en la parte baja del tórax</td><td>Silencio ventral</td><td>Derrame pleural</td></tr><tr><td>No se oyen ruidos en la parte alta del tórax</td><td>Silencio dorsal</td><td>Neumotórax</td></tr></table><div class="ausn">Anote también <b>dónde</b> se escuchan: craneoventral orienta a neumonía (aspiración o bacteriana); perihiliar o dorsocaudal, a edema cardiogénico en el perro; difuso, a edema no cardiogénico o ICC felina; focal o de un lado, a contusión, neumonía lobar o neoplasia.</div></details>
    ${sel("vej","Vejiga a la palpación",EX_VEJ)}${sel("abm","Masa abdominal / esplenomegalia",[["no","No"],["si","Sí"]])}${["me","mc"].includes(ST.sexo)?"":sel("mam","Glándulas mamarias",[["no","Normales"],["si","Nódulos o masas"]])}
    ${sel("linf","Linfonodos",[["no","Normales"],["loc","Aumento localizado"],["gen","Aumento generalizado"]])}${sel("ecto","Ectoparásitos",[["no","No se observan"],["garr","Garrapatas"],["pulg","Pulgas"],["ambos","Garrapatas y pulgas"]])}</div>
-   <div class="muted">Los hallazgos anormales se agregan solos como signos (p. ej., mucosas pálidas, fiebre, bradicardia) y responden las preguntas de temperatura, perfusión y auscultación.</div></div>`;
+   ${fcfrAviso()}<div class="muted">Los hallazgos anormales se agregan solos como signos (p. ej., mucosas pálidas, fiebre, bradicardia) y responden las preguntas de temperatura, perfusión y auscultación.</div></div>`;
 }
 
 function renderS1(){
-  const vac = ST.esp ? `<div class="field"><span class="flabel">Vacunación (puede marcar varias)</span><div class="opts">${optBtns(VAC[ST.esp],ST.vac,"setVac",true)}</div></div>`
-                     : `<div class="field"><span class="flabel">Vacunación</span><div class="muted">Seleccione la especie para ver las vacunas.</div></div>`;
+  const vac = ST.esp ? `<div class="field${missC("vac")}"><span class="flabel">${lb("vac","Vacunación (puede marcar varias)")}</span><div class="opts">${optBtns(VAC[ST.esp],ST.vac,"setVac",true)}</div></div>`
+                     : `<div class="field${missC("vac")}"><span class="flabel">${lb("vac","Vacunación")}</span><div class="muted">Seleccione la especie para ver las vacunas.</div></div>`;
   document.getElementById("s1").innerHTML=`
-   <div class="field"><span class="flabel">Especie</span><div class="opts">${optBtns(P_ESP,ST.esp,"setEsp")}</div></div>
-   <div class="field"><span class="flabel">Peso</span><div class="wt"><input id="peso" type="number" min="0.1" step="0.1" inputmode="decimal" placeholder="kg" value="${ST.peso!=null?ST.peso:""}" oninput="setPeso(this.value)"><span class="muted">kg · necesario para dosis y fluidos</span></div></div>
-   <div class="field"><span class="flabel">Edad</span><div class="opts">${optBtns(P_EDAD,ST.edad,"setEdad")}</div></div>
-   <div class="field"><span class="flabel">Sexo y estado reproductivo</span><div class="opts">${optBtns(P_SEXO,ST.sexo,"setSexo")}</div></div>
+   <div class="field${missC("esp")}"><span class="flabel">${lb("esp","Especie")}</span><div class="opts">${optBtns(P_ESP,ST.esp,"setEsp")}</div></div>
+   <div class="field${missC("peso")}"><span class="flabel">${lb("peso","Peso")}</span><div class="wt"><input id="peso" type="number" min="0.1" step="0.1" inputmode="decimal" placeholder="kg" value="${ST.peso!=null?ST.peso:""}" oninput="setPeso(this.value)"><span class="muted">kg · necesario para dosis y fluidos</span></div></div>
+   <div class="field${missC("edad")}"><span class="flabel">${lb("edad","Edad")}</span><div class="opts">${optBtns(P_EDAD,ST.edad,"setEdad")}</div></div>
+   <div class="field${missC("sexo")}"><span class="flabel">${lb("sexo","Sexo y estado reproductivo")}</span><div class="opts">${optBtns(P_SEXO,ST.sexo,"setSexo")}</div></div>
    ${vac}
-   <div class="field"><span class="flabel">Estado hemodinámico al ingreso</span><div class="opts">${optBtns(P_HEMO,ST.hemo,"setHemo")}</div></div>
-   <div class="field"><span class="flabel">Antecedentes clínicos (puede marcar varios)</span><div class="opts">${optBtns(HXS.filter(h=>h[0]!=="retro"||ST.esp!=="c"),ST.hxs,"setHx",true)}</div></div>
+   <div class="field${missC("hemo")}"><span class="flabel">${lb("hemo","Estado hemodinámico al ingreso")}</span><div class="opts">${optBtns(P_HEMO,ST.hemo,"setHemo")}</div></div>
+   <div class="field${missC("hx")}"><span class="flabel">${lb("hx","Antecedentes clínicos (puede marcar varios)")}</span><div class="opts">${optBtns(HXS.filter(h=>h[0]!=="retro"||ST.esp!=="c"),ST.hxs,"setHx",true)}</div></div>
    ${examHtml()}`;
 }
 function setHx(v){if(v==="ninguno"){const had=ST.hxs.has(v);ST.hxs.clear();if(!had)ST.hxs.add(v)}else{ST.hxs.delete("ninguno");ST.hxs.has(v)?ST.hxs.delete(v):ST.hxs.add(v)}renderAll()}
@@ -2067,7 +2510,7 @@ function renderS2(){
   const el=document.getElementById("s2");
   if(!ST.motivo){
     el.innerHTML=`<div class="muted" style="margin-bottom:8px">Seleccione el motivo principal por el que llega el paciente.</div>
-     <div class="mot-grid">${MOTIVOS.map(m=>`<button class="mot" onclick="setMotivo('${m.id}')"><span class="dot" style="background:${m.sys?SYS[m.sys].col:"#8A90A8"}"></span>${esc(m.n)}</button>`).join("")}</div>`;
+     <div class="mot-grid">${MOTIVOS.map(m=>`<button class="mot" onclick="pedirMotivo('${m.id}')"><span class="dot" style="background:${m.sys?SYS[m.sys].col:"#8A90A8"}"></span>${esc(m.n)}</button>`).join("")}</div>`;
     return;
   }
   const M0=MOTIVOS.find(x=>x.id===ST.motivo), M2=ST.motivo2?MOTIVOS.find(x=>x.id===ST.motivo2):null;
@@ -2087,8 +2530,7 @@ function renderS2(){
    <input class="ssearch" id="sbusca" type="search" placeholder="Buscar signo (p. ej., vóm, conv, tos)" value="${esc(q)}" oninput="ST.sbusca=this.value;sBuscar()" autocomplete="off">
    <div class="sres" id="sres"></div>
    <div class="sgroup"><div class="sgroup-t">Signos del motivo de consulta${M.pre&&M.pre.length?` <span class="prekey">Amarillo = marcado por el motivo</span>`:""}</div><div class="sgrid">${main.map(chip).join("")}</div></div>
-   <div class="sgroup-t" style="margin-top:12px">Otros signos por sistema</div>
-   ${Object.entries(grupos).map(([g,l])=>{const n=l.filter(s=>ST.signs.has(s)).length;return `<details class="sgrp" ${n||ST.openSys.has("sg_"+g)?"open":""} ontoggle="toggleSys('sg_${g}',this.open)"><summary>${esc(g)}${n?`<span class="cnt-on">${n} marcado${n>1?"s":""}</span>`:""}</summary><div class="sgrid">${l.map(chip).join("")}</div></details>`}).join("")}`;
+   ${(()=>{const nAll=Object.values(grupos).flat().filter(x=>ST.signs.has(x)).length;return `<details class="sgall" ${nAll||ST.openSys.has("sg_all")?"open":""} ontoggle="toggleSys('sg_all',this.open)"><summary><span class="sg-ar" aria-hidden="true"></span><span class="sg-t">Otros signos por sistema</span>${nAll?`<span class="cnt-on">${nAll} marcado${nAll>1?"s":""}</span>`:""}<span class="sg-hint"><span class="sg-ver">Ver sistemas</span><span class="sg-ocu">Ocultar</span></span></summary>`})()}${Object.entries(grupos).map(([g,l])=>{const n=l.filter(s=>ST.signs.has(s)).length;return `<details class="sgrp" ${n||ST.openSys.has("sg_"+g)?"open":""} ontoggle="toggleSys('sg_${g}',this.open)"><summary><span class="sg-ar" aria-hidden="true"></span><span class="sg-t">${esc(g)}</span>${n?`<span class="cnt-on">${n} marcado${n>1?"s":""}</span>`:""}<span class="sg-hint"><span class="sg-ver">Ver signos</span><span class="sg-ocu">Ocultar</span></span></summary><div class="sgrid">${l.map(chip).join("")}</div></details>`}).join("")}</details>`;
   sBuscar();
 }
 function sBuscar(){
@@ -2149,6 +2591,12 @@ function answer(q,v){const Q=QS.find(x=>x.id===q);
 // ─── PANEL DERECHO ───
 function renderAlerts(){
   const A=answers(), s=SG(), al=[];
+  {const fx=faltantes(), imp=fx.filter(x=>x.imp), vac=fx.filter(x=>!x.imp);
+   if(imp.length) al.push(["r","Valor imposible en el examen físico",imp.map(x=>x.l+": "+x.imp).join(" · ")+". Corrija el dato: no se usa en el análisis ni permite generar la nota SOAP."]);
+   {const e0=ST.ex||{}, fr0=parseFloat(e0.fr), fc0=parseFloat(e0.fc); if(!isNaN(fr0)&&fr0>100&&(e0.fc==null||e0.fc==="")) al.push(["y","Verifique la FR",`FR de ${fr0} rpm sin FC registrada: ¿se escribió la frecuencia cardíaca en el campo de FR?`]);
+    if(!isNaN(fc0)&&!isNaN(fr0)&&fc0<40&&fr0>60) al.push(["y","¿Intercambió FC y FR?",`FC ${fc0} lpm y FR ${fr0} rpm: parece que los valores están en el campo equivocado. Revise antes de continuar.`]);
+    else if(!isNaN(fc0)&&!isNaN(fr0)&&fc0===fr0) al.push(["y","FC y FR iguales",`FC y FR registradas con el mismo valor (${fc0}): confirme que no se copió el mismo número en ambos campos.`]);}
+   if(vac.length&&(ST.motivo||ST.valTried)) al.push(["y","Datos obligatorios pendientes",vac.map(x=>x.l).join(", ")+". Son necesarios para generar la nota SOAP."]);}
   {const hi=hemoInfo(), L=x=>(P_HEMO.find(p=>p[0]===x)||[,"sin marcar"])[1].toLowerCase();
    if(hi.cambio==="baja") al.push(["y","Estado hemodinámico no concuerda con las constantes",`Marcó ${L(hi.sel)}, pero ${hi.motivo} están en rango normal. El motor analiza al paciente como ESTABLE (diagnósticos, fluidos y AINE). Si el shock es real, reevalúe y registre las constantes alteradas.`]);
    if(hi.cambio==="sube") al.push(["r","Constantes compatibles con shock",`Marcó ${hi.sel?L(hi.sel):"sin estado hemodinámico"}, pero hay ${hi.motivo}. El motor analiza al paciente como ${L(hi.eff).toUpperCase()} y activa la reanimación con fluidos. Corrija el triaje si no corresponde.`]);}
@@ -2166,6 +2614,7 @@ function renderAlerts(){
    if(false) al.push(["y","Verifique el estado hemodinámico","Marcó shock, pero FC, TLLC y mucosas registradas están en rango normal; esto cambia la fluidoterapia (bolos)."]);
    if(e.vej==="grande"&&!["estr","olig","hemu","nodef","incont"].some(x=>s.has(x))) al.push(["y","Vejiga distendida sin signos urinarios","Confirme si orina: descartar retención (neurogénica, dolor, sedación) u obstrucción."]);}
   if(A.gluc===undefined&&["conv","colap","ment","temb","fasc"].some(x=>s.has(x))) al.push(["y","Medir glucemia ahora","Convulsiones, colapso o alteración de conciencia: descartar hipoglucemia con glucómetro antes de continuar."]);
+  if(A.crea===undefined&&(s.has("alurem")||(s.has("ulcoral")&&A.lesloc==="punta"))) al.push(["y","Aliento urémico: medir creatinina","Aliento urémico o úlceras en la punta de la lengua sugieren azotemia marcada (en ERC estable suele ser IRIS 3–4; también IRA). Medir creatinina, BUN, K⁺, fósforo y densidad urinaria; valorar hidratación antes de estadificar."]);
   if(A.gluc==="lo") al.push(["r","Hipoglucemia","Dextrosa 50% 0.5–1 mL/kg IV diluida 1:2–1:4 en 1–2 min; luego suero mixto (2.5–5%) en CRI y glucemia cada 1–2 h."]);
   if(inA(A.nak,"hiperk")||((s.has("brad")||s.has("hipot"))&&(s.has("estr")||s.has("olig")||A.vejiga==="grande"))) al.push(["r","Posible hiperkalemia","ECG ahora. Tratamiento de referencia: gluconato de calcio 10% 0.5–1.5 mL/kg IV lento con ECG, insulina regular 0.1–0.25 UI/kg IV + dextrosa 50% diluida, solución salina 0.9% y resolver la causa (desobstrucción)."]);
   if(A.temp==="vhi") al.push(["r","Hipertermia > 41 °C","Enfriamiento activo con agua a temperatura ambiente y ventilador; detener a 39.5 °C."]);
@@ -2482,20 +2931,21 @@ function genSOAPbase(){
   {const hi=hemoInfo(); if(ST.hemo||hi.eff) L.push(`Estado hemodinámico al ingreso: ${ST.hemo?lab(P_HEMO,ST.hemo):"sin marcar"}${hi.cambio?` — analizado como ${lab(P_HEMO,hi.eff)} por las constantes (${hi.motivo})`:""}`);}
   {const e=ST.ex||{},p=[];if(e.fc)p.push(`FC ${e.fc} lpm`);if(e.fr)p.push(`FR ${e.fr} rpm`);if(e.temp){const tc=tempCls(e.temp);p.push(`T ${e.temp} °C${tc?" ("+tc.s+")":""}`)}if(e.muc)p.push(`mucosas ${lab(EX_MUC,e.muc).toLowerCase()}`);if(e.tllc)p.push(`TLLC ${lab(EX_TLLC,e.tllc)}`);if(e.pulso)p.push(`pulso femoral ${lab(EX_PULSO,e.pulso).toLowerCase()}`);if(e.dh)p.push(`deshidratación ${lab(EX_DH,e.dh)}`);if(e.gluc)p.push(`glucemia ${e.gluc} mg/dL`);if(e.dolor)p.push(`dolor: ${lab(EX_DOL,e.dolor).split(" (")[0].toLowerCase()}`);if(e.cc)p.push(`CC ${e.cc}/5`);if(e.vej)p.push(`vejiga ${lab(EX_VEJ,e.vej).toLowerCase()}`);if(e.abm==="si")p.push("masa abdominal/esplenomegalia");if(e.mam==="si")p.push("nódulos mamarios");if(e.linf&&e.linf!=="no")p.push(`linfonodos: aumento ${e.linf==="gen"?"generalizado":"localizado"}`);if(e.ecto&&e.ecto!=="no")p.push(`ectoparásitos: ${{garr:"garrapatas",pulg:"pulgas",ambos:"garrapatas y pulgas"}[e.ecto]}`);if(e.card)p.push(`ausc. cardíaca: ${lab(EX_CARD,e.card).toLowerCase()}`);if(e.pulm)p.push(`ausc. pulmonar: ${lab(EX_PULM,e.pulm).toLowerCase()}`);if(p.length)L.push(`Constantes: ${p.join(", ")}`)}
   const ex=qLines(q=>!Q_S.includes(q.id)&&!q.lab); if(ex.length){L.push("Examen físico:");L.push(...ex)}
-  const lb=qLines(q=>q.lab); if(lb.length){L.push("Resultados disponibles:");L.push(...lb)}
+  const lb=qLines(q=>q.lab);
   if(!ST.hemo&&!ex.length&&!lb.length&&!Object.values(ST.ex||{}).some(v=>v)) L.push("- (sin hallazgos registrados en el motor)");
   L.push("");
   L.push("A — ANÁLISIS");
+  if(lb.length){L.push("Interpretación de exámenes:");L.push(...lb)} else L.push("Interpretación de exámenes: sin resultados registrados en el motor.");
   const msys=[...new Set(alta.map(x=>x.d.sys))]; if(msys.length) L.push(`Sistema más afectado: ${msys.map(k=>SYS[k].n).join(" / ")}`);
   if(alta.length){L.push(alta.length>1?"Diagnósticos presuntivos:":"Diagnóstico presuntivo:");alta.forEach((x,i)=>L.push(`${alta.length>1?(i+1)+". ":""}${x.d.n}${x.d.z?" — ZOONOSIS":""}${x.pos.length?` — a favor: ${x.pos.join("; ")}`:""}`))}
   else L.push("Sin diagnóstico presuntivo con los datos actuales.");
-  L.push("");
-  L.push("P — PLAN");
-  // exámenes
+  // exámenes por realizar
   const ids={}; alta.forEach(x=>x.d.lab.forEach(l=>{let id=l.replace("!",""),u=l[0]==="!"; if(LB[id].inv===false){if(LSUB[id])id=LSUB[id];else return} id=labSp(id); if(!id) return; ids[id]=ids[id]||u}));
   if(alta.length&&SG().has("icter")){ids.hepatico=true;ids.uro=true}
   const ex1=Object.entries(ids).sort((a,b)=>b[1]-a[1]);
-  if(ex1.length){L.push("Exámenes:");ex1.forEach(([id,u])=>L.push(`  · ${LB[id].n}${u?" — inmediato":""}`))}
+  if(ex1.length){L.push("Exámenes por realizar:");ex1.forEach(([id,u])=>L.push(`  · ${LB[id].n}${u?" — inmediato":""}`))}
+  L.push("");
+  L.push("P — PLAN");
   // fluidos
   if(ST.peso&&ST.esp){
     const cat=ST.esp==="f", kg=ST.peso, f=ST.fl;
@@ -2509,6 +2959,9 @@ function genSOAPbase(){
   }
   // tratamiento por diagnóstico
   alta.forEach(x=>{const r=resolveTx(x.d.tx); L.push(`Tratamiento — ${x.d.n}:`); r.out.forEach(t=>L.push(txText(t))); if(r.gaps.length) L.push(`  · No disponible en HVCP: ${r.gaps.join(", ")}`)});
+  L.push("Procedimientos realizados (sonda, oxígeno, otros): ");
+  L.push("Hospitalización o alta: ");
+  L.push("Se explica al propietario: ");
   L.push("");
   L.push("Nota generada con el Motor Clínico HVCP v7.9.7 como apoyo; revisada y validada por el médico veterinario tratante.");
   document.getElementById("soap").value=L.join("\n");
@@ -2525,7 +2978,7 @@ function copySOAP(){
 
 function renderRight(){const all=scoreDx(),l=altaList(all),act=activeList(all);renderAlerts();renderSystems();renderDx(l,all);renderLabs(act);renderFluids(act);renderIRIS();renderBar(l,all);renderNav()}
 function irA(id){const e=document.getElementById(id);if(!e)return;const off=(document.getElementById("stepnav").offsetHeight||0)+6;window.scrollTo({top:e.getBoundingClientRect().top+window.scrollY-off,behavior:"smooth"})}
-function renderNav(){const n=document.getElementById("stepnav");if(!n)return;const e=ST.ex||{},exOk=["fc","temp","muc","tllc"].some(k=>e[k]),pac=!!(ST.esp&&ST.edad&&ST.hemo),sg=ST.motivo&&ST.signs.size>0,nq=Object.keys(ST.ans).length;
+function renderNav(){const n=document.getElementById("stepnav");if(!n)return;const e=ST.ex||{},exOk=!faltantes().some(x=>x.g==="ex"),pac=!!ST.hemo&&!faltantes().some(x=>x.g==="pac"),sg=ST.motivo&&ST.signs.size>0,nq=Object.keys(ST.ans).length;
  const b=(id,num,t,ok)=>`<button class="${ok?"ok":""}" onclick="irA('${id}')"><span class="n">${num}</span>${t}${ok?" ✓":""}</button>`;
  n.innerHTML=b("sec1","1","Paciente",pac)+b("exfis","2","Examen",exOk)+b("sec2","3","Signos",sg)+b("sec3","4",`Preguntas${nq?" ("+nq+")":""}`,nq>0)+b("secDx","5","Resultado",false)+b("secSoap","6","SOAP",!!(document.getElementById("soap")||{}).value)}
 function renderBar(l,all){const el=document.getElementById("bbar");if(!el)return;const al=ST._al||[],nr=al.filter(a=>a[0]==="r").length,ny=al.filter(a=>a[0]==="y").length;
@@ -2536,9 +2989,9 @@ function renderBar(l,all){const el=document.getElementById("bbar");if(!el)return
 function toggleTheme(){const r=document.documentElement,l=r.getAttribute("data-theme")!=="light";if(l)r.setAttribute("data-theme","light");else r.removeAttribute("data-theme");try{localStorage.setItem("hvcp_tema",l?"light":"dark")}catch(e){}const b=document.getElementById("themebtn");if(b)b.textContent=l?"Modo oscuro":"Modo claro"}
 try{if(localStorage.getItem("hvcp_tema")==="light"){document.documentElement.setAttribute("data-theme","light");setTimeout(()=>{const b=document.getElementById("themebtn");if(b)b.textContent="Modo oscuro"},0)}}catch(e){}
 function renderAll(){renderS1();renderS2();renderS3();renderRight()}
-function resetAll(){regReset();ST.openSys.clear();ST.t0=null;ST.sbusca="";ST.m2open=false;ST.ex={};ST.soapSel.clear();ST.hxs.clear();ST.motivo2=null;Object.assign(ST,{motivo:null,esp:null,peso:null,edad:null,sexo:null,hemo:null,ans:{}});ST.vac.clear();ST.signs.clear();ST.open.clear();ST.fl={tipo:"rl",desh:"0",horas:"24",perd:0,form:"b",ped:false,na:"",iris:{crea:"",sdma:"",upc:"",pas:""}};renderAll();document.getElementById("soap").value="";document.getElementById("soapmsg").textContent="";window.scrollTo(0,0)}
+function resetAll(){regReset();ST.openSys.clear();ST.t0=null;ST.sbusca="";ST.m2open=false;ST.ex={};ST.soapSel.clear();ST.hxs.clear();ST.motivo2=null;Object.assign(ST,{avisoMot:false,valTried:false,motivo:null,esp:null,peso:null,edad:null,sexo:null,hemo:null,ans:{}});ST.vac.clear();ST.signs.clear();ST.open.clear();ST.fl={tipo:"rl",desh:"0",horas:"24",perd:0,form:"b",ped:false,na:"",iris:{crea:"",sdma:"",upc:"",pas:""}};renderAll();document.getElementById("soap").value="";document.getElementById("soapmsg").textContent="";window.scrollTo(0,0)}
 
-const VCIE=[["GEN-DER-152","Absceso Cutáneo","","14"],["GEN-DER-176","Absceso Perianal","","14"],["GEN-TRA-436","Absceso Subcutáneo","","14"],["GEN-DER-425","Alopecia X","","14"],["GEN-PAR-002","Amebiasis","","01"],["PER-INF-HEM-004","Anaplasmosis Canina","Infección por Anaplasma","01"],["GEN-HEM-354","Anemia Aplásica","","03"],["GEN-HEM-426","Anemia Ferropénica","","03"],["GEN-HEM-066","Anemia Hemolítica Inmunomediada","","03"],["PER-HEM-NUT-051","Anemia Nutricional","Deficiencia de nutrientes","03"],["GEN-HEM-132","Anemia Regenerativa","","03"],["GEN-ALR-004","Angioedema","","04"],["GEN-MUS-400","Anquilosis Temporomandibular","","15"],["GEN-HEM-005","Aplasia Medular","","03"],["GEN-CAR-006","Arritmias Cardíacas","","09"],["GEN-MUS-330","Artritis Séptica","","15"],["GEN-MUS-016","Artrosis","","15"],["GEN-SIS-258","Ascitis","","12"],["GEN-RES-017","Asma","","10"],["GEN-RES-200","Asma Felina","","10"],["GEN-MIC-018","Aspergilosis","","01"],["GEN-GAS-019","Atresia Anal","","11"],["GEN-HEM-020","Babesiosis","","03"],["GEN-GEN-022","Balanopostitis","","17"],["GEN-PAR-021","Balantidiosis","","01"],["GEN-HEP-023","Barro Biliar","","11"],["GEN-RES-013","Bordetelosis (Tos de Perreras)","","10"],["GEN-INF-024","Borreliosis","","01"],["GEN-RES-025","Bronconeumonía","","10"],["GEN-RES-384","Bronquitis Crónica","","10"],["GEN-INF-351","Calicivirus Felino","","01"],["GEN-CAR-168","Cardiomiopatía Hipertrófica Felina","","09"],["GEN-OFT-026","Cataratas","","07"],["GEN-URI-027","Cistitis","","13"],["GEN-URI-451","Cistitis Idiopática Felina","","13"],["GEN-INF-028","Clamidiasis","","01"],["GEN-PAR-405","Coccidiosis Intestinal","","01"],["GEN-HEP-328","Colangiohepatitis Bacteriana","","12"],["GEN-HEP-230","Colangiohepatitis Inmunomediada","","12"],["GEN-HEP-086","Colangitis","","12"],["GEN-HEP-393","Colangitis Linfocítica","","12"],["GEN-RES-144","Colapso Traqueal","","10"],["GEN-GAS-248","Colitis Crónica","","11"],["GEN-GAS-314","Colitis Granulomatosa","","11"],["GEN-GAS-418","Colitis Ulcerativa","","11"],["GEN-INF-281","Complejo Respiratorio Felino","","01"],["GEN-OFT-030","Conjuntivitis","","07"],["GEN-OFT-337","Conjuntivitis Alérgica","","07"],["GEN-OFT-231","Conjuntivitis Bacteriana","","07"],["GEN-GAS-031","Coronavírus Canino","","01"],["GEN-NEU-173","Crisis Convulsiva Idiopática","","06"],["GEN-GAS-489","Cuerpo extraño esofágico","Hueso o juguete atorado en esófago","11"],["GEN-GAS-381","Cólico Gástrico","Sarna Demodécica","11"],["PER-INV-DER-005","Demodicosis","Sarna Demodécica","14"],["GEN-DER-034","Dermatitis Alérgica","","14"],["GEN-DER-440","Dermatitis Alérgica por Pulgas","","14"],["GEN-DER-309","Dermatitis Atópica","","04"],["GEN-DER-156","Dermatitis Micótica","","14"],["GEN-DER-219","Dermatitis por Alergia Alimentaria","","04"],["GEN-DER-389","Dermatitis por Contacto","","14"],["GEN-DER-334","Dermatitis por Malassezia","Picazón intensa","14"],["PER-DER-PRU-043","Dermatitis Pruriginosa","Picazón intensa","04"],["GEN-DER-284","Dermatitis Psicógena Felina","","14"],["GEN-DER-428","Dermatitis Seborreica","","14"],["GEN-DER-327","Dermatofitosis Felina","Taponamiento","14"],["GEN-CAR-468","Derrame pericárdico / taponamiento cardíaco","Taponamiento","09"],["GEN-RES-466","Derrame pleural","Efusión pleural","10"],["GEN-END-136","Diabetes Insípida","","05"],["GEN-END-291","Diabetes Mellitus Tipo 1","","05"],["GEN-END-363","Diabetes Mellitus Tipo II","","05"],["GEN-GAS-179","Dilatación Gástrica","","11"],["GEN-GAS-035","Dilatación-Vólvulo Gástrica","","11"],["GEN-PAR-190","Dirofilariasis","","01"],["GEN-MUS-367","Displasia de Cadera","","15"],["GEN-REP-341","Distocia","Taquipnea por dolor","13"],["GEN-SIS-467","Dolor agudo no controlado","Taquipnea por dolor","17"],["GEN-REP-111","Eclampsia","","13"],["GEN-DER-271","Ectoparasitosis","","14"],["GEN-OFT-240","Ectropión","Edema pulmonar","07"],["PER-RES-CAR-021","Edema Pulmonar","Edema pulmonar","09"],["GEN-RES-490","Edema pulmonar no cardiogénico","Edema por electrocución, casi ahogamiento u obstrucción de vías altas","10"],["PER-INF-HEM-003","Ehrlichiosis Canina","Fiebre por Garrapatas","01"],["GEN-NEU-126","Encefalitis","","06"],["GEN-NEU-251","Encefalitis Inmunomediada","","04"],["GEN-HEP-307","Encefalopatía Hepática","","12"],["GEN-CAR-424","Endocardiosis Valvular Mitral","","09"],["GEN-CAR-368","Endocarditis Bacteriana","","09"],["GEN-REP-343","Endometritis","","13"],["GEN-GAS-139","Enfermedad Inflamatoria Intestinal (EII)","Acumulación de aire bajo la piel","11"],["GEN-DEN-039","Enfermedades Periodontales","Absceso dental, dientes flojos, sarro","16"],["GEN-DEN-499","Estomatitis urémica","Úlceras o necrosis de lengua por uremia","16"],["GEN-DEN-500","Cuerpo extraño oral o estrangulación lingual","Hilo o liga en la lengua, palo entre los dientes","16"],["GEN-DEN-501","Quemadura oral eléctrica o cáustica","Mordió un cable, cloro, destapacaños","16"],["GEN-DEN-502","Gingivoestomatitis crónica felina","Estomatitis caudal felina","16"],["GEN-NEO-503","Neoplasia oral","Melanoma, carcinoma escamoso, fibrosarcoma, épulis","02"],["PER-DER-TRA-048","Enfisema Subcutáneo","Acumulación de aire bajo la piel","14"],["GEN-GAS-415","Enteritis Linfoplasmocítica","","11"],["GEN-GAS-220","Enteritis Parasitarias","","01"],["GEN-GAS-270","Enteropatía Perdedora de Proteínas","Mordedura de serpiente","11"],["GEN-INF-358","Enterotoxemia","","01"],["GEN-TOX-477","Envenenamiento ofídico (vipéridos)","Mordedura de serpiente","18"],["GEN-NEU-290","Epilepsia Idiopática","","06"],["GEN-NEO-357","Epulis","","02"],["GEN-OFT-182","Epífora Crónica","","07"],["GEN-GAS-318","Esofagitis por Reflujo","","11"],["GEN-HEM-040","Esplenomegalia","","03"],["GEN-MUS-375","Espongilosis","","15"],["GEN-RES-254","Estenosis Traqueal","","10"],["GEN-URI-186","Estenosis Uretral","Obstipación, fecaloma, megacolon felino","13"],["GEN-RES-041","Estornudo Inverso","Tóxico desconocido","10"],["GEN-GAS-483","Estreñimiento, obstipación o megacolon","Obstipación, fecaloma, megacolon felino","11"],["GEN-TOX-478","Exposición tóxica no identificada","Tóxico desconocido","18"],["GEN-NEO-113","Fibrosarcoma","FLUTD","02"],["GEN-NEO-411","Fibrosarcoma Oral","","02"],["FEL-URI-MET-035","FLUTD (Síndrome Urinario Inferior Felino)","FLUTD","13"],["GEN-ORT-043","Fractura de Cadera","Fractura","15"],["GEN-TRA-195","Fractura Mandibular","","15"],["GEN-TRA-480","Fractura o luxación","Fractura","17"],["GEN-GAS-042","Fístula Anal","","11"],["GEN-CIR-429","Fístula Oronasal","","11"],["GEN-DER-370","Fístula Perianal","Indiscreción dietética","11"],["GEN-GAS-445","Gastritis Crónica","Helicobacteriosis gástrica","11"],["GEN-GAS-452","Gastritis Erosiva","Indiscreción dietética","11"],["GEN-GAS-486","Gastritis por Helicobacter","Helicobacteriosis gástrica","11"],["GEN-GAS-462","Gastroenteritis aguda inespecífica","Indiscreción dietética","11"],["GEN-GAS-485","Gastroenteritis bacteriana","Enteritis por Campylobacter, Salmonella o Clostridium","11"],["GEN-GAS-070","Gastroenteritis Parasitarias","","01"],["GEN-PAR-044","Giardiasis","Aumento rápido de presión ocular","01"],["GEN-DEN-222","Gingivitis","","16"],["PER-OFT-GLA-053","Glaucoma Agudo","Aumento rápido de presión ocular","07"],["GEN-SIS-338","Golpe de Calor","","17"],["GEN-NEO-247","Hemangiosarcoma","","02"],["GEN-NEO-272","Hemangiosarcoma Cutáneo","","02"],["GEN-NEO-442","Hemangiosarcoma Esplénico","","02"],["GEN-OTO-122","Hematoma Auricular","","08"],["GEN-HEM-085","Hemoparásitos","Mordedura","01"],["GEN-HEP-261","Hepatitis Crónica","Mordedura","12"],["GEN-INF-387","Hepatitis Infecciosa Canina","","01"],["GEN-HEP-275","Hepatopatía Inducida por Medicamentos","Mordedura","12"],["GEN-PAR-323","Hepatozoonosis","","01"],["GEN-TRA-479","Heridas por mordedura","Mordedura","17"],["GEN-CIR-317","Hernia Diafragmática","","15"],["GEN-CIR-142","Hernia Inguinal","","15"],["GEN-CIR-396","Hernia Perineal","","15"],["GEN-CIR-364","Hernia Umbilical","","15"],["GEN-NEU-279","Herniación de Disco Intervertebral","","06"],["GEN-MUS-386","Higroma","","14"],["GEN-END-352","Hiperadrenocorticismo","","05"],["GEN-END-456","Hipercalcemia Maligna","","02"],["GEN-ORA-398","Hiperplasia Gingival","","16"],["GEN-REP-310","Hiperplasia Prostática Benigna","","13"],["GEN-CAR-413","Hipertensión Arterial Sistémica","","09"],["GEN-SIS-342","Hipertermia Maligna","Hipoglucemia del adulto y juvenil","05"],["FEL-END-135","Hipertiroidismo","Hipoglucemia del adulto y juvenil","05"],["GEN-END-203","Hipoadrenocorticismo","","05"],["GEN-END-390","Hipocalcemia","Hipoglucemia del adulto y juvenil","05"],["GEN-END-253","Hipocalcemia Posparto","","05"],["GEN-END-464","Hipoglucemia","Hipoglucemia del adulto y juvenil","05"],["GEN-END-175","Hipoglucemia Neonatal","SIDA Felino","05"],["GEN-END-333","Hipoparatiroidismo","SIDA Felino","05"],["GEN-END-441","Hipotiroidismo Canino","","05"],["GEN-INF-359","Histoplasmosis","SIDA Felino","01"],["GEN-URI-153","Infección de Vías Urinarias","Enfermedad valvular mitral","13"],["FEL-INF-IMM-031","Inmunodeficiencia Viral Felina (FIV)","SIDA Felino","01"],["GEN-CAR-324","Insuficiencia Cardíaca Congestiva","Enfermedad valvular mitral","09"],["GEN-HEP-114","Insuficiencia Hepática","Fallo renal agudo","12"],["PER-CAR-VAL-020","Insuficiencia Mitral","Enfermedad valvular mitral","09"],["PER-REN-SIS-013","Insuficiencia Renal Aguda","Fallo renal agudo","13"],["GEN-REN-067","Insuficiencia Renal Crónica (IRC)","Acetaminofén","13"],["GEN-TOX-471","Intoxicación por AINE","Ibuprofeno, naproxeno, diclofenaco","18"],["GEN-TOX-234","Intoxicación por Alimentos","Pipeta de perro en gato","18"],["GEN-TOX-470","Intoxicación por carbamatos / organofosforados","\"Tres pasitos\", insecticidas","18"],["GEN-TOX-493","Intoxicación por etilenglicol","Anticongelante","18"],["GEN-TOX-491","Intoxicación por lactonas macrocíclicas (ivermectina, doramectina)","Ivermectina","18"],["GEN-TOX-492","Intoxicación por marihuana (THC)","Cannabis","18"],["GEN-TOX-495","Intoxicación por metaldehído","Cebo para caracoles","18"],["GEN-TOX-325","Intoxicación por Metales Pesados","Rhinella marina","18"],["GEN-TOX-494","Intoxicación por micotoxinas tremorgénicas","Basura, comida con moho","18"],["GEN-TOX-472","Intoxicación por paracetamol","Acetaminofén","18"],["GEN-TOX-473","Intoxicación por permetrina en gatos","Pipeta de perro en gato","18"],["GEN-TOX-196","Intoxicación por Rodenticidas","Linfoma intestinal","18"],["GEN-TOX-476","Intoxicación por sapo","Rhinella marina","18"],["GEN-TOX-475","Intoxicación por uvas o pasas","Ácido tartárico","18"],["GEN-TOX-474","Intoxicación por xilitol","Edulcorante","18"],["GEN-GAS-300","Intususcepción Intestinal","","11"],["GEN-RES-320","Laringitis Infecciosa","Linfoma intestinal","10"],["GEN-INF-329","Leishmaniosis Canina","","01"],["GEN-INF-391","Leptospirosis","Lipidosis hepática","01"],["FEL-INF-065","Leucemia Viral Felina (FeLV)","FeLV","01"],["GEN-GAS-315","Linfangiectasia","","11"],["GEN-NEO-463","Linfoma alimentario","Linfoma intestinal","02"],["GEN-NEO-496","Linfoma mediastínico / neoplasia torácica","Linfoma mediastínico, timoma","02"],["GEN-NEO-157","Linfoma Multicéntrico","Lipidosis hepática","02"],["FEL-HEP-MET-042","Lipidosis Hepática Felina","Lipidosis hepática","05"],["GEN-NEO-446","Lipoma Subcutáneo","","14"],["GEN-MUS-444","Luxación Patelar","","15"],["GEN-REP-373","Mastitis","","13"],["GEN-NEO-187","Mastocitoma Cutáneo","","02"],["GEN-GAS-210","Megaesófago","","11"],["GEN-NEO-382","Melanoma Maligno","","02"],["GEN-NEU-385","Meningitis Aséptica","","06"],["GEN-DER-348","Miasis Cutánea","","14"],["GEN-NEU-331","Miastenia Gravis","","06"],["FEL-INF-340","Micoplasmosis Hemotrópica Felina","","01"],["GEN-INF-432","Micosis Sistémica","Distemper","01"],["GEN-NEU-218","Mielopatía Degenerativa","Distemper","06"],["GEN-CAR-268","Miocardiopatía Dilatada","","09"],["FEL-CAR-434","Miocardiopatía Hipertrófica Felina","Distemper","09"],["GEN-CAR-158","Miocarditis","","09"],["GEN-MUS-103","Miopatía Inflamatoria","Distemper","04"],["GEN-MUS-388","Miopatía por Captura","","15"],["GEN-MUS-128","Miositis Autoinmune","","04"],["GEN-MUS-301","Miositis Inmunomediada","","04"],["GEN-MUS-417","Miositis Masticatoria","","04"],["GEN-MUS-450","Miositis Polimiosítica","Distemper","15"],["PER-INF-RES-002","Moquillo Canino","Distemper","01"],["GEN-NEO-355","Neoplasia Adrenal","","02"],["GEN-NEO-374","Neoplasia de Glándula Salival","","02"],["GEN-NEO-498","Neoplasia de vías urinarias","Carcinoma urotelial, linfoma vesical","02"],["GEN-NEO-212","Neoplasia del Bazo","","02"],["GEN-NEO-202","Neoplasia Hepática","","02"],["GEN-NEO-292","Neoplasia Mamaria","","02"],["GEN-NEO-419","Neoplasia Nasal","","02"],["GEN-NEO-260","Neoplasia Pulmonar","","02"],["GEN-NEO-395","Neoplasia Testicular","","02"],["GEN-NEO-165","Neoplasias Cutáneas","","02"],["GEN-NEO-071","Neoplasias Mamarias","","02"],["GEN-PAR-129","Neosporosis","","01"],["GEN-RES-366","Neumonía Aspirativa","","10"],["GEN-RES-166","Neumonía Bacteriana","","10"],["GEN-RES-263","Neumonía Fúngica","","10"],["GEN-RES-236","Neumotórax Espontáneo","","10"],["GEN-TRA-431","Neumotórax Traumático","","10"],["GEN-NEU-453","Neuropatía Periférica","","06"],["GEN-MET-377","Obesidad","","05"],["GEN-RES-421","Obstrucción de Vías Aéreas Superiores","Infección por tenias","10"],["GEN-GAS-408","Obstrucción Intestinal","Infección por tenias","11"],["GEN-URI-353","Obstrucción Uretral","Infección por lombrices intestinales","13"],["GEN-URI-083","Obstrucción Urinaria","Infección por tenias","13"],["GEN-MUS-273","Osteoartritis","Infección por lombrices intestinales","15"],["GEN-MUS-304","Osteomielitis Bacteriana","Infección por tenias","15"],["GEN-NEO-378","Osteosarcoma","Infección por lombrices intestinales","02"],["GEN-OTO-288","Otitis Externa Crónica","Parvo","08"],["GEN-OTO-296","Otitis Media Crónica","PIF","08"],["GEN-GAS-430","Pancreatitis Aguda","","11"],["FEL-INF-350","Panleucopenia Felina","Infección por tenias","01"],["GEN-MUS-118","Panosteitis","Infección por lombrices intestinales","15"],["PER-PAR-GAS-008","Parasitosis por Cestodos","Infección por tenias","01"],["PER-PAR-GAS-009","Parasitosis por Nematodos","Infección por lombrices intestinales","01"],["PER-INF-GAS-001","Parvovirosis Canina","Parvo","01"],["FEL-INF-SIS-034","Peritonitis Infecciosa Felina","PIF","01"],["GEN-TRA-455","Peritonitis Séptica","","11"],["GEN-DER-403","Pioderma Profundo","","14"],["GEN-DER-155","Pioderma Superficial","Parálisis por garrapata, polirradiculoneuritis","14"],["GEN-REP-245","Piometra","","13"],["GEN-DER-073","Pododermatitis","","14"],["GEN-NEU-422","Poliarteritis Nodosa","Proptosis","03"],["GEN-MUS-252","Poliartritis Reumatoide","Prostatitis","04"],["GEN-MUS-336","Polimiositis","Parálisis por garrapata, polirradiculoneuritis","04"],["GEN-NEU-321","Polineuropatía Idiopática","","06"],["GEN-NEU-488","Polirradiculoneuritis / parálisis flácida aguda","Parálisis por garrapata, polirradiculoneuritis","06"],["GEN-OFT-416","Prolapso de Glándula de Tercer Párpado","Proptosis","07"],["GEN-TRA-460","Prolapso Rectal","Prostatitis","11"],["GEN-OFT-487","Proptosis del globo ocular","Proptosis","07"],["GEN-REP-484","Prostatitis aguda / absceso prostático","Prostatitis","13"],["GEN-SIS-160","Pérdida de Peso Crónica","","05"],["GEN-RES-099","Pólipos Nasales","Otitis parasitaria","10"],["GEN-OFT-399","Queratitis Pigmentaria","Otitis parasitaria","07"],["GEN-OFT-299","Queratitis Superficial Crónica","","07"],["GEN-OFT-322","Queratitis Ulcerativa","","07"],["GEN-OFT-163","Queratoconjuntivitis Seca","Otitis parasitaria","07"],["GEN-DER-345","Quiste Dermatoide","","07"],["GEN-DER-180","Quiste Dermoid","","07"],["GEN-DER-412","Quiste Sebáceo","","14"],["GEN-MUS-137","Rabdomiolisis","Otitis parasitaria","15"],["GEN-INF-406","Rabia","","01"],["GEN-URI-497","Retención urinaria neurogénica","Vejiga neurogénica","13"],["GEN-OFT-379","Retinopatía","","07"],["GEN-OFT-177","Retinopatía Hipertensiva","Temblores de causa no identificada","07"],["FEL-RES-057","Rinotraqueítis Felina","Otitis parasitaria","01"],["GEN-NEO-120","Sarcoma de Tejidos Blandos","","02"],["GEN-DER-420","Sarna Notoédrica","","14"],["PER-INV-DER-007","Sarna Otodéctica","Otitis parasitaria","08"],["GEN-DER-058","Sarna Sarcóptica","","14"],["GEN-INF-402","Sepsis Neonatal","","01"],["GEN-SIS-217","Shock Hipovolémico","","17"],["GEN-SIS-285","Shock Séptico","Temblores de causa no identificada","17"],["GEN-NEU-439","Subluxación Atlantoaxial","","06"],["GEN-RES-443","Síndrome Braquicefálico","","10"],["GEN-NEU-414","Síndrome de Cola Equina","","06"],["GEN-GAS-361","Síndrome de Hemorragia Gastrointestinal Aguda","","11"],["GEN-NEU-433","Síndrome de Horner","Temblores de causa no identificada","06"],["GEN-GAS-193","Síndrome de Mala Absorción","","11"],["GEN-GAS-356","Síndrome de Malabsorción Intestinal","Lesiones físicas","11"],["GEN-NEU-482","Síndrome de temblor generalizado","Temblores de causa no identificada","06"],["GEN-NEU-394","Síndrome de Wobbler","","06"],["GEN-GAS-303","Síndrome del Intestino Irritable","","11"],["GEN-OFT-276","Síndrome del Ojo Seco","Lesiones físicas","07"],["GEN-NEU-346","Síndrome Vestibular Idiopático","","06"],["GEN-TRA-397","Torsión Esplénica","TEA, trombo en silla de montar","09"],["GEN-REP-192","Torsión Testicular","TEA, trombo en silla de montar","13"],["GEN-PAR-319","Toxocariosis","Lesiones físicas","01"],["GEN-PAR-262","Toxoplasmosis","","01"],["GEN-RES-121","Traqueitis","TEA, trombo en silla de montar","10"],["GEN-RES-076","Traqueobronquitis Infecciosa Canina","","01"],["GEN-RES-164","Traqueítis No Infecciosa","Ruptura de vías urinarias","10"],["GEN-TRA-227","Trauma Craneoencefálico","Lesiones físicas","17"],["GEN-NEU-297","Trauma Espinal","TEA, trombo en silla de montar","06"],["GEN-TRA-133","Trauma Torácico","","10"],["PER-TRA-MIS-038","Traumatismo","Lesiones físicas","17"],["GEN-OFT-062","Traumatismo Ocular","","07"],["GEN-TRA-344","Traumatismo Torácico","Sangrado GI alto","10"],["FEL-GAS-437","Tricobezoares en Gatos","TEA, trombo en silla de montar","11"],["GEN-HEM-326","Trombocitopenia Inmunomediada","Ruptura de vías urinarias","03"],["GEN-HEM-302","Trombocitopenia Secundaria","","03"],["FEL-CAR-469","Tromboembolismo arterial felino","TEA, trombo en silla de montar","09"],["GEN-NEO-461","Tumor de Glándula Mamaria","","02"],["GEN-NEO-141","Tumor de Glándulas Anales","","02"],["GEN-NEO-145","Tumor Testicular","Ruptura de vías urinarias","02"],["GEN-NEO-423","Tumor Venéreo Transmisible (TVT)","Sangrado GI alto","02"],["GEN-INF-410","Tétanos","","01"],["GEN-URI-465","Uroabdomen","Ruptura de vías urinarias","13"],["GEN-URI-146","Urolitiasis Uretral","","13"],["GEN-URI-335","Urolitiasis Vesical","","13"],["GEN-OFT-063","Uveítis","Sangrado GI alto","07"],["GEN-OFT-404","Uveítis Anterior","","07"],["GEN-OFT-457","Úlcera Corneal","","07"],["GEN-GAS-481","Úlcera gastroduodenal / sangrado digestivo alto","Sangrado GI alto","11"]];
+const VCIE=[["GEN-DER-152","Absceso Cutáneo","","14"],["GEN-DER-176","Absceso Perianal","","14"],["GEN-TRA-436","Absceso Subcutáneo","","14"],["GEN-DER-425","Alopecia X","","14"],["GEN-PAR-002","Amebiasis","","01"],["PER-INF-HEM-004","Anaplasmosis Canina","Infección por Anaplasma","01"],["GEN-HEM-354","Anemia Aplásica","","03"],["GEN-HEM-426","Anemia Ferropénica","","03"],["GEN-HEM-066","Anemia Hemolítica Inmunomediada","","03"],["PER-HEM-NUT-051","Anemia Nutricional","Deficiencia de nutrientes","03"],["GEN-HEM-132","Anemia Regenerativa","","03"],["GEN-ALR-004","Angioedema","","04"],["GEN-MUS-400","Anquilosis Temporomandibular","","15"],["GEN-HEM-005","Aplasia Medular","","03"],["GEN-CAR-006","Arritmias Cardíacas","","09"],["GEN-MUS-330","Artritis Séptica","","15"],["GEN-MUS-016","Artrosis","","15"],["GEN-MUS-504","Ruptura de ligamento cruzado craneal","Cojera aguda de miembro posterior","15"],["GEN-SIS-258","Ascitis","","12"],["GEN-RES-017","Asma","","10"],["GEN-RES-200","Asma Felina","","10"],["GEN-MIC-018","Aspergilosis","","01"],["GEN-GAS-019","Atresia Anal","","11"],["GEN-HEM-020","Babesiosis","","03"],["GEN-GEN-022","Balanopostitis","","17"],["GEN-PAR-021","Balantidiosis","","01"],["GEN-HEP-023","Barro Biliar","","11"],["GEN-RES-013","Bordetelosis (Tos de Perreras)","","10"],["GEN-INF-024","Borreliosis","","01"],["GEN-RES-025","Bronconeumonía","","10"],["GEN-RES-384","Bronquitis Crónica","","10"],["GEN-INF-351","Calicivirus Felino","","01"],["GEN-CAR-168","Cardiomiopatía Hipertrófica Felina","","09"],["GEN-OFT-026","Cataratas","","07"],["GEN-URI-027","Cistitis","","13"],["GEN-URI-451","Cistitis Idiopática Felina","","13"],["GEN-INF-028","Clamidiasis","","01"],["GEN-PAR-405","Coccidiosis Intestinal","","01"],["GEN-HEP-328","Colangiohepatitis Bacteriana","","12"],["GEN-HEP-230","Colangiohepatitis Inmunomediada","","12"],["GEN-HEP-086","Colangitis","","12"],["GEN-HEP-393","Colangitis Linfocítica","","12"],["GEN-RES-144","Colapso Traqueal","","10"],["GEN-GAS-248","Colitis Crónica","","11"],["GEN-GAS-314","Colitis Granulomatosa","","11"],["GEN-GAS-418","Colitis Ulcerativa","","11"],["GEN-INF-281","Complejo Respiratorio Felino","","01"],["GEN-OFT-030","Conjuntivitis","","07"],["GEN-OFT-337","Conjuntivitis Alérgica","","07"],["GEN-OFT-231","Conjuntivitis Bacteriana","","07"],["GEN-GAS-031","Coronavírus Canino","","01"],["GEN-NEU-173","Crisis Convulsiva Idiopática","","06"],["GEN-GAS-489","Cuerpo extraño esofágico","Hueso o juguete atorado en esófago","11"],["GEN-GAS-381","Cólico Gástrico","Sarna Demodécica","11"],["PER-INV-DER-005","Demodicosis","Sarna Demodécica","14"],["GEN-DER-034","Dermatitis Alérgica","","14"],["GEN-DER-440","Dermatitis Alérgica por Pulgas","","14"],["GEN-DER-309","Dermatitis Atópica","","04"],["GEN-DER-156","Dermatitis Micótica","","14"],["GEN-DER-219","Dermatitis por Alergia Alimentaria","","04"],["GEN-DER-389","Dermatitis por Contacto","","14"],["GEN-DER-334","Dermatitis por Malassezia","Picazón intensa","14"],["PER-DER-PRU-043","Dermatitis Pruriginosa","Picazón intensa","04"],["GEN-DER-284","Dermatitis Psicógena Felina","","14"],["GEN-DER-428","Dermatitis Seborreica","","14"],["GEN-DER-327","Dermatofitosis Felina","Taponamiento","14"],["GEN-CAR-468","Derrame pericárdico / taponamiento cardíaco","Taponamiento","09"],["GEN-RES-466","Derrame pleural","Efusión pleural","10"],["GEN-END-136","Diabetes Insípida","","05"],["GEN-END-291","Diabetes Mellitus Tipo 1","","05"],["GEN-END-363","Diabetes Mellitus Tipo II","","05"],["GEN-GAS-179","Dilatación Gástrica","","11"],["GEN-GAS-035","Dilatación-Vólvulo Gástrica","","11"],["GEN-PAR-190","Dirofilariasis","","01"],["GEN-MUS-367","Displasia de Cadera","","15"],["GEN-REP-341","Distocia","Taquipnea por dolor","13"],["GEN-REP-505","Muerte fetal","Feto sin latido, gestación detenida","13"],["GEN-REP-506","Maceración fetal","Feto muerto con infección uterina, descarga fétida","13"],["GEN-SIS-467","Dolor agudo no controlado","Taquipnea por dolor","17"],["GEN-REP-111","Eclampsia","","13"],["GEN-DER-271","Ectoparasitosis","","14"],["GEN-OFT-240","Ectropión","Edema pulmonar","07"],["PER-RES-CAR-021","Edema Pulmonar","Edema pulmonar","09"],["GEN-RES-490","Edema pulmonar no cardiogénico","Edema por electrocución, casi ahogamiento u obstrucción de vías altas","10"],["PER-INF-HEM-003","Ehrlichiosis Canina","Fiebre por Garrapatas","01"],["GEN-NEU-126","Encefalitis","","06"],["GEN-NEU-251","Encefalitis Inmunomediada","","04"],["GEN-HEP-307","Encefalopatía Hepática","","12"],["GEN-CAR-424","Endocardiosis Valvular Mitral","","09"],["GEN-CAR-368","Endocarditis Bacteriana","","09"],["GEN-REP-343","Endometritis","","13"],["GEN-GAS-139","Enfermedad Inflamatoria Intestinal (EII)","Acumulación de aire bajo la piel","11"],["GEN-DEN-507","Absceso del cuarto premolar superior (muela carnicera)","Fístula maxilar o infraorbitaria, aumento de volumen bajo el ojo","16"],["GEN-DEN-039","Enfermedades Periodontales","Absceso dental, dientes flojos, sarro","16"],["GEN-DEN-499","Estomatitis urémica","Úlceras o necrosis de lengua por uremia","16"],["GEN-DEN-500","Cuerpo extraño oral o estrangulación lingual","Hilo o liga en la lengua, palo entre los dientes","16"],["GEN-DEN-501","Quemadura oral eléctrica o cáustica","Mordió un cable, cloro, destapacaños","16"],["GEN-DEN-502","Gingivoestomatitis crónica felina","Estomatitis caudal felina","16"],["GEN-NEO-503","Neoplasia oral","Melanoma, carcinoma escamoso, fibrosarcoma, épulis","02"],["PER-DER-TRA-048","Enfisema Subcutáneo","Acumulación de aire bajo la piel","14"],["GEN-GAS-415","Enteritis Linfoplasmocítica","","11"],["GEN-GAS-220","Enteritis Parasitarias","","01"],["GEN-GAS-270","Enteropatía Perdedora de Proteínas","Mordedura de serpiente","11"],["GEN-INF-358","Enterotoxemia","","01"],["GEN-TOX-477","Envenenamiento ofídico (vipéridos)","Mordedura de serpiente","18"],["GEN-NEU-290","Epilepsia Idiopática","","06"],["GEN-NEO-357","Epulis","","02"],["GEN-OFT-182","Epífora Crónica","","07"],["GEN-GAS-318","Esofagitis por Reflujo","","11"],["GEN-HEM-040","Esplenomegalia","","03"],["GEN-MUS-375","Espongilosis","","15"],["GEN-RES-254","Estenosis Traqueal","","10"],["GEN-URI-186","Estenosis Uretral","Obstipación, fecaloma, megacolon felino","13"],["GEN-RES-041","Estornudo Inverso","Tóxico desconocido","10"],["GEN-GAS-483","Estreñimiento, obstipación o megacolon","Obstipación, fecaloma, megacolon felino","11"],["GEN-TOX-478","Exposición tóxica no identificada","Tóxico desconocido","18"],["GEN-NEO-113","Fibrosarcoma","FLUTD","02"],["GEN-NEO-411","Fibrosarcoma Oral","","02"],["FEL-URI-MET-035","FLUTD (Síndrome Urinario Inferior Felino)","FLUTD","13"],["GEN-ORT-043","Fractura de Cadera","Fractura","15"],["GEN-TRA-195","Fractura Mandibular","","15"],["GEN-TRA-480","Fractura o luxación","Fractura","17"],["GEN-GAS-042","Fístula Anal","","11"],["GEN-CIR-429","Fístula Oronasal","","11"],["GEN-DER-370","Fístula Perianal","Indiscreción dietética","11"],["GEN-GAS-445","Gastritis Crónica","Helicobacteriosis gástrica","11"],["GEN-GAS-452","Gastritis Erosiva","Indiscreción dietética","11"],["GEN-GAS-486","Gastritis por Helicobacter","Helicobacteriosis gástrica","11"],["GEN-GAS-462","Gastroenteritis aguda inespecífica","Indiscreción dietética","11"],["GEN-GAS-485","Gastroenteritis bacteriana","Enteritis por Campylobacter, Salmonella o Clostridium","11"],["GEN-GAS-070","Gastroenteritis Parasitarias","","01"],["GEN-PAR-044","Giardiasis","Aumento rápido de presión ocular","01"],["GEN-DEN-222","Gingivitis","","16"],["PER-OFT-GLA-053","Glaucoma Agudo","Aumento rápido de presión ocular","07"],["GEN-SIS-338","Golpe de Calor","","17"],["GEN-NEO-247","Hemangiosarcoma","","02"],["GEN-NEO-272","Hemangiosarcoma Cutáneo","","02"],["GEN-NEO-442","Hemangiosarcoma Esplénico","","02"],["GEN-OTO-122","Hematoma Auricular","","08"],["GEN-HEM-085","Hemoparásitos","Mordedura","01"],["GEN-HEP-261","Hepatitis Crónica","Mordedura","12"],["GEN-INF-387","Hepatitis Infecciosa Canina","","01"],["GEN-HEP-275","Hepatopatía Inducida por Medicamentos","Mordedura","12"],["GEN-PAR-323","Hepatozoonosis","","01"],["GEN-TRA-479","Heridas por mordedura","Mordedura","17"],["GEN-CIR-317","Hernia Diafragmática","","15"],["GEN-CIR-142","Hernia Inguinal","","15"],["GEN-CIR-396","Hernia Perineal","","15"],["GEN-CIR-364","Hernia Umbilical","","15"],["GEN-NEU-279","Herniación de Disco Intervertebral","","06"],["GEN-MUS-386","Higroma","","14"],["GEN-END-352","Hiperadrenocorticismo","","05"],["GEN-END-456","Hipercalcemia Maligna","","02"],["GEN-ORA-398","Hiperplasia Gingival","","16"],["GEN-REP-310","Hiperplasia Prostática Benigna","","13"],["GEN-CAR-413","Hipertensión Arterial Sistémica","","09"],["GEN-SIS-342","Hipertermia Maligna","Hipoglucemia del adulto y juvenil","05"],["FEL-END-135","Hipertiroidismo","Hipoglucemia del adulto y juvenil","05"],["GEN-END-203","Hipoadrenocorticismo","","05"],["GEN-END-390","Hipocalcemia","Hipoglucemia del adulto y juvenil","05"],["GEN-END-253","Hipocalcemia Posparto","","05"],["GEN-END-464","Hipoglucemia","Hipoglucemia del adulto y juvenil","05"],["GEN-END-175","Hipoglucemia Neonatal","SIDA Felino","05"],["GEN-END-333","Hipoparatiroidismo","SIDA Felino","05"],["GEN-END-441","Hipotiroidismo Canino","","05"],["GEN-INF-359","Histoplasmosis","SIDA Felino","01"],["GEN-URI-153","Infección de Vías Urinarias","Enfermedad valvular mitral","13"],["FEL-INF-IMM-031","Inmunodeficiencia Viral Felina (FIV)","SIDA Felino","01"],["GEN-CAR-324","Insuficiencia Cardíaca Congestiva","Enfermedad valvular mitral","09"],["GEN-HEP-114","Insuficiencia Hepática","Fallo renal agudo","12"],["PER-CAR-VAL-020","Insuficiencia Mitral","Enfermedad valvular mitral","09"],["PER-REN-SIS-013","Insuficiencia Renal Aguda","Fallo renal agudo","13"],["GEN-REN-067","Insuficiencia Renal Crónica (IRC)","Acetaminofén","13"],["GEN-TOX-471","Intoxicación por AINE","Ibuprofeno, naproxeno, diclofenaco","18"],["GEN-TOX-234","Intoxicación por Alimentos","Pipeta de perro en gato","18"],["GEN-TOX-470","Intoxicación por carbamatos / organofosforados","\"Tres pasitos\", insecticidas","18"],["GEN-TOX-493","Intoxicación por etilenglicol","Anticongelante","18"],["GEN-TOX-491","Intoxicación por lactonas macrocíclicas (ivermectina, doramectina)","Ivermectina","18"],["GEN-TOX-492","Intoxicación por marihuana (THC)","Cannabis","18"],["GEN-TOX-495","Intoxicación por metaldehído","Cebo para caracoles","18"],["GEN-TOX-325","Intoxicación por Metales Pesados","Rhinella marina","18"],["GEN-TOX-494","Intoxicación por micotoxinas tremorgénicas","Basura, comida con moho","18"],["GEN-TOX-472","Intoxicación por paracetamol","Acetaminofén","18"],["GEN-TOX-473","Intoxicación por permetrina en gatos","Pipeta de perro en gato","18"],["GEN-TOX-196","Intoxicación por Rodenticidas","Linfoma intestinal","18"],["GEN-TOX-476","Intoxicación por sapo","Rhinella marina","18"],["GEN-TOX-475","Intoxicación por uvas o pasas","Ácido tartárico","18"],["GEN-TOX-474","Intoxicación por xilitol","Edulcorante","18"],["GEN-GAS-300","Intususcepción Intestinal","","11"],["GEN-RES-320","Laringitis Infecciosa","Linfoma intestinal","10"],["GEN-INF-329","Leishmaniosis Canina","","01"],["GEN-INF-391","Leptospirosis","Lipidosis hepática","01"],["FEL-INF-065","Leucemia Viral Felina (FeLV)","FeLV","01"],["GEN-GAS-315","Linfangiectasia","","11"],["GEN-NEO-463","Linfoma alimentario","Linfoma intestinal","02"],["GEN-NEO-496","Linfoma mediastínico / neoplasia torácica","Linfoma mediastínico, timoma","02"],["GEN-NEO-157","Linfoma Multicéntrico","Lipidosis hepática","02"],["FEL-HEP-MET-042","Lipidosis Hepática Felina","Lipidosis hepática; esteatosis hepática; hígado graso","05"],["GEN-NEO-446","Lipoma Subcutáneo","","14"],["GEN-MUS-444","Luxación Patelar","","15"],["GEN-REP-373","Mastitis","","13"],["GEN-NEO-187","Mastocitoma Cutáneo","","02"],["GEN-GAS-210","Megaesófago","","11"],["GEN-NEO-382","Melanoma Maligno","","02"],["GEN-NEU-385","Meningitis Aséptica","","06"],["GEN-DER-348","Miasis Cutánea","","14"],["GEN-NEU-331","Miastenia Gravis","","06"],["FEL-INF-340","Micoplasmosis Hemotrópica Felina","","01"],["GEN-INF-432","Micosis Sistémica","Distemper","01"],["GEN-NEU-218","Mielopatía Degenerativa","Distemper","06"],["GEN-CAR-268","Miocardiopatía Dilatada","","09"],["FEL-CAR-434","Miocardiopatía Hipertrófica Felina","Distemper","09"],["GEN-CAR-158","Miocarditis","","09"],["GEN-MUS-103","Miopatía Inflamatoria","Distemper","04"],["GEN-MUS-388","Miopatía por Captura","","15"],["GEN-MUS-128","Miositis Autoinmune","","04"],["GEN-MUS-301","Miositis Inmunomediada","","04"],["GEN-MUS-417","Miositis Masticatoria","","04"],["GEN-MUS-450","Miositis Polimiosítica","Distemper","15"],["PER-INF-RES-002","Moquillo Canino","Distemper","01"],["GEN-NEO-355","Neoplasia Adrenal","","02"],["GEN-NEO-374","Neoplasia de Glándula Salival","","02"],["GEN-NEO-498","Neoplasia de vías urinarias","Carcinoma urotelial, linfoma vesical","02"],["GEN-NEO-212","Neoplasia del Bazo","","02"],["GEN-NEO-202","Neoplasia Hepática","","02"],["GEN-NEO-292","Neoplasia Mamaria","","02"],["GEN-NEO-419","Neoplasia Nasal","","02"],["GEN-NEO-260","Neoplasia Pulmonar","","02"],["GEN-NEO-395","Neoplasia Testicular","","02"],["GEN-NEO-165","Neoplasias Cutáneas","","02"],["GEN-NEO-071","Neoplasias Mamarias","","02"],["GEN-PAR-129","Neosporosis","","01"],["GEN-RES-366","Neumonía Aspirativa","","10"],["GEN-RES-166","Neumonía Bacteriana","","10"],["GEN-RES-263","Neumonía Fúngica","","10"],["GEN-RES-236","Neumotórax Espontáneo","","10"],["GEN-TRA-431","Neumotórax Traumático","","10"],["GEN-NEU-453","Neuropatía Periférica","","06"],["GEN-MET-377","Obesidad","","05"],["GEN-RES-421","Obstrucción de Vías Aéreas Superiores","Infección por tenias","10"],["GEN-GAS-408","Obstrucción Intestinal","Infección por tenias","11"],["GEN-URI-353","Obstrucción Uretral","Infección por lombrices intestinales","13"],["GEN-URI-083","Obstrucción Urinaria","Infección por tenias","13"],["GEN-MUS-273","Osteoartritis","Infección por lombrices intestinales","15"],["GEN-MUS-304","Osteomielitis Bacteriana","Infección por tenias","15"],["GEN-NEO-378","Osteosarcoma","Infección por lombrices intestinales","02"],["GEN-OTO-288","Otitis Externa Crónica","Parvo","08"],["GEN-OTO-296","Otitis Media Crónica","PIF","08"],["GEN-GAS-430","Pancreatitis Aguda","","11"],["FEL-INF-350","Panleucopenia Felina","Infección por tenias","01"],["GEN-MUS-118","Panosteitis","Infección por lombrices intestinales","15"],["PER-PAR-GAS-008","Parasitosis por Cestodos","Infección por tenias","01"],["PER-PAR-GAS-009","Parasitosis por Nematodos","Infección por lombrices intestinales","01"],["PER-INF-GAS-001","Parvovirosis Canina","Parvo","01"],["FEL-INF-SIS-034","Peritonitis Infecciosa Felina","PIF","01"],["GEN-TRA-455","Peritonitis Séptica","","11"],["GEN-DER-403","Pioderma Profundo","","14"],["GEN-DER-155","Pioderma Superficial","Parálisis por garrapata, polirradiculoneuritis","14"],["GEN-REP-245","Piometra","","13"],["GEN-DER-073","Pododermatitis","","14"],["GEN-NEU-422","Poliarteritis Nodosa","Proptosis","03"],["GEN-MUS-252","Poliartritis Reumatoide","Prostatitis","04"],["GEN-MUS-336","Polimiositis","Parálisis por garrapata, polirradiculoneuritis","04"],["GEN-NEU-321","Polineuropatía Idiopática","","06"],["GEN-NEU-488","Polirradiculoneuritis / parálisis flácida aguda","Parálisis por garrapata, polirradiculoneuritis","06"],["GEN-OFT-416","Prolapso de Glándula de Tercer Párpado","Proptosis","07"],["GEN-TRA-460","Prolapso Rectal","Prostatitis","11"],["GEN-OFT-487","Proptosis del globo ocular","Proptosis","07"],["GEN-REP-484","Prostatitis aguda / absceso prostático","Prostatitis","13"],["GEN-SIS-160","Pérdida de Peso Crónica","","05"],["GEN-RES-099","Pólipos Nasales","Otitis parasitaria","10"],["GEN-OFT-399","Queratitis Pigmentaria","Otitis parasitaria","07"],["GEN-OFT-299","Queratitis Superficial Crónica","","07"],["GEN-OFT-322","Queratitis Ulcerativa","","07"],["GEN-OFT-163","Queratoconjuntivitis Seca","Otitis parasitaria","07"],["GEN-DER-345","Quiste Dermatoide","","07"],["GEN-DER-180","Quiste Dermoid","","07"],["GEN-DER-412","Quiste Sebáceo","","14"],["GEN-MUS-137","Rabdomiolisis","Otitis parasitaria","15"],["GEN-INF-406","Rabia","","01"],["GEN-URI-497","Retención urinaria neurogénica","Vejiga neurogénica","13"],["GEN-OFT-379","Retinopatía","","07"],["GEN-OFT-177","Retinopatía Hipertensiva","Temblores de causa no identificada","07"],["FEL-RES-057","Rinotraqueítis Felina","Otitis parasitaria","01"],["GEN-NEO-120","Sarcoma de Tejidos Blandos","","02"],["GEN-DER-420","Sarna Notoédrica","","14"],["PER-INV-DER-007","Sarna Otodéctica","Otitis parasitaria","08"],["GEN-DER-058","Sarna Sarcóptica","","14"],["GEN-INF-402","Sepsis Neonatal","","01"],["GEN-SIS-217","Shock Hipovolémico","","17"],["GEN-SIS-285","Shock Séptico","Temblores de causa no identificada","17"],["GEN-NEU-439","Subluxación Atlantoaxial","","06"],["GEN-RES-443","Síndrome Braquicefálico","","10"],["GEN-NEU-414","Síndrome de Cola Equina","","06"],["GEN-GAS-361","Síndrome de Hemorragia Gastrointestinal Aguda","","11"],["GEN-NEU-433","Síndrome de Horner","Temblores de causa no identificada","06"],["GEN-GAS-193","Síndrome de Mala Absorción","","11"],["GEN-GAS-356","Síndrome de Malabsorción Intestinal","Lesiones físicas","11"],["GEN-NEU-482","Síndrome de temblor generalizado","Temblores de causa no identificada","06"],["GEN-NEU-394","Síndrome de Wobbler","","06"],["GEN-GAS-303","Síndrome del Intestino Irritable","","11"],["GEN-OFT-276","Síndrome del Ojo Seco","Lesiones físicas","07"],["GEN-NEU-346","Síndrome Vestibular Idiopático","","06"],["GEN-TRA-397","Torsión Esplénica","TEA, trombo en silla de montar","09"],["GEN-REP-192","Torsión Testicular","TEA, trombo en silla de montar","13"],["GEN-PAR-319","Toxocariosis","Lesiones físicas","01"],["GEN-PAR-262","Toxoplasmosis","","01"],["GEN-RES-121","Traqueitis","TEA, trombo en silla de montar","10"],["GEN-RES-076","Traqueobronquitis Infecciosa Canina","","01"],["GEN-RES-164","Traqueítis No Infecciosa","Ruptura de vías urinarias","10"],["GEN-TRA-227","Trauma Craneoencefálico","Lesiones físicas","17"],["GEN-NEU-297","Trauma Espinal","TEA, trombo en silla de montar","06"],["GEN-TRA-133","Trauma Torácico","","10"],["PER-TRA-MIS-038","Traumatismo","Lesiones físicas","17"],["GEN-OFT-062","Traumatismo Ocular","","07"],["GEN-TRA-344","Traumatismo Torácico","Sangrado GI alto","10"],["FEL-GAS-437","Tricobezoares en Gatos","TEA, trombo en silla de montar","11"],["GEN-HEM-326","Trombocitopenia Inmunomediada","Ruptura de vías urinarias","03"],["GEN-HEM-302","Trombocitopenia Secundaria","","03"],["FEL-CAR-469","Tromboembolismo arterial felino","TEA, trombo en silla de montar","09"],["GEN-NEO-461","Tumor de Glándula Mamaria","","02"],["GEN-NEO-141","Tumor de Glándulas Anales","","02"],["GEN-NEO-145","Tumor Testicular","Ruptura de vías urinarias","02"],["GEN-NEO-423","Tumor Venéreo Transmisible (TVT)","Sangrado GI alto","02"],["GEN-INF-410","Tétanos","","01"],["GEN-URI-465","Uroabdomen","Ruptura de vías urinarias","13"],["GEN-URI-146","Urolitiasis Uretral","","13"],["GEN-URI-335","Urolitiasis Vesical","","13"],["GEN-OFT-063","Uveítis","Sangrado GI alto","07"],["GEN-OFT-404","Uveítis Anterior","","07"],["GEN-OFT-457","Úlcera Corneal","","07"],["GEN-GAS-481","Úlcera gastroduodenal / sangrado digestivo alto","Sangrado GI alto","11"]];
 const VCAP={"14":"Enfermedades de la Piel y Tejido Subcutáneo","01":"Enfermedades Infecciosas y Parasitarias","03":"Enfermedades de la Sangre y Hematopoyéticas","04":"Enfermedades del Sistema Inmune y Alérgicas","15":"Enfermedades Musculoesqueléticas","09":"Enfermedades del Sistema Cardiovascular","12":"Enfermedades Hepatobiliares","10":"Enfermedades del Aparato Respiratorio","11":"Enfermedades del Aparato Digestivo","17":"Traumatismos, Urgencias y Condiciones Diversas","07":"Enfermedades del Ojo y Anexos","13":"Enfermedades del Aparato Urogenital","06":"Enfermedades del Sistema Nervioso","05":"Enfermedades Endocrinas y Metabólicas","16":"Enfermedades de Cavidad Oral y Dental","18":"Intoxicaciones y Envenenamientos","02":"Enfermedades Neoplásicas","08":"Enfermedades del Oído"};
 
 // ═══════════════════════════════════════════════════════════════
@@ -2546,13 +2999,13 @@ const VCAP={"14":"Enfermedades de la Piel y Tejido Subcutáneo","01":"Enfermedad
 // ═══════════════════════════════════════════════════════════════
 const MOTOR_VER="7.9.7";
 const VC=new Map(VCIE.map(r=>[r[0],r]));
-const VC_NORM=VCIE.map(r=>[r,(r[0]+" "+r[1]).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()]);
+const VC_NORM=VCIE.map(r=>[r,(r[0]+" "+r[1]+" "+(r[2]||"")).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()]);
 const MOTOR_C=new Set(DX.map(d=>d.c));
 const REG_INICIO=new Date(2026,9,1);
 const CONF=[["histo","Histopatología o necropsia",1],["lab","Prueba de laboratorio específica",1],["img","Imagen diagnóstica",1],["qx","Hallazgo quirúrgico",1],["resp","Respuesta al tratamiento",0],["clin","Solo criterio clínico",0]];
 const CONF_OBJ=new Set(CONF.filter(x=>x[2]).map(x=>x[0]));
 const LABN=[["lact","Lactato","mmol/L"],["glu","Glucosa","mg/dL"],["hto","Hematocrito","%"],["st","Proteínas totales","g/dL"],["bun","BUN","mg/dL"],["crea","Creatinina","mg/dL"],["na","Sodio","mmol/L"],["k","Potasio","mmol/L"]];
-const LABT=[["parvo","SNAP parvovirus",["pos","neg"]],["4dx","SNAP 4Dx",["pos","neg"]],["felv","FeLV / FIV",["pos","neg"]],["frotis","Frotis de hemoparásitos",["pos","neg"]],["autoag","Autoaglutinación",["pos","neg"]],["afast","AFAST: líquido libre",["pos","neg"]],["tfast","TFAST",["anormal","normal"]],["rxt","Radiografía de tórax",["anormal","normal"]],["eco","Ecografía abdominal",["anormal","normal"]],["uri","Urianálisis",["anormal","normal"]]];
+const LABT=[["parvo","SNAP parvovirus",["pos","neg"]],["4dx","SNAP 4Dx",["pos","neg"]],["felv","FeLV / FIV",["pos","neg"]],["frotis","Frotis de hemoparásitos",["pos","neg"]],["autoag","Autoaglutinación",["pos","neg"]],["afast","AFAST: líquido libre",["pos","neg"]],["tfast","TFAST",["anormal","normal"]],["rxt","Radiografía de tórax",["anormal","normal"]],["rxa","Radiografía de abdomen",["anormal","normal"]],["rxcab","Radiografía de cabeza",["anormal","normal"]],["rxcad","Radiografía de cadera",["anormal","normal"]],["eco","Ecografía abdominal",["anormal","normal"]],["uri","Urianálisis",["anormal","normal"]]];
 const TLBL={pos:"Positivo",neg:"Negativo",anormal:"Anormal",normal:"Normal"};
 
 // Registro en línea (Supabase). Los médicos usan el motor sin cuenta: la página abre una sesión anónima
@@ -2583,6 +3036,7 @@ function regSnapshot(){
   }));
 }
 function regTrasSOAP(){
+  if(regReeval()) return;
   const prueba=document.getElementById("regno").checked;
   if(!ST.signs.size&&!ST.motivo){regMsg("Sin motivo ni signos: no se registra.");return}
   if(!REG.cur){const d=new Date();REG.cur={id:nuevoId(),f:d.toISOString()}}
@@ -2601,7 +3055,7 @@ async function regGuardar(prueba){
   else if(r.ok)regMsg(`Caso ${c.id} registrado. El código queda en la nota SOAP del expediente.`,"ok");
   else regMsg(`Caso ${c.id} guardado en este dispositivo: se enviará al registro en cuanto haya conexión. El código ya está en la nota SOAP.`,"warn");
 }
-function regReset(){if(REG.cur||ST.motivo||ST.esp)regEvento("nuevo_paciente");REG.cur=null;const n=document.getElementById("regno");if(n)n.checked=false;regMsg("")}
+function regReset(){if(REG.cur||ST.motivo||ST.esp)regEvento("nuevo_paciente");REG.cur=null;const n=document.getElementById("regno");if(n)n.checked=false;const re1=document.getElementById("regre");if(re1)re1.checked=false;const rc=document.getElementById("regrecod");if(rc){rc.value="";rc.style.display="none"}regMsg("")}
 // ─── Vista del registro ───
 function regToggle(on){
   const app=document.querySelector(".app"),rv=document.getElementById("regview"),b=document.getElementById("regbtn");
@@ -2629,6 +3083,9 @@ function regFiltrarVet(){const t=REG.todos||[],sel=document.getElementById("regv
 function regSet(k,v){REG[k]=v;if(k==="rango")regCargar();else{if(k==="vet")regFiltrarVet();regRender()}}
 function nombreMotivo(id){const m=MOTIVOS.find(x=>x.id===id);return m?m.n:"—"}
 function dxNom(c){const r=VC.get(c);return r?r[1]:c||"—"}
+function regConf(v){const E=REG.ed;if(!E)return;
+  if(E.conf===v){E.conf=E.conf2||"";E.conf2=""}else if(E.conf2===v){E.conf2=""}else if(!E.conf){E.conf=v}else{E.conf2=v}
+  regRender()}
 function cerrado(k){return !!(k&&(k.sinDx||(k.dx&&k.conf)))}
 
 function regRender(){
@@ -2650,11 +3107,11 @@ function regLista(){
   const q=REG.busca.trim().toUpperCase();
   const vis=q?rows.filter(x=>x.id.includes(q)):rows;
   const nP=REG.casos.filter(x=>!cerrado(REG.cierres.get(x.id))).length;
-  return `<div class="reg-tools"><div class="opts">${[["pend",`Pendientes (${nP})`],["cerr","Cerrados"],["todos","Todos"]].map(([v,n])=>`<button class="opt ${REG.filtro===v?"on":""}" onclick="regSet('filtro','${v}')">${n}</button>`).join("")}</div>
+  return `<div class="reg-tools"><div class="opts">${[["pend",`Pendientes (${nP})`],["cerr",`Cerrados (${REG.casos.length-nP})`],["todos",`Todos (${REG.casos.length})`]].map(([v,n])=>`<button class="opt ${REG.filtro===v?"on":""}" onclick="regSet('filtro','${v}')">${n}</button>`).join("")}</div>
    <div class="wt" style="flex-wrap:wrap"><input id="regbusca" value="${esc(REG.busca)}" placeholder="Código MC (ej. MC-7K3PQ2)" style="width:240px;font-family:var(--sans)" onkeydown="if(event.key==='Enter')regBuscar()"><button class="opt" onclick="regBuscar()">Buscar</button>${q?`<button class="opt" onclick="REG.busca='';regRender()">Limpiar</button>`:""}</div></div>
    ${vis.length?`<div class="reg-list">${vis.map(x=>{const k=REG.cierres.get(x.id),t=x.sal.top[0],e=x.ent;
      return `<button class="reg-row" onclick="regAbrir('${x.id}')"><span class="code">${esc(x.id)}</span><span class="reg-rf">${esc(fCorta(x.f))}</span>
-     <span class="reg-rm"><b>${t?esc(t.n):"Sin presuntivo"}</b><span class="muted">${esc(lab(P_ESP,e.esp)||"—")}${e.edad?" · "+esc(lab(P_EDAD,e.edad)):""} · ${esc(nombreMotivo(e.motivo))}${x.vet?" · "+esc(x.vet):""}</span></span>
+     <span class="reg-rm"><b>${cerrado(k)?(k.sinDx?"Sin diagnóstico definitivo":esc(k.dx.n||"")):(t?esc(t.n):"Sin presuntivo")}</b><span class="muted">${esc(lab(P_ESP,e.esp)||"—")}${e.edad?" · "+esc(lab(P_EDAD,e.edad)):""} · ${esc(nombreMotivo(e.motivo))}${x.vet?" · "+esc(x.vet):""}</span></span>
      <span class="reg-rb">${x.migrado?`<span class="lk t">Migrado</span>`:""}${x.sal.insuf?`<span class="lk m">Datos insuficientes</span>`:""}${cerrado(k)?`<span class="lk s">Cerrado</span>`:k?`<span class="lk b">En curso</span>`:`<span class="lk b">Pendiente</span>`}</span></button>`}).join("")}</div>`
      :`<div class="empty">${REG.casos.length?"Ningún caso con este filtro.":"Aún no hay casos registrados en este período. Cada nota SOAP generada en el motor crea un caso."}</div>`}`;
 }
@@ -2663,7 +3120,7 @@ function regBuscar(){REG.busca=(document.getElementById("regbusca").value||"").t
 
 // ─── Ficha y cierre del caso ───
 function regAbrir(id){const x=REG.casos.find(c=>c.id===id);if(!x)return;const k=REG.cierres.get(id)||{};
-  REG.sel=x;REG.ed=JSON.parse(JSON.stringify({dx:k.dx||null,con:k.con||[],sinDx:!!k.sinDx,conf:k.conf||"",labs:k.labs||{},tests:k.tests||{},otros:k.otros||"",notas:k.notas||""}));
+  REG.sel=x;REG.ed=JSON.parse(JSON.stringify({dx:k.dx||null,con:k.con||[],sinDx:!!k.sinDx,conf:k.conf||"",conf2:k.conf2||"",labs:k.labs||{},tests:k.tests||{},otros:k.otros||"",notas:k.notas||""}));
   REG.edMsg="";regRender();window.scrollTo(0,0)}
 function regCerrarFicha(){REG.sel=null;REG.ed=null;regRender()}
 function regFicha(){
@@ -2688,9 +3145,9 @@ function regFicha(){
     :E.sinDx?`<div class="reg-pick"><span>Sin diagnóstico definitivo</span><button class="mot2b" onclick="REG.ed.sinDx=false;regRender()">Cambiar</button></div>`
     :`<div class="opts" style="margin-bottom:6px">${quick.map(t=>`<button class="opt" onclick="regPick('${t.c}','dx')">${esc(t.n)}<small>presuntivo del motor</small></button>`).join("")}</div>
       <input id="regvc" class="reg-in" placeholder="Buscar en VetCIE-1 por nombre o código" oninput="regBuscaVC(this.value)" autocomplete="off"><div id="regvcres" class="reg-vcres"></div>
-      <div class="opts" style="margin-top:6px"><button class="mot2b" onclick="regNuevoDx()">No está en VetCIE-1</button><button class="mot2b" onclick="REG.ed.sinDx=true;REG.ed.conf='';regRender()">Sin diagnóstico definitivo</button></div>`}
+      <div class="opts" style="margin-top:6px"><button class="mot2b" onclick="regNuevoDx()">No está en VetCIE-1</button><button class="mot2b" onclick="REG.ed.sinDx=true;REG.ed.conf='';REG.ed.conf2='';regRender()">Sin diagnóstico definitivo</button></div>`}
    </div>
-   ${E.dx?`<div class="field"><span class="flabel">Base de la confirmación</span><div class="opts">${CONF.map(([v,n,o])=>`<button class="opt ${E.conf===v?"on":""} ${o?"":"y"}" onclick="REG.ed.conf='${v}';regRender()">${esc(n)}</button>`).join("")}</div>
+   ${E.dx?`<div class="field"><span class="flabel">Base de la confirmación <span class="muted">(puede marcar hasta 2)</span></span><div class="opts">${CONF.map(([v,n,o])=>`<button class="opt ${E.conf===v||E.conf2===v?"on":""} ${o?"":"y"}" aria-pressed="${E.conf===v||E.conf2===v}" onclick="regConf('${v}')">${esc(n)}</button>`).join("")}</div>
      <div class="muted" style="margin-top:4px">Solo las cuatro primeras cuentan como confirmación objetiva en los indicadores.</div></div>
      <div class="field"><span class="flabel">Diagnósticos concomitantes</span>
      ${E.con.map((c,i)=>`<div class="reg-pick"><span>${esc(c.n)} <span class="code">${esc(c.c||"sin código")}</span></span><button class="mot2b" onclick="REG.ed.con.splice(${i},1);regRender()">Quitar</button></div>`).join("")}
@@ -2733,7 +3190,7 @@ async function regGuardarCierre(){
   if(!REG.sb){REG.edMsg="Sin conexión con el registro. Intente de nuevo cuando haya red.";regRender();return}
   try{const {data,error}=await REG.sb.rpc("guardar_cierre",{p_codigo:x.id,p:doc});if(error)throw error;
     const k=data||doc;REG.cierres.set(x.id,k);if(REG.cierresTodos&&REG.cierresTodos!==REG.cierres)REG.cierresTodos.set(x.id,k);
-    REG.edMsg=cerrado(k)?"Caso cerrado.":"Guardado. El caso sigue pendiente hasta registrar el diagnóstico definitivo (o «sin diagnóstico definitivo»)."}
+    toastMsg("Información guardada");REG.edMsg=cerrado(k)?"Caso cerrado.":"Guardado. El caso sigue pendiente hasta registrar el diagnóstico definitivo (o «sin diagnóstico definitivo»)."}
   catch(e){REG.edMsg=/falta_confirmacion/.test(e&&e.message)?"Indique la base de la confirmación del diagnóstico.":/caso_no_encontrado/.test(e&&e.message)?"El caso ya no existe o fue anulado.":"No se pudo guardar. Revise la conexión e intente de nuevo."}
   regRender();
 }
@@ -2743,8 +3200,8 @@ function wilson(k,n){if(!n)return null;const z=1.96,p=k/n,d=1+z*z/n,c=(p+z*z/(2*
 function pct(k,n){return n?Math.round(k/n*100)+"%":"—"}
 function regEval(){
   return REG.casos.map(c=>{const k=REG.cierres.get(c.id);if(!k||!k.dx||!k.conf)return null;
-    const d=k.dx.c,top=c.sal.top.map(t=>t.c);
-    return {c,k,d,h1:!!d&&top[0]===d,h3:!!d&&top.slice(0,3).includes(d),hs:!!d&&c.sal.soap.includes(d),hA:!!d&&c.sal.alta.includes(d),inM:!!d&&MOTOR_C.has(d),obj:CONF_OBJ.has(k.conf),cap:k.dx.cap||"",insuf:c.sal.insuf}
+    const EQ=x=>DX_EQUIV[x]||x, d=EQ(k.dx.c),top=c.sal.top.map(t=>EQ(t.c)),soap=c.sal.soap.map(EQ),alta=c.sal.alta.map(EQ);
+    return {c,k,d,h1:!!d&&top[0]===d,h3:!!d&&top.slice(0,3).includes(d),hs:!!d&&soap.includes(d),hA:!!d&&alta.includes(d),inM:!!d&&MOTOR_C.has(d),obj:CONF_OBJ.has(k.conf)||CONF_OBJ.has(k.conf2),cap:k.dx.cap||"",insuf:c.sal.insuf}
   }).filter(Boolean);
 }
 function regStats(){
@@ -2871,7 +3328,7 @@ function regLibro(etq){
       Object.assign(o,{"Alta probabilidad":s.alta.join("; "),"SOAP":s.soap.join("; "),"SOAP elegida por":s.soapAuto?"Automático":"Médico",
       "Dx definitivo":k.dx?k.dx.n:k.sinDx?"Sin diagnóstico definitivo":"","Dx definitivo código":k.dx?k.dx.c:"","Capítulo":k.dx&&k.dx.cap?VCAP[k.dx.cap]:"",
       "En el motor":k.dx?(MOTOR_C.has(k.dx.c)?"Sí":"No"):"","Concomitantes":(k.con||[]).map(d=>d.c||d.n).join("; "),
-      "Confirmación":lab(CONF,k.conf),"Confirmación objetiva":k.conf?(CONF_OBJ.has(k.conf)?"Sí":"No"):"",
+      "Confirmación":lab(CONF,k.conf)+(k.conf2?" + "+lab(CONF,k.conf2):""),"Confirmación objetiva":k.conf?(CONF_OBJ.has(k.conf)||CONF_OBJ.has(k.conf2)?"Sí":"No"):"",
       "Acierto top-1":r?(r.h1?1:0):"","Acierto top-3":r?(r.h3?1:0):"","Acierto SOAP":r?(r.hs?1:0):""});
       LABN.forEach(([id,n,u])=>o[`${n} (${u})`]=(k.labs||{})[id]??"");LABT.forEach(([id,n])=>o[n]=TLBL[(k.tests||{})[id]]||"");
       Object.assign(o,{"Otros resultados":k.otros||"","Notas":k.notas||""});
