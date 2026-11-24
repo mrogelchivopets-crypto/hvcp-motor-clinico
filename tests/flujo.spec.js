@@ -29,6 +29,13 @@ async function dispositivo(browser, { conConfig = true } = {}) {
 
 async function pacienteYSoap(page) {
   await page.locator("#s1 button.opt", { hasText: "Canino" }).click();
+  // Datos obligatorios del motor (REQ): sin ellos, elegir el motivo abre el aviso y la nota SOAP no se genera.
+  await page.evaluate(() => {
+    setEdad("e2"); setSexo("mc"); setVac(VAC.c[0][0]);
+    setEx("fc", "110"); setEx("fr", "24"); setEx("temp", "38.6");
+    setEx("muc", "rosa"); setEx("tllc", "n"); setEx("dh", "0"); setEx("card", "n"); setEx("pulm", EX_PULM[0][0]);
+  });
+  expect(await page.evaluate(() => faltantes().map((x) => x.l))).toEqual([]);
   // Motivo «Vómito o diarrea» (con signos marcados por el motivo, así el motor da diagnósticos)
   const motivo = await page.evaluate(() => MOTIVOS.find((m) => m.id === "dig").n);
   await page.locator("#s2 .mot", { hasText: motivo }).click();
@@ -126,6 +133,9 @@ test.describe("con el proyecto de prueba", () => {
     await expect(page.locator("#regbar")).toBeHidden();
     await expect(page.locator("#regbody")).toContainText("no se muestra el historial");
     await page.locator("#acccod").fill(codigoNormal.toLowerCase());
+    // El panel se vuelve a dibujar solo (sincronización de la cola, latido): el código escrito no debe perderse.
+    await page.evaluate(() => regRender());
+    await expect(page.locator("#acccod")).toHaveValue(codigoNormal.toLowerCase());
     await page.getByRole("button", { name: "Abrir caso" }).click();
     await expect(page.locator("#regbody")).toContainText(codigoNormal, { timeout: 20000 });
     await page.locator("#regbody button.opt", { hasText: "presuntivo del motor" }).first().click();
@@ -159,7 +169,8 @@ test.describe("con el proyecto de prueba", () => {
     await expect(page.locator("#regbody")).not.toContainText(codigoNormal);
     await page.getByRole("button", { name: /^Cerrados/ }).click();
     await expect(page.locator("#regbody")).toContainText(codigoNormal);
-    await page.getByRole("button", { name: "Todos", exact: true }).click();
+    // Los filtros muestran la cantidad: «Todos (3)»
+    await page.getByRole("button", { name: /^Todos( \(\d+\))?$/ }).click();
     await expect(page.locator("#regbody")).toContainText(codigoNormal);
     await expect(page.locator("#regbody")).not.toContainText(codigoPrueba);
     await expect(page.locator("#regvet option")).not.toHaveCount(1);

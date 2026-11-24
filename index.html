@@ -3371,7 +3371,7 @@ function regAcceso(){
   return `<div class="reg-acc">
   <div class="card"><div class="card-h">Cerrar un caso</div><div class="card-b">
    <p class="muted" style="margin-bottom:8px">Escriba el código MC que quedó en la nota SOAP del expediente para registrar el diagnóstico definitivo y los exámenes clave. Por privacidad, aquí no se muestra el historial de casos.</p>
-   <div class="field"><input id="acccod" class="reg-in" placeholder="Código MC (ej. MC-7K3PQ2)" value="${esc(REG.accCod)}" autocapitalize="characters" autocomplete="off" onkeydown="if(event.key==='Enter')regAbrirCodigo()"></div>
+   <div class="field"><input id="acccod" class="reg-in" placeholder="Código MC (ej. MC-7K3PQ2)" value="${esc(REG.accCod)}" oninput="REG.accCod=this.value" autocapitalize="characters" autocomplete="off" onkeydown="if(event.key==='Enter')regAbrirCodigo()"></div>
    <div class="opts"><button class="opt on" onclick="regAbrirCodigo()">Abrir caso</button></div>
    <div class="regmsg ${REG.accErr?"err":""}">${esc(REG.accMsg||"")}</div>
   </div></div>
