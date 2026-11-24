@@ -2263,6 +2263,23 @@ function relojHVCP(){const el=document.getElementById("hclock");if(!el)return;co
   let hh=d.getHours(),mm=String(d.getMinutes()).padStart(2,"0"),ap=hh<12?"a. m.":"p. m.";hh=hh%12||12;
   el.textContent=`${W[d.getDay()]} ${d.getDate()} ${Mn[d.getMonth()]} ${d.getFullYear()} · ${hh}:${mm} ${ap}`;el.title=d.toLocaleString("es-SV")}
 relojHVCP();setInterval(relojHVCP,15000);
+// ═══ Urolitiasis vesical o sedimento urinario felino (24/11/2026, caso MC-AMXZ4N) ═══
+// En gatos el motor solo tenía obstrucción uretral, cistitis idiopática e infección urinaria. En hembras la obstrucción
+// uretral es rara (−40) y el sedimento o los urolitos vesicales quedaban sin diagnóstico propio.
+(function(){
+const ADD=o=>DX.push(Object.assign({b:0,fl:"mant",z:false,r:[],lab:[]},o));
+ADD({id:"urolit_f",n:"Urolitiasis vesical o sedimento urinario felino (cristaluria)",c:"GEN-URI-335",sys:"uro",sp:["f"],k:["estr","hemu"],
+ s:{estr:20,hemu:15,olig:5,dabd:5},
+ r:[["crist",["estru","oxal"],30,"Cristales en el sedimento urinario"],["crist",["no"],-10,""],["eco",["vej"],30,"Sedimento o urolitos vesicales en la ecografía"],
+    ["sexo",["he","hl","hc"],10,"Hembra: la obstrucción uretral es rara; pensar en sedimento o cálculos vesicales"],["vejiga",["grande"],5,""],
+    ["ant",["obsu"],10,"Obstrucción urinaria previa"],["cc",["obeso"],5,"Sobrepeso"]],
+ need:{s:[],a:[["crist",["estru","oxal"]],["eco",["vej"]]],pen:-20,txt:"Sin cristales en el sedimento ni hallazgo vesical en la ecografía"},
+ why:"Estranguria, polaquiuria o hematuria por cristales (estruvita u oxalato), arenilla o urolitos vesicales. Confirmar con sedimento urinario y ecografía (o radiografía). Descartar siempre la obstrucción uretral, sobre todo en machos.",
+ lab:["!uro","!eco_abd","urocultivo","rx_uro"],
+ tx:[["buprenorfina","Analgesia"],["_","Aumentar el consumo de agua (alimento húmedo) y manejo ambiental"],["_","Estruvita: dieta urinaria de disolución; oxalato o cálculos que no se disuelven: cistotomía"],["_","Antibiótico solo con urocultivo positivo"],["_","Si no puede orinar o la vejiga está distendida: tratar como obstrucción uretral"]],
+ ref:"ACVIM Consensus on Uroliths (Lulich et al., J Vet Intern Med 2016); Ettinger, Feldman & Côté, Textbook of Veterinary Internal Medicine (9.ª ed.)"});
+})();
+
 const ST = {hxs:new Set(),motivo2:null,soapSel:new Set(),openSys:new Set(),motivo:null,esp:null,peso:null,edad:null,sexo:null,hemo:null,vac:new Set(),signs:new Set(),ans:{},open:new Set(),
   fl:{tipo:"rl",desh:"0",horas:"24",perd:0,form:"b",ped:false,na:"",iris:{crea:"",sdma:"",upc:"",pas:""}}};
 

@@ -1,5 +1,15 @@
 # Historial de cambios del Motor Clínico
 
+## v7.9.7 · 24/11/2026 · urolitiasis vesical o sedimento urinario felino (M7)
+
+Origen: caso MC-AMXZ4N (gata esterilizada con sedimento urinario). En gatos el motor solo tenía obstrucción uretral, cistitis idiopática e infección urinaria; el sedimento o los urolitos vesicales no tenían diagnóstico propio. Aprobado por la Dirección General con un solo caso.
+
+- Diagnóstico nuevo, solo gatos: «Urolitiasis vesical o sedimento urinario felino (cristaluria)» (GEN-URI-335). Entra con esfuerzo para orinar o hematuria.
+- Suma: cristales de estruvita u oxalato en el sedimento (+30), ecografía con sedimento o urolitos vesicales (+30), hembra (+10), obstrucción urinaria previa (+10), vejiga distendida (+5), sobrepeso (+5). Sin cristales: −10. Sin cristales ni hallazgo vesical en la ecografía: −20.
+- Exámenes: examen general de orina y ecografía abdominal (inmediatos), urocultivo y radiografía. Tratamiento: analgesia, más agua y manejo ambiental, dieta de disolución (estruvita) o cistotomía, antibiótico solo con urocultivo positivo; si no puede orinar, tratar como obstrucción uretral.
+- Resultados: MC-AMXZ4N (vejiga distendida) sigue con obstrucción uretral 1.ª y urolitiasis 3.ª; con estruvita o sedimento en la eco, urolitiasis pasa a 1.ª. En machos con vejiga distendida la obstrucción no cambia.
+- Regresión: 127 casos del registro con la misma lista de alta probabilidad (1 caso cambia en el top-5); 1000 casos generados: 7 listas distintas, todas gatos con cristales o hallazgo vesical en la eco.
+
 ## v7.9.7 · 24/11/2026 · cierre con hallazgos específicos, cierre obligatorio, condición corporal y buscador
 
 Origen: análisis del registro del 24/11 (127 casos, 57 cierres). Aprobado por la Dirección General (M1, M2, M3, M5 y M6). No cambia ningún diagnóstico ni puntaje: 127 casos del registro y 1000 casos generados desde las reglas de cada diagnóstico dan la misma lista de alta probabilidad y el mismo top-5.
