@@ -216,6 +216,7 @@ textarea,input,select{font-size:16px}
 .reg-tests{display:flex;flex-direction:column;gap:4px}
 .reg-th{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;padding:2px 0 6px 12px;border-bottom:1px solid var(--border)}
 .reg-th .opt{font-size:11.5px;padding:4px 8px}
+.reg-th.falta{box-shadow:inset 3px 0 0 var(--yellow);border-radius:4px}.reg-th.falta b{color:var(--yellow)}
 .reg-sug{margin:6px 0;display:flex;flex-direction:column;gap:4px}
 .reg-test{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12.5px;padding:3px 0;border-bottom:1px solid var(--border);flex-wrap:wrap}
 .reg-test .opt{padding:4px 9px;font-size:12px}
@@ -3037,6 +3038,10 @@ const VCAP={"14":"Enfermedades de la Piel y Tejido Subcutáneo","01":"Enfermedad
 // REGISTRO DE CASOS — sin datos del propietario
 // ═══════════════════════════════════════════════════════════════
 const MOTOR_VER="7.9.7";
+// Compilación (M8, 24/11/2026): identifica la publicación exacta de la página sin cambiar la versión del motor.
+// Se guarda junto a la versión en el registro («7.9.7+2026-11-24b»), así un caso hecho con una página en caché se distingue
+// aunque el número de versión sea el mismo. Actualícela (fecha y letra) en cada publicación.
+const MOTOR_BUILD="2026-11-24b";
 const VC=new Map(VCIE.map(r=>[r[0],r]));
 // Sinónimos del buscador VetCIE-1 (24/11/2026): solo amplían la búsqueda; no cambian el catálogo ni los códigos.
 const VC_SINON={"GEN-HEP-023":"colecistitis mucocele biliar","GEN-URI-335":"sedimento urinario cristaluria cristales arenilla calculos vesicales","FEL-URI-MET-035":"sedimento urinario cristaluria arenilla tapon uretral"};
@@ -3053,11 +3058,15 @@ const TLBL={pos:"Positivo",neg:"Negativo",anormal:"Anormal",normal:"Normal"};
 // [valor que abre la pregunta, pregunta del motor, opciones incluidas (null = todas), opciones excluidas]
 const LABT_H={"4dx":["pos","snap4",["pos","lyme","diro"]],eco:["anormal","eco",null,["n"]],rxa:["anormal","eco",["utero","vej","efus","ce","colon","feto"]],
   tfast:["anormal","tfast",null,["n","nm"]],rxt:["anormal","tfast",null,["n","nm"]],uri:["anormal","crist",["oxal","estru"]]};
-function labtOpts(id){const [,q,inc,exc]=LABT_H[id],Q=QS.find(x=>x.id===q);return Q?Q.o.filter(([v])=>(!inc||inc.includes(v))&&!(exc||[]).includes(v)):[]}
+// M9 (24/11/2026): el hallazgo es obligatorio al guardar; «No determinado» (nd) existe para cuando no se pudo precisar y no se envía al motor.
+const LABT_ND=["nd","No determinado"];
+function labtOpts(id){const [,q,inc,exc]=LABT_H[id],Q=QS.find(x=>x.id===q);return (Q?Q.o.filter(([v])=>(!inc||inc.includes(v))&&!(exc||[]).includes(v)):[]).concat([LABT_ND])}
+function labtFaltan(t){return Object.keys(LABT_H).filter(id=>t&&t[id]===LABT_H[id][0]&&!t[id+"_h"])}
 function labtHTexto(t){return Object.keys(LABT_H).filter(id=>t&&t[id+"_h"]).map(id=>{const o=labtOpts(id).find(([v])=>v===t[id+"_h"]);return `${(LABT.find(x=>x[0]===id)||[,id])[1]}: ${o?o[1]:t[id+"_h"]}`}).join("; ")}
 // Respuestas que el motor habría recibido con los resultados del cierre (solo preguntas que el médico no respondió).
 function regDatosCierre(k,ent){
-  const t=k.tests||{},L=k.labs||{},A=(ent&&ent.ans)||{},f=ent&&ent.esp==="f",o={};
+  const t0=k.tests||{},t={...t0},L=k.labs||{},A=(ent&&ent.ans)||{},f=ent&&ent.esp==="f",o={};
+  Object.keys(t).forEach(x=>{if(/_h$/.test(x)&&t[x]===LABT_ND[0])delete t[x]}); // «No determinado» no aporta dato al motor
   const put=(q,v)=>{if(v!=null&&A[q]===undefined&&o[q]===undefined)o[q]=v};
   if(t.parvo)put("virq",t.parvo==="pos"?"ppos":"pneg");
   if(t["4dx"])put("snap4",t["4dx"]==="neg"?"neg":(t["4dx_h"]||"pos"));
@@ -3122,7 +3131,7 @@ function regTrasSOAP(){
 async function regGuardar(prueba){
   const c=REG.cur;if(!c)return;
   const min=ST.t0?Math.max(0,Math.round((Date.now()-ST.t0)/60000)):null;
-  const doc={id:c.id,f:c.f,fa:new Date().toISOString(),v:MOTOR_VER,prueba:!!prueba,sesion:REG.sesion,min,
+  const doc={id:c.id,f:c.f,fa:new Date().toISOString(),v:MOTOR_VER+"+"+MOTOR_BUILD,prueba:!!prueba,sesion:REG.sesion,min,
     alertas:(ST._al||[]).map(a=>[a[0],a[1]]),...regSnapshot()};
   colaPoner({t:"caso",k:c.id,p:doc});
   const r=await colaEnviar();
@@ -3231,7 +3240,7 @@ function regFicha(){
      ${E.con.map((c,i)=>`<div class="reg-pick"><span>${esc(c.n)} <span class="code">${esc(c.c||"sin código")}</span></span><button class="mot2b" onclick="REG.ed.con.splice(${i},1);regRender()">Quitar</button></div>`).join("")}
      <input id="regvc2" class="reg-in" placeholder="Agregar concomitante (VetCIE-1)" oninput="regBuscaVC(this.value,'con')" autocomplete="off"><div id="regvcres2" class="reg-vcres"></div></div>`:""}
    <div class="field"><span class="flabel">Exámenes clave (valor al ingreso)</span><div class="fl-grid">${LABN.map(([id,n,u])=>`<label>${esc(n)} (${u})<input type="number" step="any" inputmode="decimal" value="${esc(E.labs[id]??"")}" onchange="regLab('${id}',this.value)"></label>`).join("")}</div>
-    <div class="reg-tests">${LABT.map(([id,n,vals])=>`<div class="reg-test"><span>${esc(n)}</span><span class="opts">${vals.map(v=>`<button class="opt ${E.tests[id]===v?"on "+(v==="pos"||v==="anormal"?"r":"g"):""}" onclick="regTest('${id}','${v}')">${TLBL[v]}</button>`).join("")}</span></div>${LABT_H[id]&&E.tests[id]===LABT_H[id][0]?`<div class="reg-th"><span class="muted">Hallazgo principal:</span>${labtOpts(id).map(([v,l])=>`<button class="opt ${E.tests[id+"_h"]===v?"on":""}" onclick="regTestH('${id}','${v}')">${esc(l)}</button>`).join("")}</div>`:""}`).join("")}</div>
+    <div class="reg-tests">${LABT.map(([id,n,vals])=>`<div class="reg-test"><span>${esc(n)}</span><span class="opts">${vals.map(v=>`<button class="opt ${E.tests[id]===v?"on "+(v==="pos"||v==="anormal"?"r":"g"):""}" onclick="regTest('${id}','${v}')">${TLBL[v]}</button>`).join("")}</span></div>${LABT_H[id]&&E.tests[id]===LABT_H[id][0]?`<div class="reg-th${E.tests[id+"_h"]?"":" falta"}"><span class="muted">Hallazgo principal${E.tests[id+"_h"]?"":" <b>(obligatorio)</b>"}:</span>${labtOpts(id).map(([v,l])=>`<button class="opt ${E.tests[id+"_h"]===v?"on":""}" onclick="regTestH('${id}','${v}')">${esc(l)}</button>`).join("")}</div>`:""}`).join("")}</div>
     <input class="reg-in" style="margin-top:8px" maxlength="300" placeholder="Otros resultados relevantes (sin datos del propietario)" value="${esc(E.otros)}" onchange="REG.ed.otros=this.value"></div>
    <div class="field"><span class="flabel">Notas clínicas</span><textarea class="reg-in" rows="3" maxlength="600" placeholder="Sin nombres ni datos del propietario" onchange="REG.ed.notas=this.value">${esc(E.notas)}</textarea></div>
    <div class="opts"><button class="opt on" onclick="regGuardarCierre()">Guardar</button><span class="muted" id="regedmsg" style="align-self:center">${esc(REG.edMsg||"")}</span></div>
@@ -3274,6 +3283,9 @@ async function regGuardarCierre(){
   if(E.dx&&!E.conf){REG.edMsg="Indique la base de la confirmación del diagnóstico.";regRender();return}
   // Sin diagnóstico ni ningún resultado: no se guarda un cierre vacío.
   const conDatos=Object.keys(E.labs||{}).length||Object.keys(E.tests||{}).length||(E.con||[]).length||String(E.otros||"").trim()||String(E.notas||"").trim();
+  // M9: examen anormal o 4Dx positivo sin hallazgo principal: no se guarda (puede elegir «No determinado»).
+  const fh=labtFaltan(E.tests);
+  if(fh.length){REG.edMsg="Indique el hallazgo principal de: "+fh.map(id=>(LABT.find(x=>x[0]===id)||[,id])[1]).join(", ")+" (o «No determinado»).";regRender();return}
   if(!E.dx&&!E.sinDx&&!conDatos){REG.edMsg="Registre el diagnóstico definitivo (o «Sin diagnóstico definitivo») antes de guardar.";regRender();return}
   if(!E.dx&&!E.sinDx&&!confirm("No registró el diagnóstico definitivo. Se guardarán los resultados y el caso seguirá pendiente. ¿Continuar?"))return;
   const doc=JSON.parse(JSON.stringify({...E,fc:new Date().toISOString(),por:REG.uid||null}));
@@ -3424,7 +3436,7 @@ function cargarXLSX(){return window.XLSX?Promise.resolve():new Promise((res,rej)
 function regLibro(etq){
     const st=regStats(),evm=new Map(st.ev.map(r=>[r.c.id,r])),wb=XLSX.utils.book_new();
     const filas=REG.casos.map(c=>{const e=c.ent,s=c.sal,x=e.ex||{},k=REG.cierres.get(c.id)||{},r=evm.get(c.id),o={
-      "Código":c.id,"Fecha":fIso(c.f),"Versión motor":c.v,"Veterinario":c.vet||"",
+      "Código":c.id,"Fecha":fIso(c.f),"Versión motor":String(c.v||"").split("+")[0],"Compilación":String(c.v||"").split("+")[1]||"","Veterinario":c.vet||"",
       "Especie":lab(P_ESP,e.esp),"Peso (kg)":e.peso,"Edad":lab(P_EDAD,e.edad),"Sexo":lab(P_SEXO,e.sexo),"Estado hemodinámico":lab(P_HEMO,e.hemo),"Estado hemodinámico analizado":e.hemoEf?lab(P_HEMO,e.hemoEf):"",
       "FC":numX(x.fc),"FR":numX(x.fr),"Temperatura":numX(x.temp),"Mucosas":lab(EX_MUC,x.muc),"TLLC":lab(EX_TLLC,x.tllc),"Pulso":lab(EX_PULSO,x.pulso),"Deshidratación":lab(EX_DH,x.dh),"CC (1-5)":numX(x.cc),
       "Ausc. cardíaca":lab(EX_CARD,x.card),"Ausc. pulmonar":lab(EX_PULM,x.pulm),"Vejiga":lab(EX_VEJ,x.vej),
@@ -3457,6 +3469,8 @@ function regLibro(etq){
       ["Confirmación 2","Hoja Casos: segunda base de la confirmación del diagnóstico definitivo (opcional; vacía en los cierres que solo tienen una). Mismos valores que «Confirmación»: "+CONF.map(c=>c[1]).join("; ")+"."],
       ["Confirmación objetiva","Hoja Casos: «Sí» si «Confirmación» o «Confirmación 2» es histopatología o necropsia, prueba de laboratorio específica, imagen diagnóstica o hallazgo quirúrgico; «No» en otro caso; vacía si el caso no tiene confirmación."],
       ...LABT.filter(t=>["rxa","rxcab","rxcad"].includes(t[0])).map(t=>[t[1],"Hoja Casos: resultado de la "+t[1].toLowerCase()+" registrado en el cierre: «Anormal» o «Normal»; vacía si no se registró."]),
+      ["Compilación","Hoja Casos: publicación exacta de la página con que se registró el caso (fecha y letra, p. ej. 2026-11-24b). Vacía en los casos anteriores al 24/11/2026. Si un caso nuevo trae una compilación vieja, esa tableta usa una página en caché."],
+      ["Hallazgos específicos","Hoja Casos: hallazgo principal de cada examen anormal o 4Dx positivo. Obligatorio desde el 24/11/2026 (M9); «No determinado» cuando no se pudo precisar."],
       ["conf2","Hoja Matriz ML: segunda base de la confirmación (código; vacía si no hay)."]]),"Diccionario");
     return wb;
 }
