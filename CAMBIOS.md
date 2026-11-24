@@ -1,5 +1,28 @@
 # Historial de cambios del Motor Clínico
 
+## v7.9.7 · 24/11/2026 · cierre con hallazgos específicos, cierre obligatorio, condición corporal y buscador
+
+Origen: análisis del registro del 24/11 (127 casos, 57 cierres). Aprobado por la Dirección General (M1, M2, M3, M5 y M6). No cambia ningún diagnóstico ni puntaje: 127 casos del registro y 1000 casos generados desde las reglas de cada diagnóstico dan la misma lista de alta probabilidad y el mismo top-5.
+
+### Cierre: hallazgo específico de los exámenes (M1)
+- Evidencia: 8 de 10 cierres con imagen «anormal» sin el hallazgo, 16 de 18 resultados de 4Dx y los 4 cierres con laboratorio sin esos datos en el caso. En los 3 casos en que el motor puso primero la pancreatitis (piometra, colangitis y barro biliar confirmados por eco), con el hallazgo de la eco el diagnóstico real sube al 1.er o 2.º lugar.
+- Al marcar «Anormal» en ecografía abdominal, radiografía de tórax o de abdomen, T-FAST o urianálisis, o «Positivo» en 4Dx, aparece «Hallazgo principal» con las opciones de la pregunta equivalente del motor (`eco`, `tfast`, `snap4`, `crist`).
+- Se guarda aparte en `tests` como `<examen>_h` (p. ej., `eco:"anormal"`, `eco_h:"utero"`); el valor general no cambia, así que la base de datos, `importar_registro.mjs` y la retroalimentación siguen funcionando igual. El Excel agrega la columna «Hallazgos específicos».
+- Indicadores: fila «Top-3 con los datos del cierre». Los casos cuyo cierre trae resultados no ingresados (4Dx, parvovirus, ecografía, T-FAST o Rx, autoaglutinación, cristales, creatinina, hematocrito, glucosa y Na/K) se reproducen en el motor actual con esas respuestas; los demás conservan su posición original.
+
+### Cierre obligatorio y sugerencia de código (M2)
+- No se guarda un cierre sin diagnóstico (ni «Sin diagnóstico definitivo») y sin ningún resultado (había 8 de 57). Con resultados pero sin diagnóstico, se pide confirmar y el caso sigue pendiente.
+- «No está en VetCIE-1»: antes de aceptar un diagnóstico escrito a mano se sugieren las coincidencias de VetCIE-1 (p. ej., «dirofilaria» → Dirofilariasis GEN-PAR-190).
+
+### Aviso de condición corporal (M3)
+- Con los datos obligatorios completos y sin condición corporal, un aviso (no bloqueante) antes de la nota SOAP: «Registrar la condición corporal» o «Generar sin la condición corporal». Faltó en 6 de 15 casos nuevos.
+
+### Equivalencia de códigos en los indicadores (M5)
+- «Fractura de cadera» (GEN-ORT-043) cuenta como «Fractura o luxación» (GEN-TRA-480) (caso MC-STJQB4). Los códigos equivalentes ya no aparecen como «fuera del motor» (también la bronconeumonía, GEN-RES-025).
+
+### Sinónimos en el buscador VetCIE-1 del cierre (M6)
+- «colecistitis» y «mucocele» encuentran Barro biliar (GEN-HEP-023); «sedimento urinario», «cristaluria» y «arenilla» encuentran Urolitiasis vesical (GEN-URI-335) y FLUTD (FEL-URI-MET-035). Solo amplían la búsqueda: el catálogo y los códigos no cambian (caso MC-AMXZ4N).
+
 ## v7.9.7 · 19/11/2026 · actualización de la lógica clínica
 
 Origen: `HVCP_ER_Motor_Clinico_v7_9_6.html` actualizado por el hospital (19/11/2026). Se integró sobre el motor con registro en línea. Pruebas: 240 casos idénticos al HTML entregado (diagnósticos, puntajes, alertas, paneles y nota SOAP).
