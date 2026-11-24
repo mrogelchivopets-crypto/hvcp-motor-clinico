@@ -3005,7 +3005,7 @@ const REG_INICIO=new Date(2026,9,1);
 const CONF=[["histo","Histopatología o necropsia",1],["lab","Prueba de laboratorio específica",1],["img","Imagen diagnóstica",1],["qx","Hallazgo quirúrgico",1],["resp","Respuesta al tratamiento",0],["clin","Solo criterio clínico",0]];
 const CONF_OBJ=new Set(CONF.filter(x=>x[2]).map(x=>x[0]));
 const LABN=[["lact","Lactato","mmol/L"],["glu","Glucosa","mg/dL"],["hto","Hematocrito","%"],["st","Proteínas totales","g/dL"],["bun","BUN","mg/dL"],["crea","Creatinina","mg/dL"],["na","Sodio","mmol/L"],["k","Potasio","mmol/L"]];
-const LABT=[["parvo","SNAP parvovirus",["pos","neg"]],["4dx","SNAP 4Dx",["pos","neg"]],["felv","FeLV / FIV",["pos","neg"]],["frotis","Frotis de hemoparásitos",["pos","neg"]],["autoag","Autoaglutinación",["pos","neg"]],["afast","AFAST: líquido libre",["pos","neg"]],["tfast","TFAST",["anormal","normal"]],["rxt","Radiografía de tórax",["anormal","normal"]],["eco","Ecografía abdominal",["anormal","normal"]],["uri","Urianálisis",["anormal","normal"]]];
+const LABT=[["parvo","SNAP parvovirus",["pos","neg"]],["4dx","SNAP 4Dx",["pos","neg"]],["felv","FeLV / FIV",["pos","neg"]],["frotis","Frotis de hemoparásitos",["pos","neg"]],["autoag","Autoaglutinación",["pos","neg"]],["afast","AFAST: líquido libre",["pos","neg"]],["tfast","TFAST",["anormal","normal"]],["rxt","Radiografía de tórax",["anormal","normal"]],["rxa","Radiografía de abdomen",["anormal","normal"]],["rxcab","Radiografía de cabeza",["anormal","normal"]],["rxcad","Radiografía de cadera",["anormal","normal"]],["eco","Ecografía abdominal",["anormal","normal"]],["uri","Urianálisis",["anormal","normal"]]];
 const TLBL={pos:"Positivo",neg:"Negativo",anormal:"Anormal",normal:"Normal"};
 
 // Registro en línea (Supabase). Los médicos usan el motor sin cuenta: la página abre una sesión anónima
@@ -3083,6 +3083,9 @@ function regFiltrarVet(){const t=REG.todos||[],sel=document.getElementById("regv
 function regSet(k,v){REG[k]=v;if(k==="rango")regCargar();else{if(k==="vet")regFiltrarVet();regRender()}}
 function nombreMotivo(id){const m=MOTIVOS.find(x=>x.id===id);return m?m.n:"—"}
 function dxNom(c){const r=VC.get(c);return r?r[1]:c||"—"}
+function regConf(v){const E=REG.ed;if(!E)return;
+  if(E.conf===v){E.conf=E.conf2||"";E.conf2=""}else if(E.conf2===v){E.conf2=""}else if(!E.conf){E.conf=v}else{E.conf2=v}
+  regRender()}
 function cerrado(k){return !!(k&&(k.sinDx||(k.dx&&k.conf)))}
 
 function regRender(){
@@ -3108,7 +3111,7 @@ function regLista(){
    <div class="wt" style="flex-wrap:wrap"><input id="regbusca" value="${esc(REG.busca)}" placeholder="Código MC (ej. MC-7K3PQ2)" style="width:240px;font-family:var(--sans)" onkeydown="if(event.key==='Enter')regBuscar()"><button class="opt" onclick="regBuscar()">Buscar</button>${q?`<button class="opt" onclick="REG.busca='';regRender()">Limpiar</button>`:""}</div></div>
    ${vis.length?`<div class="reg-list">${vis.map(x=>{const k=REG.cierres.get(x.id),t=x.sal.top[0],e=x.ent;
      return `<button class="reg-row" onclick="regAbrir('${x.id}')"><span class="code">${esc(x.id)}</span><span class="reg-rf">${esc(fCorta(x.f))}</span>
-     <span class="reg-rm"><b>${t?esc(t.n):"Sin presuntivo"}</b><span class="muted">${esc(lab(P_ESP,e.esp)||"—")}${e.edad?" · "+esc(lab(P_EDAD,e.edad)):""} · ${esc(nombreMotivo(e.motivo))}${x.vet?" · "+esc(x.vet):""}</span></span>
+     <span class="reg-rm"><b>${cerrado(k)?(k.sinDx?"Sin diagnóstico definitivo":esc(k.dx.n||"")):(t?esc(t.n):"Sin presuntivo")}</b><span class="muted">${esc(lab(P_ESP,e.esp)||"—")}${e.edad?" · "+esc(lab(P_EDAD,e.edad)):""} · ${esc(nombreMotivo(e.motivo))}${x.vet?" · "+esc(x.vet):""}</span></span>
      <span class="reg-rb">${x.migrado?`<span class="lk t">Migrado</span>`:""}${x.sal.insuf?`<span class="lk m">Datos insuficientes</span>`:""}${cerrado(k)?`<span class="lk s">Cerrado</span>`:k?`<span class="lk b">En curso</span>`:`<span class="lk b">Pendiente</span>`}</span></button>`}).join("")}</div>`
      :`<div class="empty">${REG.casos.length?"Ningún caso con este filtro.":"Aún no hay casos registrados en este período. Cada nota SOAP generada en el motor crea un caso."}</div>`}`;
 }
@@ -3117,7 +3120,7 @@ function regBuscar(){REG.busca=(document.getElementById("regbusca").value||"").t
 
 // ─── Ficha y cierre del caso ───
 function regAbrir(id){const x=REG.casos.find(c=>c.id===id);if(!x)return;const k=REG.cierres.get(id)||{};
-  REG.sel=x;REG.ed=JSON.parse(JSON.stringify({dx:k.dx||null,con:k.con||[],sinDx:!!k.sinDx,conf:k.conf||"",labs:k.labs||{},tests:k.tests||{},otros:k.otros||"",notas:k.notas||""}));
+  REG.sel=x;REG.ed=JSON.parse(JSON.stringify({dx:k.dx||null,con:k.con||[],sinDx:!!k.sinDx,conf:k.conf||"",conf2:k.conf2||"",labs:k.labs||{},tests:k.tests||{},otros:k.otros||"",notas:k.notas||""}));
   REG.edMsg="";regRender();window.scrollTo(0,0)}
 function regCerrarFicha(){REG.sel=null;REG.ed=null;regRender()}
 function regFicha(){
@@ -3142,9 +3145,9 @@ function regFicha(){
     :E.sinDx?`<div class="reg-pick"><span>Sin diagnóstico definitivo</span><button class="mot2b" onclick="REG.ed.sinDx=false;regRender()">Cambiar</button></div>`
     :`<div class="opts" style="margin-bottom:6px">${quick.map(t=>`<button class="opt" onclick="regPick('${t.c}','dx')">${esc(t.n)}<small>presuntivo del motor</small></button>`).join("")}</div>
       <input id="regvc" class="reg-in" placeholder="Buscar en VetCIE-1 por nombre o código" oninput="regBuscaVC(this.value)" autocomplete="off"><div id="regvcres" class="reg-vcres"></div>
-      <div class="opts" style="margin-top:6px"><button class="mot2b" onclick="regNuevoDx()">No está en VetCIE-1</button><button class="mot2b" onclick="REG.ed.sinDx=true;REG.ed.conf='';regRender()">Sin diagnóstico definitivo</button></div>`}
+      <div class="opts" style="margin-top:6px"><button class="mot2b" onclick="regNuevoDx()">No está en VetCIE-1</button><button class="mot2b" onclick="REG.ed.sinDx=true;REG.ed.conf='';REG.ed.conf2='';regRender()">Sin diagnóstico definitivo</button></div>`}
    </div>
-   ${E.dx?`<div class="field"><span class="flabel">Base de la confirmación</span><div class="opts">${CONF.map(([v,n,o])=>`<button class="opt ${E.conf===v?"on":""} ${o?"":"y"}" onclick="REG.ed.conf='${v}';regRender()">${esc(n)}</button>`).join("")}</div>
+   ${E.dx?`<div class="field"><span class="flabel">Base de la confirmación <span class="muted">(puede marcar hasta 2)</span></span><div class="opts">${CONF.map(([v,n,o])=>`<button class="opt ${E.conf===v||E.conf2===v?"on":""} ${o?"":"y"}" aria-pressed="${E.conf===v||E.conf2===v}" onclick="regConf('${v}')">${esc(n)}</button>`).join("")}</div>
      <div class="muted" style="margin-top:4px">Solo las cuatro primeras cuentan como confirmación objetiva en los indicadores.</div></div>
      <div class="field"><span class="flabel">Diagnósticos concomitantes</span>
      ${E.con.map((c,i)=>`<div class="reg-pick"><span>${esc(c.n)} <span class="code">${esc(c.c||"sin código")}</span></span><button class="mot2b" onclick="REG.ed.con.splice(${i},1);regRender()">Quitar</button></div>`).join("")}
@@ -3198,7 +3201,7 @@ function pct(k,n){return n?Math.round(k/n*100)+"%":"—"}
 function regEval(){
   return REG.casos.map(c=>{const k=REG.cierres.get(c.id);if(!k||!k.dx||!k.conf)return null;
     const EQ=x=>DX_EQUIV[x]||x, d=EQ(k.dx.c),top=c.sal.top.map(t=>EQ(t.c)),soap=c.sal.soap.map(EQ),alta=c.sal.alta.map(EQ);
-    return {c,k,d,h1:!!d&&top[0]===d,h3:!!d&&top.slice(0,3).includes(d),hs:!!d&&soap.includes(d),hA:!!d&&alta.includes(d),inM:!!d&&MOTOR_C.has(d),obj:CONF_OBJ.has(k.conf),cap:k.dx.cap||"",insuf:c.sal.insuf}
+    return {c,k,d,h1:!!d&&top[0]===d,h3:!!d&&top.slice(0,3).includes(d),hs:!!d&&soap.includes(d),hA:!!d&&alta.includes(d),inM:!!d&&MOTOR_C.has(d),obj:CONF_OBJ.has(k.conf)||CONF_OBJ.has(k.conf2),cap:k.dx.cap||"",insuf:c.sal.insuf}
   }).filter(Boolean);
 }
 function regStats(){
@@ -3325,7 +3328,7 @@ function regLibro(etq){
       Object.assign(o,{"Alta probabilidad":s.alta.join("; "),"SOAP":s.soap.join("; "),"SOAP elegida por":s.soapAuto?"Automático":"Médico",
       "Dx definitivo":k.dx?k.dx.n:k.sinDx?"Sin diagnóstico definitivo":"","Dx definitivo código":k.dx?k.dx.c:"","Capítulo":k.dx&&k.dx.cap?VCAP[k.dx.cap]:"",
       "En el motor":k.dx?(MOTOR_C.has(k.dx.c)?"Sí":"No"):"","Concomitantes":(k.con||[]).map(d=>d.c||d.n).join("; "),
-      "Confirmación":lab(CONF,k.conf),"Confirmación objetiva":k.conf?(CONF_OBJ.has(k.conf)?"Sí":"No"):"",
+      "Confirmación":lab(CONF,k.conf)+(k.conf2?" + "+lab(CONF,k.conf2):""),"Confirmación objetiva":k.conf?(CONF_OBJ.has(k.conf)||CONF_OBJ.has(k.conf2)?"Sí":"No"):"",
       "Acierto top-1":r?(r.h1?1:0):"","Acierto top-3":r?(r.h3?1:0):"","Acierto SOAP":r?(r.hs?1:0):""});
       LABN.forEach(([id,n,u])=>o[`${n} (${u})`]=(k.labs||{})[id]??"");LABT.forEach(([id,n])=>o[n]=TLBL[(k.tests||{})[id]]||"");
       Object.assign(o,{"Otros resultados":k.otros||"","Notas":k.notas||""});

@@ -31,6 +31,11 @@ Origen: `HVCP_ER_Motor_Clinico_v7_9_6.html` actualizado por el hospital (19/11/2
 ### Guía rápida de auscultación pulmonar
 - Recuadro desplegable justo debajo de «Auscultación pulmonar»: qué opción marcar según el tipo de estertor y a qué orienta, más la localización. La pregunta «¿Auscultación torácica?» tiene la misma ayuda resumida.
 
+### Cierre de casos: dos bases de confirmación, más radiografías y diagnóstico del médico en la lista
+- «Base de la confirmación» admite hasta 2 opciones (se guardan en `conf` y `conf2`); la confirmación cuenta como objetiva si cualquiera de las dos lo es. El Excel exportado muestra ambas («Prueba de laboratorio específica + Imagen diagnóstica»).
+- Exámenes del cierre: se agregan radiografía de abdomen (`rxa`), de cabeza (`rxcab`) y de cadera (`rxcad`), además de la de tórax.
+- En la lista del registro, los casos cerrados muestran el diagnóstico definitivo del médico (o «Sin diagnóstico definitivo»); los pendientes siguen mostrando el presuntivo del motor.
+
 ### Aliento urémico, deshidratación obligatoria y ajustes por el registro del 23/11
 - Signo nuevo «Aliento urémico (olor a orina o amoníaco)»; junto con las úlceras orales aparece en los motivos de decaimiento, vómito o diarrea, metabólico y urinario. Suma a ERC agudizada, IRA y estomatitis urémica, y genera la alerta «Aliento urémico: medir creatinina» si no hay creatinina ingresada.
 - Signo nuevo «Inflamación o aumento de volumen (cara, miembros o cuerpo)» en trauma, dolor y piel; suma a politrauma, fractura, mordedura y absceso.
