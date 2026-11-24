@@ -55,6 +55,9 @@ En el panel, vaya a **SQL Editor → New query**. Pegue y ejecute (**Run**) **en
 3. `supabase/migrations/20261117000300_indicadores.sql`: vistas de indicadores.
 4. `supabase/migrations/20261117000400_admin.sql`: funciones del admin.
 5. `supabase/migrations/20261119000500_hemo_efectivo.sql`: estado hemodinámico efectivo (motor v7.9.7).
+6. `supabase/migrations/20261120000600_rol_lector.sql`: rol de solo lectura.
+7. `supabase/migrations/20261124000700_segunda_confirmacion.sql`: segunda base de la confirmación.
+8. `supabase/migrations/20261124000800_mis_pendientes.sql`: aviso de casos por cerrar en cada dispositivo (M10). Sin ella, el aviso usa la lista local del dispositivo.
 
 Cuando se agregue una migración nueva a un proyecto que ya está funcionando, se ejecuta **solo esa**. Conviene correrla primero en el proyecto de prueba y después en el de producción.
 

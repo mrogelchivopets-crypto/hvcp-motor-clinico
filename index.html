@@ -216,6 +216,7 @@ textarea,input,select{font-size:16px}
 .reg-tests{display:flex;flex-direction:column;gap:4px}
 .reg-th{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;padding:2px 0 6px 12px;border-bottom:1px solid var(--border)}
 .reg-th .opt{font-size:11.5px;padding:4px 8px}
+.aviso-cierre{margin:10px max(12px,calc((100% - 1400px)/2))}.aviso-cierre .opt{font-family:var(--mono);font-size:12px}
 .reg-th.falta{box-shadow:inset 3px 0 0 var(--yellow);border-radius:4px}.reg-th.falta b{color:var(--yellow)}
 .reg-sug{margin:6px 0;display:flex;flex-direction:column;gap:4px}
 .reg-test{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12.5px;padding:3px 0;border-bottom:1px solid var(--border);flex-wrap:wrap}
@@ -384,6 +385,7 @@ details[open]>summary .sg-ocu{display:inline}
 </header>
 <div id="jswarn"><b>El motor no se está ejecutando.</b><br>En iPhone, la vista previa de WhatsApp o de la app Archivos no ejecuta la página. Ábrala con el enlace en <b>Safari</b> (o Chrome), o use «Compartir → Abrir en Safari».</div>
 <noscript><div style="background:#4A1616;color:#FFC9C9;padding:14px;margin:16px;border-radius:8px">Esta herramienta necesita JavaScript. Ábrala en Safari o Chrome.</div></noscript>
+<div class="alert y aviso-cierre" id="avisocierre" role="status" style="display:none"></div>
 <nav class="stepnav" id="stepnav"></nav>
 <div class="app">
   <main>
@@ -3133,7 +3135,7 @@ async function regGuardar(prueba){
   const min=ST.t0?Math.max(0,Math.round((Date.now()-ST.t0)/60000)):null;
   const doc={id:c.id,f:c.f,fa:new Date().toISOString(),v:MOTOR_VER+"+"+MOTOR_BUILD,prueba:!!prueba,sesion:REG.sesion,min,
     alertas:(ST._al||[]).map(a=>[a[0],a[1]]),...regSnapshot()};
-  colaPoner({t:"caso",k:c.id,p:doc});
+  colaPoner({t:"caso",k:c.id,p:doc});if(!prueba)misPoner(c.id,c.f);
   const r=await colaEnviar();
   if(prueba)regMsg(r.ok?"Caso de prueba o docencia guardado: no cuenta en los indicadores.":"Caso de prueba o docencia en cola: se enviará al recuperar la conexión.",r.ok?"":"warn");
   else if(r.ok)regMsg(`Caso ${c.id} registrado. El código queda en la nota SOAP del expediente.`,"ok");
@@ -3171,6 +3173,37 @@ function regConf(v){const E=REG.ed;if(!E)return;
   if(E.conf===v){E.conf=E.conf2||"";E.conf2=""}else if(E.conf2===v){E.conf2=""}else if(!E.conf){E.conf=v}else{E.conf2=v}
   regRender()}
 function cerrado(k){return !!(k&&(k.sinDx||(k.dx&&k.conf)))}
+// ─── Plazos de cierre (M10, 24/11/2026) ───
+// 0–24 h: pendiente. 24–72 h: aviso en el dispositivo que registró el caso. > 72 h: vencido = «sin confirmación»
+// (no entra al acierto, que solo usa cerrados; se cuenta aparte). Hasta 14 días el médico aún puede cerrarlo; después, solo la dirección.
+const PLAZO={aviso:24,vence:72,limite:14*24};
+function horasDesde(iso){return (Date.now()-new Date(iso).getTime())/36e5}
+function estadoCaso(c,k){return cerrado(k)?"cerr":horasDesde(c.f)>PLAZO.vence?"venc":"pend"}
+function haceTxt(iso){const h=horasDesde(iso);return h<48?`hace ${Math.round(h)} h`:`hace ${Math.floor(h/24)} días`}
+// Casos registrados en este dispositivo (solo código y fecha), para el aviso si aún no existe la RPC mis_pendientes.
+const MIS_KEY="hvcp_mis_casos";
+function misLeer(){try{return JSON.parse(localStorage.getItem(MIS_KEY)||"[]")}catch(e){return []}}
+function misEscribir(l){try{localStorage.setItem(MIS_KEY,JSON.stringify(l.filter(x=>horasDesde(x.f)<=PLAZO.limite)))}catch(e){}}
+function misPoner(id,f){const l=misLeer().filter(x=>x.id!==id);l.push({id,f,c:0});misEscribir(l)}
+function misCerrar(id){misEscribir(misLeer().map(x=>x.id===id?{...x,c:1}:x))}
+// Pendientes de este dispositivo con más de 24 h y menos de 14 días (vencidos incluidos: todavía pueden cerrarse).
+async function regPendientesCargar(){
+  let l=null;
+  if(REG.sb&&REG.uid&&navigator.onLine){try{const {data,error}=await REG.sb.rpc("mis_pendientes");if(!error&&Array.isArray(data))l=data.map(x=>({id:x.codigo,f:x.creado}))}catch(e){}}
+  if(!l)l=misLeer().filter(x=>!x.c);
+  REG.misPend=l.filter(x=>{const h=horasDesde(x.f);return h>PLAZO.aviso&&h<=PLAZO.limite}).sort((a,b)=>a.f<b.f?-1:1);
+  avisoPintar();if(REG.abierto&&!REG.admin&&!REG.sel)regRender();
+}
+function avisoPintar(){
+  const el=document.getElementById("avisocierre");if(!el)return;const l=REG.misPend||[];
+  if(!l.length||REG.avisoOculto){el.style.display="none";el.innerHTML="";return}
+  const nV=l.filter(x=>horasDesde(x.f)>PLAZO.vence).length;
+  el.style.display="";el.innerHTML=`<b>${l.length===1?"Tiene 1 caso por cerrar":`Tiene ${l.length} casos por cerrar`} en este dispositivo${nV?` (${nV} vencido${nV>1?"s":""})`:""}</b>
+   Registre el diagnóstico definitivo: sin cierre, el caso no sirve para validar el motor. A las 72 h queda como «sin confirmación» y a los 14 días solo la dirección puede cerrarlo.
+   <div class="opts" style="margin-top:6px">${l.slice(0,8).map(x=>`<button class="opt" onclick="regIrCodigo('${x.id}')">${esc(x.id)} · ${haceTxt(x.f)}${horasDesde(x.f)>PLAZO.vence?" · vencido":""}</button>`).join("")}${l.length>8?`<span class="muted" style="align-self:center">y ${l.length-8} más</span>`:""}<button class="mot2b" onclick="REG.avisoOculto=true;avisoPintar()">Más tarde</button></div>`;
+}
+function regIrCodigo(id){if(REG.admin){REG.busca=id;REG.filtro="todos";REG.sel=null;REG.vista="casos";if(!REG.abierto)regToggle(true);else regRender();return}
+  REG.accCod=id;REG.accMsg="";if(!REG.abierto)regToggle(true);regAbrirCodigo()}
 
 function regRender(){
   const el=document.getElementById("regbody");if(!el||!REG.abierto)return;
@@ -3187,16 +3220,16 @@ function regRender(){
 }
 
 function regLista(){
-  const rows=REG.casos.filter(x=>{const k=REG.cierres.get(x.id);return REG.filtro==="todos"?true:REG.filtro==="cerr"?cerrado(k):!cerrado(k)});
+  const rows=REG.casos.filter(x=>REG.filtro==="todos"||estadoCaso(x,REG.cierres.get(x.id))===REG.filtro);
   const q=REG.busca.trim().toUpperCase();
   const vis=q?rows.filter(x=>x.id.includes(q)):rows;
-  const nP=REG.casos.filter(x=>!cerrado(REG.cierres.get(x.id))).length;
-  return `<div class="reg-tools"><div class="opts">${[["pend",`Pendientes (${nP})`],["cerr",`Cerrados (${REG.casos.length-nP})`],["todos",`Todos (${REG.casos.length})`]].map(([v,n])=>`<button class="opt ${REG.filtro===v?"on":""}" onclick="regSet('filtro','${v}')">${n}</button>`).join("")}</div>
+  const nE={pend:0,venc:0,cerr:0};REG.casos.forEach(x=>nE[estadoCaso(x,REG.cierres.get(x.id))]++);
+  return `<div class="reg-tools"><div class="opts">${[["pend",`Pendientes ≤ 72 h (${nE.pend})`],["venc",`Vencidos > 72 h (${nE.venc})`],["cerr",`Cerrados (${nE.cerr})`],["todos",`Todos (${REG.casos.length})`]].map(([v,n])=>`<button class="opt ${REG.filtro===v?"on":""}" onclick="regSet('filtro','${v}')">${n}</button>`).join("")}</div>
    <div class="wt" style="flex-wrap:wrap"><input id="regbusca" value="${esc(REG.busca)}" placeholder="Código MC (ej. MC-7K3PQ2)" style="width:240px;font-family:var(--sans)" onkeydown="if(event.key==='Enter')regBuscar()"><button class="opt" onclick="regBuscar()">Buscar</button>${q?`<button class="opt" onclick="REG.busca='';regRender()">Limpiar</button>`:""}</div></div>
    ${vis.length?`<div class="reg-list">${vis.map(x=>{const k=REG.cierres.get(x.id),t=x.sal.top[0],e=x.ent;
      return `<button class="reg-row" onclick="regAbrir('${x.id}')"><span class="code">${esc(x.id)}</span><span class="reg-rf">${esc(fCorta(x.f))}</span>
      <span class="reg-rm"><b>${cerrado(k)?(k.sinDx?"Sin diagnóstico definitivo":esc(k.dx.n||"")):(t?esc(t.n):"Sin presuntivo")}</b><span class="muted">${esc(lab(P_ESP,e.esp)||"—")}${e.edad?" · "+esc(lab(P_EDAD,e.edad)):""} · ${esc(nombreMotivo(e.motivo))}${x.vet?" · "+esc(x.vet):""}</span></span>
-     <span class="reg-rb">${x.migrado?`<span class="lk t">Migrado</span>`:""}${x.sal.insuf?`<span class="lk m">Datos insuficientes</span>`:""}${cerrado(k)?`<span class="lk s">Cerrado</span>`:k?`<span class="lk b">En curso</span>`:`<span class="lk b">Pendiente</span>`}</span></button>`}).join("")}</div>`
+     <span class="reg-rb">${x.migrado?`<span class="lk t">Migrado</span>`:""}${x.sal.insuf?`<span class="lk m">Datos insuficientes</span>`:""}${cerrado(k)?`<span class="lk s">Cerrado</span>`:horasDesde(x.f)>PLAZO.vence?`<span class="lk m" title="Más de 72 h sin cierre: sin confirmación, fuera del acierto">Vencido</span>`:k?`<span class="lk b">En curso</span>`:`<span class="lk b">Pendiente</span>`}</span></button>`}).join("")}</div>`
      :`<div class="empty">${REG.casos.length?"Ningún caso con este filtro.":"Aún no hay casos registrados en este período. Cada nota SOAP generada en el motor crea un caso."}</div>`}`;
 }
 function regBuscar(){REG.busca=(document.getElementById("regbusca").value||"").trim();regRender()}
@@ -3280,6 +3313,7 @@ async function regAnular(){
 }
 async function regGuardarCierre(){
   const x=REG.sel,E=REG.ed;
+  if(!REG.admin&&!cerrado(REG.cierres.get(x.id))&&horasDesde(x.f)>PLAZO.limite){REG.edMsg="Este caso tiene más de 14 días sin cierre: solo la dirección puede cerrarlo.";regRender();return}
   if(E.dx&&!E.conf){REG.edMsg="Indique la base de la confirmación del diagnóstico.";regRender();return}
   // Sin diagnóstico ni ningún resultado: no se guarda un cierre vacío.
   const conDatos=Object.keys(E.labs||{}).length||Object.keys(E.tests||{}).length||(E.con||[]).length||String(E.otros||"").trim()||String(E.notas||"").trim();
@@ -3293,7 +3327,7 @@ async function regGuardarCierre(){
   if(!REG.sb){REG.edMsg="Sin conexión con el registro. Intente de nuevo cuando haya red.";regRender();return}
   try{const {data,error}=await REG.sb.rpc("guardar_cierre",{p_codigo:x.id,p:doc});if(error)throw error;
     const k=data||doc;REG.cierres.set(x.id,k);if(REG.cierresTodos&&REG.cierresTodos!==REG.cierres)REG.cierresTodos.set(x.id,k);
-    toastMsg("Información guardada");REG.edMsg=cerrado(k)?"Caso cerrado.":"Guardado. El caso sigue pendiente hasta registrar el diagnóstico definitivo (o «sin diagnóstico definitivo»)."}
+    toastMsg("Información guardada");if(cerrado(k)){misCerrar(x.id);REG.misPend=(REG.misPend||[]).filter(z=>z.id!==x.id);avisoPintar()}REG.edMsg=cerrado(k)?"Caso cerrado.":"Guardado. El caso sigue pendiente hasta registrar el diagnóstico definitivo (o «sin diagnóstico definitivo»)."}
   catch(e){REG.edMsg=/falta_confirmacion/.test(e&&e.message)?"Indique la base de la confirmación del diagnóstico.":/caso_no_encontrado/.test(e&&e.message)?"El caso ya no existe o fue anulado.":"No se pudo guardar. Revise la conexión e intente de nuevo."}
   regRender();
 }
@@ -3317,6 +3351,7 @@ function regStats(){
   const sets={todos:ev,obj:ev.filter(r=>r.obj),motor:ev.filter(r=>r.inM)};
   st.acc={};for(const[s,a]of Object.entries(sets))st.acc[s]={h1:g(a,r=>r.h1),h3:g(a,r=>r.h3),hs:g(a,r=>r.hs),hc3:g(a,r=>r.hc3)};
   st.nDc=ev.filter(r=>r.dc).length;
+  st.venc=REG.casos.filter(c=>estadoCaso(c,REG.cierres.get(c.id))==="venc").length;
   st.insuf=REG.casos.filter(c=>c.sal.insuf).length;
   st.sinDxMotor=REG.casos.filter(c=>c.sal.sinDx).length;
   const fal={};REG.casos.filter(c=>c.sal.insuf).forEach(c=>c.sal.faltan.forEach(f=>fal[f]=(fal[f]||0)+1));st.faltan=Object.entries(fal).sort((a,b)=>b[1]-a[1]);
@@ -3421,7 +3456,8 @@ function regIndicadores(){
     <div><span class="reg-k">${s.N}</span><span class="muted">casos registrados</span></div>
     <div><span class="reg-k">${s.nEv}</span><span class="muted">con diagnóstico definitivo</span></div>
     <div><span class="reg-k">${pct(s.insuf,s.N)}</span><span class="muted">con datos insuficientes (${s.insuf})</span></div>
-    <div><span class="reg-k">${pct(s.fuera.reduce((a,b)=>a+b.prin,0),s.nEv)}</span><span class="muted">definitivos fuera del motor</span></div></div>
+    <div><span class="reg-k">${pct(s.fuera.reduce((a,b)=>a+b.prin,0),s.nEv)}</span><span class="muted">definitivos fuera del motor</span></div>
+    <div><span class="reg-k">${pct(s.venc,s.N)}</span><span class="muted">sin confirmación: vencidos &gt; 72 h sin cierre (${s.venc}); no entran al acierto</span></div></div>
   ${s.nEv<30?`<div class="alert y"><b>Muestra pequeña (${s.nEv} casos evaluables)</b>Los porcentajes tienen intervalos de confianza amplios; no recalibre pesos con menos de 30 casos por diagnóstico.</div>`:""}
   ${regPodio(s)}
   <div class="card"><div class="card-h">Cuando el médico cambió el diagnóstico del motor</div><div class="card-b">${s.medVsMotor.n?`<p>${s.medVsMotor.n} casos con elección distinta al primer lugar del motor: acertó el médico en ${s.medVsMotor.med}, el motor en ${s.medVsMotor.mot}, ninguno en ${s.medVsMotor.ning}.</p><p class="muted">Si el médico acierta más que el motor, revise los pesos de las reglas de esos diagnósticos.</p>`:`<p class="muted">Sin casos en que el médico eligiera otro diagnóstico para la nota.</p>`}</div></div>
@@ -3436,7 +3472,7 @@ function cargarXLSX(){return window.XLSX?Promise.resolve():new Promise((res,rej)
 function regLibro(etq){
     const st=regStats(),evm=new Map(st.ev.map(r=>[r.c.id,r])),wb=XLSX.utils.book_new();
     const filas=REG.casos.map(c=>{const e=c.ent,s=c.sal,x=e.ex||{},k=REG.cierres.get(c.id)||{},r=evm.get(c.id),o={
-      "Código":c.id,"Fecha":fIso(c.f),"Versión motor":String(c.v||"").split("+")[0],"Compilación":String(c.v||"").split("+")[1]||"","Veterinario":c.vet||"",
+      "Código":c.id,"Fecha":fIso(c.f),"Estado":{cerr:"Cerrado",pend:"Pendiente",venc:"Vencido (sin confirmación)"}[estadoCaso(c,k)],"Versión motor":String(c.v||"").split("+")[0],"Compilación":String(c.v||"").split("+")[1]||"","Veterinario":c.vet||"",
       "Especie":lab(P_ESP,e.esp),"Peso (kg)":e.peso,"Edad":lab(P_EDAD,e.edad),"Sexo":lab(P_SEXO,e.sexo),"Estado hemodinámico":lab(P_HEMO,e.hemo),"Estado hemodinámico analizado":e.hemoEf?lab(P_HEMO,e.hemoEf):"",
       "FC":numX(x.fc),"FR":numX(x.fr),"Temperatura":numX(x.temp),"Mucosas":lab(EX_MUC,x.muc),"TLLC":lab(EX_TLLC,x.tllc),"Pulso":lab(EX_PULSO,x.pulso),"Deshidratación":lab(EX_DH,x.dh),"CC (1-5)":numX(x.cc),
       "Ausc. cardíaca":lab(EX_CARD,x.card),"Ausc. pulmonar":lab(EX_PULM,x.pulm),"Vejiga":lab(EX_VEJ,x.vej),
@@ -3469,6 +3505,7 @@ function regLibro(etq){
       ["Confirmación 2","Hoja Casos: segunda base de la confirmación del diagnóstico definitivo (opcional; vacía en los cierres que solo tienen una). Mismos valores que «Confirmación»: "+CONF.map(c=>c[1]).join("; ")+"."],
       ["Confirmación objetiva","Hoja Casos: «Sí» si «Confirmación» o «Confirmación 2» es histopatología o necropsia, prueba de laboratorio específica, imagen diagnóstica o hallazgo quirúrgico; «No» en otro caso; vacía si el caso no tiene confirmación."],
       ...LABT.filter(t=>["rxa","rxcab","rxcad"].includes(t[0])).map(t=>[t[1],"Hoja Casos: resultado de la "+t[1].toLowerCase()+" registrado en el cierre: «Anormal» o «Normal»; vacía si no se registró."]),
+      ["Estado","Hoja Casos: «Cerrado» (diagnóstico definitivo o «sin diagnóstico definitivo»), «Pendiente» (hasta 72 h sin cierre) o «Vencido (sin confirmación)» (más de 72 h sin cierre; no entra al acierto). Calculado al exportar."],
       ["Compilación","Hoja Casos: publicación exacta de la página con que se registró el caso (fecha y letra, p. ej. 2026-11-24b). Vacía en los casos anteriores al 24/11/2026. Si un caso nuevo trae una compilación vieja, esa tableta usa una página en caché."],
       ["Hallazgos específicos","Hoja Casos: hallazgo principal de cada examen anormal o 4Dx positivo. Obligatorio desde el 24/11/2026 (M9); «No determinado» cuando no se pudo precisar."],
       ["conf2","Hoja Matriz ML: segunda base de la confirmación (código; vacía si no hay)."]]),"Diccionario");
@@ -3495,6 +3532,7 @@ function regAcceso(){
    <div class="field"><input id="acccod" class="reg-in" placeholder="Código MC (ej. MC-7K3PQ2)" value="${esc(REG.accCod)}" oninput="REG.accCod=this.value" autocapitalize="characters" autocomplete="off" onkeydown="if(event.key==='Enter')regAbrirCodigo()"></div>
    <div class="opts"><button class="opt on" onclick="regAbrirCodigo()">Abrir caso</button></div>
    <div class="regmsg ${REG.accErr?"err":""}">${esc(REG.accMsg||"")}</div>
+   ${(REG.misPend||[]).length?`<h4 class="sub" style="margin-top:10px">Por cerrar en este dispositivo</h4><div class="opts">${REG.misPend.map(x=>`<button class="opt" onclick="regIrCodigo('${x.id}')">${esc(x.id)} · ${haceTxt(x.f)}${horasDesde(x.f)>PLAZO.vence?" · vencido":""}</button>`).join("")}</div>`:""}
   </div></div>
   <div class="card"><div class="card-h">Acceso de administración</div><div class="card-b">
    <p class="muted" style="margin-bottom:8px">Solo para la dirección: lista de casos, indicadores del hospital y exportación a Excel.</p>
@@ -3510,6 +3548,7 @@ async function regAbrirCodigo(){
   REG.accMsg="Buscando…";REG.accErr=false;regRender();
   try{const {data,error}=await REG.sb.rpc("caso_por_codigo",{p_codigo:v});if(error)throw error;
     if(!data){REG.accMsg=colaTiene(v)?"Ese caso está todavía en la cola de este dispositivo: espere a que se sincronice.":"No existe un caso con ese código (o fue anulado).";REG.accErr=true;regRender();return}
+    if(!REG.admin&&!cerrado(data.cierre)&&horasDesde(data.caso.f)>PLAZO.limite){REG.accMsg="Este caso tiene más de 14 días sin cierre y quedó como «sin confirmación». Solo la dirección puede cerrarlo.";REG.accErr=true;regRender();return}
     REG.cierres=new Map();if(data.cierre)REG.cierres.set(data.caso.id,data.cierre);REG.casos=[data.caso];REG.accMsg="";regAbrir(data.caso.id)}
   catch(e){REG.accMsg=/demasiadas_consultas/.test(e&&e.message)?"Demasiadas búsquedas seguidas. Espere unos minutos.":"No se pudo buscar el caso. Revise la conexión.";REG.accErr=true;regRender()}
 }
@@ -3619,10 +3658,11 @@ function regEvento(tipo){if(!REG.sb||!REG.uid||!navigator.onLine)return;REG.sb.r
   REG.sb.auth.onAuthStateChange(async(ev)=>{if(ev==="PASSWORD_RECOVERY"){const n=prompt("Escriba su nueva contraseña (mínimo 10 caracteres):");
     if(n&&n.length>=10){const {error}=await REG.sb.auth.updateUser({password:n});alert(error?"No se pudo cambiar la contraseña.":"Contraseña actualizada.")}}});
   if(await regSesionLista()){await regPerfil();await regSesionUso()}
-  netPintar();colaEnviar();
+  netPintar();colaEnviar();regPendientesCargar();
   if(REG.abierto){if(REG.admin&&!REG.cargado)regCargar();regRender()}
   window.addEventListener("online",()=>{netPintar();colaEnviar()});window.addEventListener("offline",netPintar);
   setInterval(()=>{if(document.visibilityState==="visible"&&REG.sesion&&navigator.onLine)REG.sb.rpc("latido",{p_sesion:REG.sesion}).then(()=>{},()=>{});colaEnviar()},60000);
+  setInterval(()=>{if(document.visibilityState==="visible")regPendientesCargar()},30*60000);
 })();
 
 document.getElementById("foot").innerHTML = `HVCP ER Motor Clínico v7.9.7 · registro en línea (reglas y registro de casos) · ${DX.length} diagnósticos presuntivos en ${Object.keys(SYS).length} sistemas · Herramienta de apoyo a la decisión: no sustituye el examen clínico ni el criterio del médico veterinario. Las dosis deben verificarse contra la presentación disponible y el estado del paciente.<br>
