@@ -14,6 +14,10 @@ Origen: caso MC-AMXZ4N (gata esterilizada con sedimento urinario). En gatos el m
 
 Origen: análisis del registro del 24/11 (127 casos, 57 cierres). Aprobado por la Dirección General (M1, M2, M3, M5 y M6). No cambia ningún diagnóstico ni puntaje: 127 casos del registro y 1000 casos generados desde las reglas de cada diagnóstico dan la misma lista de alta probabilidad y el mismo top-5.
 
+### Indicadores: «¿Dónde quedó el diagnóstico del médico?»
+- La tabla de acierto (top-1, top-3, SOAP y top-3 con los datos del cierre, con IC95 en cada celda) se reemplaza por una tabla de posiciones: en 1.er lugar, en 2.º o 3.er lugar, fuera de los 3 primeros y total, con casos y %, para todos los casos y para los de confirmación objetiva.
+- Encima, una frase automática y una barra apilada (verde, azul claro y gris). Debajo, notas con la coincidencia de la SOAP, el rango probable (IC 95 %) y, cuando difiere, el top-3 con los datos del cierre.
+
 ### Cierre: hallazgo específico de los exámenes (M1)
 - Evidencia: 8 de 10 cierres con imagen «anormal» sin el hallazgo, 16 de 18 resultados de 4Dx y los 4 cierres con laboratorio sin esos datos en el caso. En los 3 casos en que el motor puso primero la pancreatitis (piometra, colangitis y barro biliar confirmados por eco), con el hallazgo de la eco el diagnóstico real sube al 1.er o 2.º lugar.
 - Al marcar «Anormal» en ecografía abdominal, radiografía de tórax o de abdomen, T-FAST o urianálisis, o «Positivo» en 4Dx, aparece «Hallazgo principal» con las opciones de la pregunta equivalente del motor (`eco`, `tfast`, `snap4`, `crist`).

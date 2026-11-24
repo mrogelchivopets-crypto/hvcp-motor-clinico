@@ -365,6 +365,10 @@ details[open]>summary .sg-ocu{display:inline}
 .hclock{font-family:var(--mono);font-size:12px;color:var(--accent);white-space:nowrap;margin-top:2px}
 .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:#1E7A46;color:#fff;font-weight:600;font-size:15px;padding:12px 22px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:9999;max-width:calc(100vw - 32px);text-align:center}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.podio-bar{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--surface3);margin:4px 0 6px}
+.podio-bar i,.podio-ley i{display:block}.podio-bar .p1,.podio-ley .p1{background:#22C55E}.podio-bar .p23,.podio-ley .p23{background:#7DB3FF}.podio-bar .pf,.podio-ley .pf{background:#5B6178}
+.podio-ley{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--sub);margin-bottom:10px}.podio-ley span{display:flex;align-items:center;gap:5px}.podio-ley i{width:10px;height:10px;border-radius:2px}
+.podio-t td{white-space:nowrap}.podio-t th{white-space:normal;vertical-align:bottom}.podio-t td:first-child{white-space:normal}@media (max-width:600px){.podio-t td,.podio-t th{padding:5px 4px;font-size:12px}}.podio-tot td{border-top:1px solid var(--border2)}
 </style>
 </head>
 <body>
@@ -3382,6 +3386,22 @@ function regUso(){
     ${sinCasos.length?`<tr><td class="muted">Abrieron el motor sin registrar casos: ${sinCasos.length} dispositivo${sinCasos.length===1?"":"s"}</td><td class="n">0</td><td class="n">—</td><td class="n">—</td><td class="n">${REG.ses?sinCasos.reduce((a,r)=>a+r.ses,0):"—"}</td><td class="n">${REG.ses?fDur(sinCasos.reduce((a,r)=>a+r.uso,0)):"—"}</td></tr>`:""}</table></div>`,
     "Los médicos usan el motor sin cuenta: cada teléfono o computadora aparece como «Anónimo · disp.» con un código propio. Las sesiones incluyen el uso sin registrar casos.")}`;
 }
+function regPodio(s){const A=s.acc,f=o=>({n:o.h1.n,p1:o.h1.k,p23:o.h3.k-o.h1.k,fu:o.h1.n-o.h3.k});
+  const T=f(A.todos),O=f(A.obj),P=(k,n)=>n?Math.round(k/n*100)+" %":"—",cel=(k,n)=>`<td class="code" style="text-align:right"><b>${k}</b></td><td class="code" style="text-align:right">${P(k,n)}</td>`;
+  const barra=o=>o.n?`<div class="podio-bar" role="img" aria-label="1.er lugar ${o.p1}, 2.º o 3.er lugar ${o.p23}, fuera ${o.fu}"><i class="p1" style="width:${o.p1/o.n*100}%"></i><i class="p23" style="width:${o.p23/o.n*100}%"></i><i class="pf" style="width:${o.fu/o.n*100}%"></i></div>`:"";
+  const ic=(o,k)=>{const c=wilson(k,o.n);return c?`${Math.round(c[0]*100)}–${Math.round(c[1]*100)} %`:"—"};
+  return `<div class="card"><div class="card-h">¿Dónde quedó el diagnóstico del médico?</div><div class="card-b reg-scroll">
+   ${T.n?`<p style="margin-bottom:10px">El motor acertó en primer lugar en <b>${T.p1} de ${T.n}</b> casos (${P(T.p1,T.n)}) y tuvo el diagnóstico correcto entre sus 3 primeras opciones en <b>${T.p1+T.p23} de ${T.n}</b> (${P(T.p1+T.p23,T.n)}).</p>${barra(T)}
+   <div class="podio-ley"><span><i class="p1"></i>1.er lugar</span><span><i class="p23"></i>2.º o 3.er lugar</span><span><i class="pf"></i>Fuera de los 3 primeros</span></div>`:""}
+   <table class="kcl reg-t podio-t"><tr><th>Dónde quedó</th><th colspan="2" style="text-align:right">Todos los casos</th><th colspan="2" style="text-align:right">Confirmación objetiva</th></tr>
+   <tr><td>En 1.er lugar</td>${cel(T.p1,T.n)}${cel(O.p1,O.n)}</tr>
+   <tr><td>En 2.º o 3.er lugar</td>${cel(T.p23,T.n)}${cel(O.p23,O.n)}</tr>
+   <tr><td>Fuera de los 3 primeros</td>${cel(T.fu,T.n)}${cel(O.fu,O.n)}</tr>
+   <tr class="podio-tot"><td><b>Total</b></td>${cel(T.n,T.n)}${cel(O.n,O.n)}</tr></table>
+   <p class="muted" style="margin-top:8px">Confirmación objetiva: histopatología o necropsia, laboratorio específico, imagen o cirugía. El diagnóstico usado en la nota SOAP coincidió con el definitivo en ${A.todos.hs.k} de ${A.todos.hs.n} casos (${P(A.todos.hs.k,A.todos.hs.n)}).</p>
+   ${T.n?`<p class="muted" style="margin-top:4px">Rango probable (IC 95 %), todos los casos: primer lugar ${ic(T,T.p1)}; entre los 3 primeros ${ic(T,T.p1+T.p23)}. Con pocos casos el rango es amplio; se irá estrechando con más cierres.</p>`:""}
+   ${T.n&&A.todos.hc3&&s.nDc&&A.todos.hc3.k!==T.p1+T.p23?`<p class="muted" style="margin-top:4px"><b>Con los datos del cierre:</b> si se hubieran ingresado al motor los resultados que solo quedaron en el cierre (${s.nDc} casos recalculados), el diagnóstico correcto habría quedado entre los 3 primeros en ${A.todos.hc3.k} de ${A.todos.hc3.n} (${P(A.todos.hc3.k,A.todos.hc3.n)}), frente a ${T.p1+T.p23} de ${T.n} (${P(T.p1+T.p23,T.n)}). La diferencia es lo que se pierde por datos no registrados.</p>`:""}
+  </div></div>`}
 function regIndicadores(){
   if(!REG.casos.length)return `<div class="empty">Sin casos en el período elegido.</div>`;
   const s=regStats(),A=s.acc;
@@ -3391,14 +3411,7 @@ function regIndicadores(){
     <div><span class="reg-k">${pct(s.insuf,s.N)}</span><span class="muted">con datos insuficientes (${s.insuf})</span></div>
     <div><span class="reg-k">${pct(s.fuera.reduce((a,b)=>a+b.prin,0),s.nEv)}</span><span class="muted">definitivos fuera del motor</span></div></div>
   ${s.nEv<30?`<div class="alert y"><b>Muestra pequeña (${s.nEv} casos evaluables)</b>Los porcentajes tienen intervalos de confianza amplios; no recalibre pesos con menos de 30 casos por diagnóstico.</div>`:""}
-  <div class="card"><div class="card-h">Acierto del diagnóstico presuntivo</div><div class="card-b reg-scroll"><table class="kcl reg-t">
-   <tr><th></th><th>Todos los evaluables</th><th>Confirmación objetiva</th><th>Dx que el motor contempla</th></tr>
-   <tr><td>Primer lugar del motor (top-1)</td>${accCell(A.todos.h1)}${accCell(A.obj.h1)}${accCell(A.motor.h1)}</tr>
-   <tr><td>Entre los 3 primeros (top-3)</td>${accCell(A.todos.h3)}${accCell(A.obj.h3)}${accCell(A.motor.h3)}</tr>
-   <tr><td>Diagnóstico usado en la SOAP</td>${accCell(A.todos.hs)}${accCell(A.obj.hs)}${accCell(A.motor.hs)}</tr>
-   <tr><td>Top-3 con los datos del cierre<div class="muted" style="font-size:11.5px">${s.nDc} casos recalculados</div></td>${accCell(A.todos.hc3)}${accCell(A.obj.hc3)}${accCell(A.motor.hc3)}</tr></table>
-   <p class="muted" style="margin-top:8px">«Con los datos del cierre»: los casos cuyo cierre trae resultados que no se ingresaron al motor (4Dx, parvovirus, ecografía, T-FAST o Rx, autoaglutinación, cristales, creatinina, hematocrito, glucosa, Na/K) se reproducen en el motor actual con esas respuestas; los demás conservan su posición original. La diferencia con la fila top-3 muestra cuánto se pierde por datos no registrados.</p>
-   <p class="muted" style="margin-top:8px">La columna de confirmación objetiva (histopatología, necropsia, laboratorio específico, imagen o cirugía) es la medida válida: las otras incluyen casos donde el definitivo puede ser el mismo presuntivo sin verificar.</p></div></div>
+  ${regPodio(s)}
   <div class="card"><div class="card-h">Cuando el médico cambió el diagnóstico del motor</div><div class="card-b">${s.medVsMotor.n?`<p>${s.medVsMotor.n} casos con elección distinta al primer lugar del motor: acertó el médico en ${s.medVsMotor.med}, el motor en ${s.medVsMotor.mot}, ninguno en ${s.medVsMotor.ning}.</p><p class="muted">Si el médico acierta más que el motor, revise los pesos de las reglas de esos diagnósticos.</p>`:`<p class="muted">Sin casos en que el médico eligiera otro diagnóstico para la nota.</p>`}</div></div>
   <div class="card"><div class="card-h">Por sistema (capítulo VetCIE-1)</div><div class="card-b reg-scroll"><table class="kcl"><tr><th>Capítulo</th><th>n</th><th>Top-1</th><th>Top-3</th></tr>${s.cap.map(r=>`<tr><td>${esc(VCAP[r.c]||"Sin código VetCIE-1")}</td><td class="code">${r.n}</td><td>${pct(r.h1,r.n)}</td><td>${pct(r.h3,r.n)}</td></tr>`).join("")}</table></div></div>
   <div class="card"><div class="card-h">Por diagnóstico definitivo</div><div class="card-b reg-scroll"><table class="kcl"><tr><th>Diagnóstico</th><th>n</th><th>Top-1</th><th>Top-3</th></tr>${s.dx.map(r=>`<tr><td>${esc(r.n)} <span class="code">${esc(r.c||"sin código")}</span>${r.inM?"":` <span class="lk m">Fuera del motor</span>`}</td><td class="code">${r.cnt}</td><td>${pct(r.h1,r.cnt)}</td><td>${pct(r.h3,r.cnt)}</td></tr>`).join("")}</table></div></div>
