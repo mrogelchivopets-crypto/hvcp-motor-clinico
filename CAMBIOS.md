@@ -1,5 +1,24 @@
 # Historial de cambios del Motor Clínico
 
+## v7.9.7 · 24/11/2026 17:30 · compilación en el registro (M8) y hallazgo principal obligatorio (M9)
+
+Origen: análisis del registro del 24/11 a las 16:45 (136 casos y 56 cierres). Aprobado por la Dirección General (M8 y M9). Casos de origen: MC-BANPER y MC-UTMWVG (registrados como 7.9.7 antes de cambios que conservaron ese número); MC-X2GR63, MC-A2DMYT y MC-NT9M5R (cierres posteriores a la publicación de las 12:03 sin hallazgo específico); MC-66VRWU, MC-8G2VKH, MC-QUN38H, MC-6D7SX3 y MC-QGHRT2 (hallazgo de la eco no ingresado).
+
+### Compilación (M8)
+- Constante `MOTOR_BUILD` (hoy `2026-11-24b`, fecha y letra). Se actualiza en cada publicación; `MOTOR_VER` no cambia.
+- Cada caso guarda `v` como «7.9.7+2026-11-24b». Se usa ese campo porque `registrar_caso` guarda `sal` campo por campo y descartaría un campo nuevo dentro de `sal`; no requiere migración (`version_motor` admite 20 caracteres).
+- Excel: «Versión motor» muestra solo 7.9.7 y la columna nueva «Compilación» muestra la etiqueta (vacía en casos anteriores). Explicadas en «Diccionario». Un caso nuevo con compilación vieja = tableta con caché.
+
+### Hallazgo principal obligatorio (M9)
+- Evidencia: 0 de 26 resultados anormales o positivos con hallazgo en todo el registro, 0 de 3 desde la publicación de M1.
+- Con ecografía, radiografía de tórax o de abdomen, T-FAST o urianálisis «Anormal», o 4Dx «Positivo», el cierre no se guarda sin «Hallazgo principal»; el renglón se marca «(obligatorio)». Nueva opción «No determinado» (`<examen>_h:"nd"`), que no se envía al motor en `regDatosCierre`.
+
+### Verificación
+- Sintaxis: `node --check` del script, OK.
+- 136 casos del registro: misma lista de alta probabilidad y mismo top-5 con puntajes; `regDatosCierre` sin diferencias.
+- 1200 casos generados desde las reglas de cada diagnóstico: 0 diferencias en la lista de alta y el top-5.
+- Cierre con eco anormal y 4Dx positivo sin hallazgo: bloqueado con mensaje; con hallazgo o «No determinado»: pasa.
+
 ## v7.9.7 · 24/11/2026 · indicadores: «¿Dónde quedó el diagnóstico del médico?»
 
 - La tabla de acierto (top-1, top-3, SOAP y top-3 con los datos del cierre, con IC95 en cada celda) se reemplaza por una tabla de posiciones: en 1.er lugar, en 2.º o 3.er lugar, fuera de los 3 primeros y total, con casos y %, para todos los casos y para los de confirmación objetiva.
