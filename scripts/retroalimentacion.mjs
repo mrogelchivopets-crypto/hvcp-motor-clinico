@@ -41,6 +41,15 @@ const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<
 const disp = (uid) => "disp. " + String(uid || "").replace(/-/g, "").slice(0, 4).toUpperCase();
 const cerrado = (k) => !!(k && (k.sinDx || (k.dx && k.conf)));
 const OBJ = new Set(["histo", "lab", "img", "qx"]);
+// Con dos bases se muestran abreviadas: «Laboratorio + Imagen».
+const CONF_CORTA = { histo: "Histopatología", lab: "Laboratorio", img: "Imagen", qx: "Cirugía", resp: "Respuesta al tratamiento", clin: "Criterio clínico" };
+const confTexto = (c1, c2) => (c2 ? `${CONF_CORTA[c1] || c1} + ${CONF_CORTA[c2] || c2}` : CONF[c1] || c1 || "sin indicar");
+const esObjetiva = (k) => OBJ.has(k.conf) || OBJ.has(k.conf2);
+// Radiografías del cierre (desde v7.9.7 también abdomen, cabeza y cadera). Si el resultado está en el cierre
+// pero no se ingresó al motor, se informa como omisión. Solo la de tórax tiene una pregunta en el motor.
+const RX = { rxt: { n: "Radiografía de tórax", q: "tfast" }, rxa: { n: "Radiografía de abdomen" }, rxcab: { n: "Radiografía de cabeza" }, rxcad: { n: "Radiografía de cadera" } };
+const rxNoIngresadas = (k, ent) => Object.entries(RX).filter(([id, r]) => (k.tests || {})[id] && !(r.q && (ent.ans || {})[r.q] !== undefined))
+  .map(([id, r]) => ({ id, n: r.n, res: k.tests[id] === "anormal" ? "Anormal" : k.tests[id] === "normal" ? "Normal" : String(k.tests[id]) }));
 const CONF = { histo: "histopatología o necropsia", lab: "prueba de laboratorio específica", img: "imagen diagnóstica", qx: "hallazgo quirúrgico", resp: "respuesta al tratamiento", clin: "solo criterio clínico" };
 
 // ─── Dentro de la página: reproducir el caso en el motor y simular datos faltantes ───
@@ -144,11 +153,11 @@ async function main() {
     const k = R.cierres[c.id];
     if (!cerrado(k) || k.sinDx || !k.dx) continue;
     const cod = String(k.dx.c || "").trim();
-    if (cod && OBJ.has(k.conf)) objPorDx[cod] = (objPorDx[cod] || 0) + 1;
+    if (cod && esObjetiva(k)) objPorDx[cod] = (objPorDx[cod] || 0) + 1;
     const top1 = c.sal && c.sal.top && c.sal.top[0] ? c.sal.top[0].c : null;
     if (!cod || (top1 && String(top1).split("/").map((s) => s.trim()).includes(cod))) continue;
     const posReg = (c.sal.top || []).findIndex((t) => String(t.c).split("/").map((s) => s.trim()).includes(cod));
-    cands.push({ codigo: c.id, f: c.f, v: c.v, por: c.por, ent: c.ent || {}, dx: cod, dxNombre: k.dx.n, conf: k.conf, fc: k.fc,
+    cands.push({ codigo: c.id, f: c.f, v: c.v, por: c.por, ent: c.ent || {}, dx: cod, dxNombre: k.dx.n, conf: k.conf, conf2: k.conf2 || null, rx: rxNoIngresadas(k, c.ent || {}), fc: k.fc,
       top1, top1Nombre: c.sal.top[0] ? c.sal.top[0].n : "—", posRegistrada: posReg < 0 ? null : posReg + 1 });
   }
 
@@ -186,7 +195,8 @@ async function main() {
 
   // Resumen de datos omitidos (solo diferencias tipo «a»)
   const cuenta = (lista) => { const m = {}; lista.filter((f) => f.tipo === "a").forEach((f) => f.faltantes.filter((x) => x.conDato.pos && (!f.base.pos || x.conDato.pos < f.base.pos))
-    .forEach((x) => { const k = x.tipo + " · " + x.dato; (m[k] = m[k] || new Set()).add(f.codigo); })); return Object.entries(m).map(([k, s]) => [k, s.size]).sort((a, b) => b[1] - a[1]); };
+    .forEach((x) => { const k = x.tipo + " · " + x.dato; (m[k] = m[k] || new Set()).add(f.codigo); })); lista.forEach((f) => (f.rx || []).forEach((x) => { const k = "Resultado del cierre no ingresado al motor · " + x.n; (m[k] = m[k] || new Set()).add(f.codigo); }));
+    return Object.entries(m).map(([k, s]) => [k, s.size]).sort((a, b) => b[1] - a[1]); };
   const nuevos = filas.filter((f) => f.nuevo);
   const resumenHoy = cuenta(nuevos), resumenAcum = cuenta(filas);
 
@@ -197,7 +207,7 @@ async function main() {
   const porDx = {};
   filas.filter((f) => f.tipo === "b").forEach((f) => {
     const p = (porDx[f.dx] = porDx[f.dx] || { id: "ajuste:" + f.dx, tipo: "ajuste_motor", dx_codigo: f.dx, dx_motor: f.dxId, diagnostico: f.dxMotor || f.dxNombre, casos: [] });
-    p.casos.push({ codigo: f.codigo, dispositivo: disp(f.por), confirmacion: f.conf, posicion_registrada: f.posRegistrada, posicion_con_datos_completos: f.conTodo.pos,
+    p.casos.push({ codigo: f.codigo, dispositivo: disp(f.por), confirmacion: confTexto(f.conf, f.conf2), posicion_registrada: f.posRegistrada, posicion_con_datos_completos: f.conTodo.pos,
       top1_motor: f.top1Nombre, datos_simulados: f.faltantes.map((x) => x.dato) });
   });
   const propuestas = Object.values(porDx).map((p) => {
@@ -230,7 +240,7 @@ async function main() {
     } else if (f.tipo === "c") cuerpo = `<p>El código ${esc(f.dx)} no corresponde a ningún diagnóstico del motor. Se cuenta para proponer diagnósticos nuevos.</p>`;
     else cuerpo = `<p>${esc(f.nota)} Revisar el cierre del caso.</p>`;
     return `<div class="caso"><div class="h"><b>${esc(f.codigo)}</b> · ${esc(disp(f.por))} · ${esc(String(f.f).slice(0, 10))} · v${esc(f.v)}</div>
-      <p>Definitivo: <b>${esc(f.dxNombre)}</b> <span class="t">${esc(f.dx)} · confirmación: ${esc(CONF[f.conf] || f.conf)}</span><br>Motor (1.º): ${esc(f.top1Nombre)}${f.posRegistrada ? ` · el definitivo estaba ${pos(f.posRegistrada)}` : " · el definitivo no estaba entre los 8 primeros"}${f.replicaIgual === false ? ` <span class="t">(al repetirlo con el motor v${esc(res.motorVer)} el orden cambia)</span>` : ""}</p>${cuerpo}</div>`;
+      <p>Definitivo: <b>${esc(f.dxNombre)}</b> <span class="t">${esc(f.dx)} · confirmación: ${esc(confTexto(f.conf, f.conf2))}</span><br>Motor (1.º): ${esc(f.top1Nombre)}${f.posRegistrada ? ` · el definitivo estaba ${pos(f.posRegistrada)}` : " · el definitivo no estaba entre los 8 primeros"}${f.replicaIgual === false ? ` <span class="t">(al repetirlo con el motor v${esc(res.motorVer)} el orden cambia)</span>` : ""}</p>${cuerpo}${(f.rx || []).length ? `<p class="m">Resultado registrado en el cierre que no se ingresó al motor: ${f.rx.map((x) => `<b>${esc(x.n)}</b> («${esc(x.res)}»)`).join("; ")}. Ingresarlo en el motor al atender ayuda a orientar el diagnóstico.</p>` : ""}</div>`;
   };
   const seccion = (lista, t) => { const g = lista.filter((f) => f.tipo === t); return g.length ? `<h3>${TIT[t]} · ${g.length}</h3>${g.map(ficha).join("")}` : ""; };
   const tabla = (rs) => rs.length ? `<table><tr><th>Dato no registrado</th><th>Casos</th></tr>${rs.slice(0, 15).map(([k, n]) => `<tr><td>${esc(k)}</td><td class="n">${n}</td></tr>`).join("")}</table>` : `<p class="m">Sin omisiones que cambien el resultado.</p>`;

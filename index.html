@@ -3328,7 +3328,7 @@ function regLibro(etq){
       Object.assign(o,{"Alta probabilidad":s.alta.join("; "),"SOAP":s.soap.join("; "),"SOAP elegida por":s.soapAuto?"Automático":"Médico",
       "Dx definitivo":k.dx?k.dx.n:k.sinDx?"Sin diagnóstico definitivo":"","Dx definitivo código":k.dx?k.dx.c:"","Capítulo":k.dx&&k.dx.cap?VCAP[k.dx.cap]:"",
       "En el motor":k.dx?(MOTOR_C.has(k.dx.c)?"Sí":"No"):"","Concomitantes":(k.con||[]).map(d=>d.c||d.n).join("; "),
-      "Confirmación":lab(CONF,k.conf)+(k.conf2?" + "+lab(CONF,k.conf2):""),"Confirmación objetiva":k.conf?(CONF_OBJ.has(k.conf)||CONF_OBJ.has(k.conf2)?"Sí":"No"):"",
+      "Confirmación":lab(CONF,k.conf),"Confirmación 2":lab(CONF,k.conf2),"Confirmación objetiva":k.conf?(CONF_OBJ.has(k.conf)||CONF_OBJ.has(k.conf2)?"Sí":"No"):"",
       "Acierto top-1":r?(r.h1?1:0):"","Acierto top-3":r?(r.h3?1:0):"","Acierto SOAP":r?(r.hs?1:0):""});
       LABN.forEach(([id,n,u])=>o[`${n} (${u})`]=(k.labs||{})[id]??"");LABT.forEach(([id,n])=>o[n]=TLBL[(k.tests||{})[id]]||"");
       Object.assign(o,{"Otros resultados":k.otros||"","Notas":k.notas||""});
@@ -3343,10 +3343,14 @@ function regLibro(etq){
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Diagnóstico","Código","En el motor","n","Top-1","Top-3"],...st.dx.map(r=>[r.n,r.c,r.inM?"Sí":"No",r.cnt,r.h1,r.h3])]),"Por diagnóstico");
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Diagnóstico","Código VetCIE-1","Casos","Como principal"],...st.fuera.map(r=>[r.n,r.c||"No está en VetCIE-1",r.cnt,r.prin])]),"Fuera del motor");
     const sk=Object.keys(SIGNS),qk=QS.map(q=>q.id);
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["codigo","especie","edad","sexo","peso","hemo","fc","fr","temp","mucosas","tllc","pulso","dh","cc","motivo",...sk.map(z=>"s_"+z),...qk.map(q=>"q_"+q),"dx_def","conf"],
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["codigo","especie","edad","sexo","peso","hemo","fc","fr","temp","mucosas","tllc","pulso","dh","cc","motivo",...sk.map(z=>"s_"+z),...qk.map(q=>"q_"+q),"dx_def","conf","conf2"],
       ...REG.casos.map(c=>{const e=c.ent,x=e.ex||{},k=REG.cierres.get(c.id)||{},S=new Set(e.signsAll||[]);
-        return [c.id,e.esp||"",e.edad||"",e.sexo||"",e.peso??"",e.hemo||"",numX(x.fc),numX(x.fr),numX(x.temp),x.muc||"",x.tllc||"",x.pulso||"",x.dh||"",numX(x.cc),e.motivo||"",...sk.map(z=>S.has(z)?1:0),...qk.map(q=>(e.ans||{})[q]??""),k.dx?k.dx.c||"NUEVO":"",k.conf||""]})]),"Matriz ML");
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Columna","Significado"],...sk.map(z=>["s_"+z,SIGNS[z][0]]),...QS.map(q=>["q_"+q.id,q.t+" — "+q.o.map(o=>o[0]+"="+o[1]).join("; ")])]),"Diccionario");
+        return [c.id,e.esp||"",e.edad||"",e.sexo||"",e.peso??"",e.hemo||"",numX(x.fc),numX(x.fr),numX(x.temp),x.muc||"",x.tllc||"",x.pulso||"",x.dh||"",numX(x.cc),e.motivo||"",...sk.map(z=>S.has(z)?1:0),...qk.map(q=>(e.ans||{})[q]??""),k.dx?k.dx.c||"NUEVO":"",k.conf||"",k.conf2||""]})]),"Matriz ML");
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Columna","Significado"],...sk.map(z=>["s_"+z,SIGNS[z][0]]),...QS.map(q=>["q_"+q.id,q.t+" — "+q.o.map(o=>o[0]+"="+o[1]).join("; ")]),
+      ["Confirmación 2","Hoja Casos: segunda base de la confirmación del diagnóstico definitivo (opcional; vacía en los cierres que solo tienen una). Mismos valores que «Confirmación»: "+CONF.map(c=>c[1]).join("; ")+"."],
+      ["Confirmación objetiva","Hoja Casos: «Sí» si «Confirmación» o «Confirmación 2» es histopatología o necropsia, prueba de laboratorio específica, imagen diagnóstica o hallazgo quirúrgico; «No» en otro caso; vacía si el caso no tiene confirmación."],
+      ...LABT.filter(t=>["rxa","rxcab","rxcad"].includes(t[0])).map(t=>[t[1],"Hoja Casos: resultado de la "+t[1].toLowerCase()+" registrado en el cierre: «Anormal» o «Normal»; vacía si no se registró."]),
+      ["conf2","Hoja Matriz ML: segunda base de la confirmación (código; vacía si no hay)."]]),"Diccionario");
     return wb;
 }
 async function regExportar(){
