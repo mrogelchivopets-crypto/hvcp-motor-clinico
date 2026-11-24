@@ -3464,11 +3464,17 @@ function regConfig(){const c=window.HVCP_CONFIG||{};if(!c.supabaseUrl||!c.supaba
   return c}
 function cargarSupabase(){return window.supabase&&window.supabase.createClient?Promise.resolve():new Promise((res,rej)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js";s.crossOrigin="anonymous";s.onload=res;s.onerror=()=>rej(new Error("supabase-js"));document.head.appendChild(s)})}
 // Garantiza una sesión: la del admin si existe; si no, una anónima del dispositivo (dura indefinidamente con renovación automática).
-async function regSesionLista(){
-  if(!REG.sb)return false;
-  try{let {data:{session}}=await REG.sb.auth.getSession();
-    if(!session){const r=await REG.sb.auth.signInAnonymously();if(r.error)return false;session=r.data.session}
-    REG.uid=session.user.id;return true}catch(e){return false}
+// Una sola entrada anónima a la vez: el inicio de la página y el primer envío de la cola podían entrar
+// en paralelo y crear dos usuarios anónimos (la sesión de uso quedaba en uno y el caso en otro).
+function regSesionLista(){
+  if(!REG.sb)return Promise.resolve(false);
+  if(!REG.listaP)REG.listaP=(async()=>{
+    try{let {data:{session}}=await REG.sb.auth.getSession();
+      if(!session){const r=await REG.sb.auth.signInAnonymously();if(r.error)return false;session=r.data.session}
+      if(REG.uid&&REG.uid!==session.user.id)REG.sesion=null; // otro usuario: la sesión de uso anterior no le pertenece
+      REG.uid=session.user.id;return true}catch(e){return false}
+  })().finally(()=>{REG.listaP=null});
+  return REG.listaP;
 }
 function dispositivo(){const u=navigator.userAgent;const so=/iPhone|iPad/.test(u)?"iOS":/Android/.test(u)?"Android":/Windows/.test(u)?"Windows":/Mac OS/.test(u)?"macOS":/Linux/.test(u)?"Linux":"Otro";
   const nav=/Edg\//.test(u)?"Edge":/CriOS|Chrome\//.test(u)?"Chrome":/FxiOS|Firefox\//.test(u)?"Firefox":/Safari\//.test(u)?"Safari":"Otro";
