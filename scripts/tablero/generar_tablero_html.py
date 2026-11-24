@@ -46,6 +46,13 @@ def resultado(nombre, s):
                 dc=sum(1 for c in s if not c['top3'] and c['dx_en_motor']),
                 df=sum(1 for c in s if not c['top3'] and not c['dx_en_motor']))
 res = [resultado('Todos', ev), resultado('Confirmación objetiva', obj), resultado('Sin confirmación objetiva', [c for c in ev if not c['objetiva']])]
+def donde(s):
+    t = len(s); a1 = sum(1 for c in s if c['top1']); t3 = sum(1 for c in s if c['top3'])
+    d = dict(total=t, a1=a1, a23=t3 - a1, fuera=t - t3, t3=t3)
+    assert d['a1'] + d['a23'] + d['fuera'] == d['total'], 'Las 3 filas no suman el total'
+    d['ic1'], d['ic3'] = wilson(a1, t), wilson(t3, t)
+    return d
+DT, DO = donde(ev), donde(obj)
 ver = Counter(c['version'] for c in casos).most_common(1)[0][0] if casos else None
 CONF = {'lab': 'laboratorio', 'img': 'imagen', 'histo': 'histopatología', 'qx': 'cirugía', 'clin': 'clínica', 'resp': 'respuesta al tratamiento'}
 def conf_txt(c):  # «laboratorio + imagen» cuando hay segunda base
@@ -133,6 +140,43 @@ def chart_acierto(W=640):
         out.append('</g>')
     return ''.join(out) + '</svg>'
 
+CAT = [('a1', '1.er lugar', 'var(--ok)'), ('a23', '2.º o 3.er lugar', 'var(--lb)'), ('fuera', 'Fuera de los 3 primeros', 'var(--gray)')]
+def chart_donde(W=760):
+    filas = [(t, d) for t, d in (('Todos los casos', DT), ('Solo con confirmación objetiva', DO)) if d['total']]
+    bh, gap, top = 26, 36, 4; H = top + len(filas) * (bh + gap)
+    out = [f'<svg viewBox="0 0 {W} {H}" width="100%" role="img" aria-label="Dónde quedó el diagnóstico del médico">']
+    for i, (t, d) in enumerate(filas):
+        y0 = top + i * (bh + gap); out.append(f'<text class="lab" x="0" y="{y0+12}">{e(t)} (n = {d["total"]})</text>')
+        acc_ = 0
+        for k, nom, col in CAT:
+            v = d[k]
+            if not v: continue
+            x0 = acc_ * (W - 2) / d['total']; acc_ += v; x1 = acc_ * (W - 2) / d['total']
+            out.append(f'<g><title>{e(nom)}: {v} de {d["total"]} ({pct(p(v, d["total"]))})</title><rect x="{x0:.1f}" y="{y0+18}" width="{max(1, x1-x0-2):.1f}" height="{bh}" fill="{col}"/>')
+            if x1 - x0 > 22: out.append(f'<text class="cat{' w' if k == 'a1' else ''}" x="{(x0+x1)/2:.1f}" y="{y0+18+bh/2}" dy="0.35em" text-anchor="middle">{v}</text>')
+            out.append('</g>')
+    leyenda = ''.join(f'<span><i style="background:{c}"></i>{e(t)}</span>' for _, t, c in CAT)
+    return f'<div class="legend">{leyenda}</div>' + ''.join(out) + '</svg>'
+
+def tabla_donde(d):
+    filas = ''.join(f'<tr><td>{e(nom)}</td><td class="n">{d[k]}</td><td class="n">{pct(p(d[k], d["total"]))}</td></tr>'
+                    for k, nom in (('a1', 'En 1.er lugar'), ('a23', 'En 2.º o 3.er lugar'), ('fuera', 'Fuera de los 3 primeros')))
+    tot = f'<tr class="tot"><td>Total</td><td class="n">{d["total"]}</td><td class="n">{pct(100.0 if d["total"] else None)}</td></tr>'
+    return (f'<div class="tw"><table><thead><tr><th>Dónde quedó el diagnóstico del médico</th><th class="n">Casos</th><th class="n">%</th></tr></thead>'
+            f'<tbody>{filas}{tot}</tbody></table></div>')
+
+def frase_donde(d):
+    if not d['total']: return '<p class="note">Todavía no hay casos cerrados con diagnóstico definitivo codificado.</p>'
+    return (f'<p class="frase">El motor acertó en primer lugar en {d["a1"]} de {d["total"]} casos ({pct(p(d["a1"], d["total"]))}) '
+            f'y tuvo el diagnóstico correcto entre sus 3 primeras opciones en {d["t3"]} de {d["total"]} ({pct(p(d["t3"], d["total"]))}).</p>')
+
+def nota_ic(d):
+    if not d['total']: return ''
+    (a, b), (c, dd) = d['ic1'], d['ic3']
+    r = lambda v: str(v).replace('.', ',')
+    return (f'<p class="ic">Rango probable (IC 95 %): primer lugar {r(a)}–{r(b)} %; entre los 3 primeros {r(c)}–{r(dd)} %. '
+            'Con pocos casos el rango es amplio; se irá estrechando con más cierres.</p>')
+
 def chart_resultado(W=760):
     segs = [('a1', 'Acierto en 1.er lugar', C1), ('a23', 'Acierto en 2.º o 3.er lugar', C3), ('dc', 'Desacierto: está en el motor', C2), ('df', 'Desacierto: no está en el motor', CR)]
     rows = [r for r in res if r['n']]; bh, gap, top = 26, 36, 4; H = top + len(rows) * (bh + gap)
@@ -171,8 +215,8 @@ page = f'''<!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tablero Motor Clínico</title>
 <style>
-:root{{--bg:#f7f8f7;--fg:#1c2421;--mut:#5c6964;--line:#dce2df;--panel:#fff;--c1:#1f7a68;--c2:#d08a2b;--c3:#5b8fc9;--bad:#b8443a;--muted-bar:#b9c4bf;--grid:#e6ebe8;color-scheme:light}}
-@media (prefers-color-scheme:dark){{:root{{--bg:#131817;--fg:#e4eae7;--mut:#9fadaa;--line:#2b3431;--panel:#1a201e;--c1:#4cc2a8;--c2:#e8a650;--c3:#7fb0e6;--bad:#e2776c;--muted-bar:#4a5753;--grid:#252d2a;color-scheme:dark}}}}
+:root{{--bg:#f7f8f7;--fg:#1c2421;--mut:#5c6964;--line:#dce2df;--panel:#fff;--c1:#1f7a68;--c2:#d08a2b;--c3:#5b8fc9;--bad:#b8443a;--muted-bar:#b9c4bf;--grid:#e6ebe8;--ok:#2e8b57;--lb:#9cc7ec;--gray:#b5bdba;color-scheme:light}}
+@media (prefers-color-scheme:dark){{:root{{--bg:#131817;--fg:#e4eae7;--mut:#9fadaa;--line:#2b3431;--panel:#1a201e;--c1:#4cc2a8;--c2:#e8a650;--c3:#7fb0e6;--bad:#e2776c;--muted-bar:#4a5753;--grid:#252d2a;--ok:#4cbf7f;--lb:#6fa6d6;--gray:#5d6864;color-scheme:dark}}}}
 *{{box-sizing:border-box}}
 body{{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}}
 main{{max-width:1080px;margin:0 auto;padding:24px 16px 56px;display:flex;flex-direction:column;gap:32px}}
@@ -183,7 +227,7 @@ h1{{font-size:1.6rem;margin:0;text-wrap:balance}} h2{{font-size:1.1rem;margin:0}
 .lbl,.win{{font-size:.8rem;color:var(--mut)}} .val{{font-size:1.9rem;line-height:1.1;font-variant-numeric:tabular-nums}}
 section{{display:flex;flex-direction:column;gap:10px;min-width:0}}
 .g2{{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:32px}}
-svg{{display:block;overflow:visible;max-width:100%}} svg text{{fill:var(--mut);font-size:12px}} svg .lab{{fill:var(--fg)}} svg .inv{{fill:var(--bg);font-weight:600}}
+svg{{display:block;overflow:visible;max-width:100%}} svg text{{fill:var(--mut);font-size:12px}} svg .lab{{fill:var(--fg)}} svg .inv{{fill:var(--bg);font-weight:600}} svg .cat{{fill:#10201a;font-weight:600}} svg .cat.w{{fill:#fff}}
 svg .grid{{stroke:var(--grid)}}
 .legend{{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.8rem;color:var(--mut)}} .legend i{{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px}}
 .tw{{overflow-x:auto;max-width:100%}}
@@ -194,6 +238,7 @@ td.n,th.n{{text-align:right;white-space:nowrap}}
 .pill{{display:inline-block;padding:1px 8px;border-radius:10px;font-size:.8rem;border:1px solid var(--c2);color:var(--c2)}}
 .des td:last-child{{min-width:280px}}
 details{{font-size:.85rem;color:var(--mut)}}
+tr.tot td{{font-weight:700;border-top:2px solid var(--line)}} .frase{{margin:10px 0 0;max-width:75ch}} .ic{{color:var(--mut);font-size:.78rem;margin:4px 0 0;max-width:75ch}} .sub2{{font-size:1rem;margin:18px 0 0}}
 </style></head><body><main>
 <header>
 <h1>Motor Clínico de Urgencias · Tablero</h1>
@@ -206,10 +251,15 @@ details{{font-size:.85rem;color:var(--mut)}}
 <section><h2>Casos por turno</h2><p class="note">Mañana 7–14 h · tarde 15–22 h · noche 23–6 h.</p>{hbar([(t, v, f"{t}: {v} casos ({pct(p(v, n))})") for t, v in turnos], str)}</section>
 <section><h2>Campos que faltaron</h2><p class="note">Porcentaje de casos en que el motor señaló el campo como faltante. Datos insuficientes en el {pct(kpi['insuf'])} de los casos.</p>{hbar([(f, p(k, n), f"{f}: faltó en {k} casos") for f, k in faltan], pct, C2)}</section>
 </div>
-<section><h2>Acierto del motor contra el diagnóstico definitivo</h2><p class="note">Punto: % de cierres con el diagnóstico definitivo en la posición 1 (top-1) o entre las 3 primeras (top-3). Línea: intervalo de confianza del 95 % (Wilson). «Objetiva»: laboratorio, imagen, histopatología o cirugía.</p>
-{chart_acierto()}
-{tabla(['Grupo', 'n', 'Aciertos', '%', 'IC inferior', 'IC superior'], [(a['grupo'], a['n'], a['k'], pct(a['pct']), pct(a['lo']), pct(a['hi'])) for a in acierto], num=(1, 2, 3, 4, 5))}</section>
-<section><h2>Aciertos y desaciertos</h2><p class="note">Puesto del diagnóstico definitivo en la lista del motor, en cada cierre evaluable.</p>{chart_resultado()}</section>
+<section><h2>¿Dónde quedó el diagnóstico del médico?</h2><p class="note">Casos cerrados con diagnóstico definitivo codificado: en qué lugar de la lista del motor quedó ese diagnóstico.</p>
+{chart_donde()}
+{tabla_donde(DT)}
+{frase_donde(DT)}
+{nota_ic(DT)}
+<h3 class="sub2">Solo casos con confirmación objetiva</h3><p class="note">Confirmación por histopatología o necropsia, laboratorio específico, imagen o cirugía (primera o segunda base).</p>
+{tabla_donde(DO)}
+{frase_donde(DO)}
+{nota_ic(DO)}</section>
 <section><h2>Casos en que el motor no acertó, y por qué</h2><p class="note">Cierres evaluables cuyo diagnóstico no quedó entre los tres primeros. El motivo se deduce de los datos del caso: si el diagnóstico está en el catálogo, en qué puesto quedó, si la ficha tenía datos insuficientes, qué campos faltaron, el tipo de confirmación y la versión del motor.</p>
 <div class="des">{tabla(['Caso', 'Diagnóstico definitivo', 'Conf.', 'Puesto en el motor', 'Primer diagnóstico del motor', 'Por qué no acertó'], [(d['id'], d['dx'], d['conf'], d['puesto'], d['primero'], d['motivo']) for d in desac])}</div></section>
 <div class="g2">
