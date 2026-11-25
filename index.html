@@ -2285,6 +2285,41 @@ ADD({id:"urolit_f",n:"Urolitiasis vesical o sedimento urinario felino (cristalur
  ref:"ACVIM Consensus on Uroliths (Lulich et al., J Vet Intern Med 2016); Ettinger, Feldman & Côté, Textbook of Veterinary Internal Medicine (9.ª ed.)"});
 })();
 
+// ═══ M10 (25/11/2026): aviso de base de confirmación sin resultado en el cierre ═══
+// Evidencia: 9 de 23 cierres por imagen sin ningún examen de imagen y 5 de 21 por laboratorio sin valores ni pruebas
+// (MC-4EAY72, MC-CUTRND, MC-CFCABE, MC-PY3M3H, MC-PS4XJ2, MC-XVPFSA; MC-782BSM, MC-2TVB5F, MC-HJURA4, MC-DC4FQ4, MC-PWTG2Z).
+// No bloquea: se puede guardar sin el resultado. El texto de «Otros resultados» cuenta como resultado. No cambia puntajes.
+(function(){
+const IMG=["eco","rxt","rxa","rxcab","rxcad","tfast","afast"],PRU=["parvo","4dx","felv","frotis","autoag","uri"];
+const NOM={img:["Imagen diagnóstica","ningún examen de imagen (ecografía, radiografía, T-FAST o A-FAST)"],
+  lab:["Prueba de laboratorio específica","ningún valor de laboratorio ni prueba rápida (SNAP, FeLV/FIV, frotis, autoaglutinación o urianálisis)"]};
+window.m10Faltan=function(E){
+  if(!E||!E.dx)return [];
+  const t=E.tests||{},L=E.labs||{},bases=[E.conf,E.conf2];
+  if(String(E.otros||"").trim())return [];
+  const f=[];
+  if(bases.includes("img")&&!IMG.some(id=>t[id]))f.push("img");
+  if(bases.includes("lab")&&!Object.keys(L).some(k=>L[k]!=null&&L[k]!=="")&&!PRU.some(id=>t[id]))f.push("lab");
+  return f;
+};
+const _guardar=regGuardarCierre;
+regGuardarCierre=async function(){
+  const ok=REG.m10Ok;REG.m10Ok=false;
+  const f=ok?[]:m10Faltan(REG.ed);
+  if(f.length){avisoM10(f);return}
+  return _guardar.apply(this,arguments);
+};
+window.avisoM10=function(f){
+  avisoCerrar();const d=document.createElement("div");
+  d.id="aviso";d.className="av-fondo";d.setAttribute("role","alertdialog");d.setAttribute("aria-modal","true");
+  const txt=f.map(b=>`La base de la confirmación es «${NOM[b][0]}», pero no registró ${NOM[b][1]}.`).join(" ");
+  d.innerHTML=`<div class="av-caja"><h3>Falta el resultado que confirma el diagnóstico</h3><p>${txt} Si puede, registre el resultado (normal o anormal): respalda el diagnóstico en los indicadores y permite revisar el caso. Si el examen no está en la lista, escríbalo en «Otros resultados».</p>
+   <div class="av-bts"><button onclick="avisoCerrar();REG.m10Ok=true;regGuardarCierre()">Guardar sin el resultado</button><button class="av-pri" onclick="avisoM10Ir()">Registrar el resultado</button></div></div>`;
+  d.addEventListener("click",ev=>{if(ev.target===d)avisoCerrar()});
+  document.body.appendChild(d);const b=d.querySelector(".av-pri");if(b)b.focus();
+};
+window.avisoM10Ir=function(){avisoCerrar();const s=document.querySelector(".reg-tests");if(s&&s.scrollIntoView)s.scrollIntoView({behavior:"smooth",block:"center"})};
+})();
 const ST = {hxs:new Set(),motivo2:null,soapSel:new Set(),openSys:new Set(),motivo:null,esp:null,peso:null,edad:null,sexo:null,hemo:null,vac:new Set(),signs:new Set(),ans:{},open:new Set(),
   fl:{tipo:"rl",desh:"0",horas:"24",perd:0,form:"b",ped:false,na:"",iris:{crea:"",sdma:"",upc:"",pas:""}}};
 
@@ -3041,7 +3076,7 @@ const MOTOR_VER="7.9.7";
 // Compilación (M8, 24/11/2026): identifica la publicación exacta de la página sin cambiar la versión del motor.
 // Se guarda junto a la versión en el registro («7.9.7+2026-11-24b»), así un caso hecho con una página en caché se distingue
 // aunque el número de versión sea el mismo. Actualícela (fecha y letra) en cada publicación.
-const MOTOR_BUILD="2026-11-24b";
+const MOTOR_BUILD="2026-11-25a";
 const VC=new Map(VCIE.map(r=>[r[0],r]));
 // Sinónimos del buscador VetCIE-1 (24/11/2026): solo amplían la búsqueda; no cambian el catálogo ni los códigos.
 const VC_SINON={"GEN-HEP-023":"colecistitis mucocele biliar","GEN-URI-335":"sedimento urinario cristaluria cristales arenilla calculos vesicales","FEL-URI-MET-035":"sedimento urinario cristaluria arenilla tapon uretral"};

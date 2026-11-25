@@ -1,5 +1,20 @@
 # Historial de cambios del Motor Clínico
 
+## v7.9.7 · 25/11/2026 11:40 · aviso de base de confirmación sin resultado (M10)
+
+Origen: análisis del registro del 25/11 a las 10:43 (153 casos y 72 cierres). Aprobado por la Dirección General como aviso no bloqueante. Casos de origen: MC-4EAY72, MC-CUTRND, MC-CFCABE, MC-PY3M3H, MC-PS4XJ2 y MC-XVPFSA (base «imagen» sin ningún examen de imagen); MC-782BSM, MC-2TVB5F, MC-HJURA4, MC-DC4FQ4 y MC-PWTG2Z (base «laboratorio» sin valores ni pruebas).
+
+- Evidencia: 9 de 23 cierres por imagen no tenían ningún examen de imagen registrado y 5 de 21 por laboratorio no tenían valores ni pruebas. M9 no lo detecta porque solo actúa cuando hay un examen marcado como anormal.
+- Al guardar un cierre con base «Imagen diagnóstica» (en `conf` o `conf2`) sin ecografía, radiografía (tórax, abdomen, cabeza o cadera), T-FAST ni A-FAST, o con base «Prueba de laboratorio específica» sin ningún valor (lactato, glucosa, Hto, PT, BUN, creatinina, Na, K) ni prueba (SNAP parvo, 4Dx, FeLV/FIV, frotis, autoaglutinación, urianálisis), aparece el aviso «Falta el resultado que confirma el diagnóstico» con «Registrar el resultado» (lleva a los exámenes) o «Guardar sin el resultado».
+- El texto de «Otros resultados» cuenta como resultado, para exámenes que no están en la lista. No aplica a cierres «Sin diagnóstico definitivo» ni a las demás bases.
+- `MOTOR_BUILD` pasa a `2026-11-25a`; `MOTOR_VER` no cambia.
+
+### Verificación
+- Sintaxis: `node --check` del script, OK.
+- 153 casos del registro: misma lista de alta probabilidad y mismo top-5 con puntajes; `regDatosCierre` sin diferencias.
+- 1200 casos generados desde las reglas de cada diagnóstico: 0 diferencias en la lista de alta y el top-5.
+- Interfaz: 11 combinaciones de base y resultados. Avisa solo cuando falta el resultado de la base marcada. «Guardar sin el resultado» guarda una vez. El mensaje de M9 (hallazgo principal) sigue apareciendo cuando corresponde. Sin errores de página.
+
 ## v7.9.7 · 24/11/2026 17:30 · compilación en el registro (M8) y hallazgo principal obligatorio (M9)
 
 Origen: análisis del registro del 24/11 a las 16:45 (136 casos y 56 cierres). Aprobado por la Dirección General (M8 y M9). Casos de origen: MC-BANPER y MC-UTMWVG (registrados como 7.9.7 antes de cambios que conservaron ese número); MC-X2GR63, MC-A2DMYT y MC-NT9M5R (cierres posteriores a la publicación de las 12:03 sin hallazgo específico); MC-66VRWU, MC-8G2VKH, MC-QUN38H, MC-6D7SX3 y MC-QGHRT2 (hallazgo de la eco no ingresado).
