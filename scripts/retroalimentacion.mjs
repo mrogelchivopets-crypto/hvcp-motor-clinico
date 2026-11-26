@@ -35,8 +35,10 @@ async function carpetaRegistro() {
 }
 const leerJSON = async (r, def) => { try { return JSON.parse(await readFile(r, "utf8")); } catch { return def; } };
 const hoySV = () => new Intl.DateTimeFormat("en-CA", { timeZone: "America/El_Salvador" }).format(new Date());
-// Dos corridas al día: la de la tarde (desde las 12:00) usa el sufijo «_tarde» para no sobrescribir la de la mañana.
-const corridaSV = () => (parseInt(new Intl.DateTimeFormat("en-US", { timeZone: "America/El_Salvador", hour: "numeric", hourCycle: "h23" }).format(new Date())) >= 12 ? "_tarde" : "");
+// Dos corridas al día. El nombre sigue a la EXPORTACIÓN analizada (no a la hora en que corre el análisis):
+// la de las 16:00 (desde las 12:00) usa «_tarde»; la de las 10:00, sin sufijo, aunque se analice más tarde.
+const corridaSV = (d) => (parseInt(new Intl.DateTimeFormat("en-US", { timeZone: "America/El_Salvador", hour: "numeric", hourCycle: "h23" }).format(new Date(d || Date.now()))) >= 12 ? "_tarde" : "");
+const fechaSV = (d) => new Intl.DateTimeFormat("en-CA", { timeZone: "America/El_Salvador" }).format(new Date(d || Date.now()));
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const disp = (uid) => "disp. " + String(uid || "").replace(/-/g, "").slice(0, 4).toUpperCase();
 const cerrado = (k) => !!(k && (k.sinDx || (k.dx && k.conf)));
@@ -223,7 +225,7 @@ async function main() {
     nota: "Propuestas pendientes de aprobación. Para decidir, llene «decision» (aprobada/rechazada) y «nota_decision». Nada se aplica solo.", propuestas }, null, 2));
 
   // HTML
-  const fecha = hoySV(), sufijo = corridaSV();
+  const fecha = fechaSV(R.generado), sufijo = corridaSV(R.generado);
   const TIT = { a: "a) Omisión de datos", b: "b) Ajuste del motor", c: "c) Fuera del catálogo del motor", d: "d) Cierre inconsistente", cercano: "Diferencial cercano (2.º o 3.º con los datos registrados)" };
   const pos = (p) => (p ? `${p}.º` : "fuera de la lista");
   const ficha = (f) => {
