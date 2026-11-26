@@ -22,6 +22,20 @@ const NOMBRE = "Registro_Motor_Clinico_HVCP";
 // Reportes/tablero/casos.json y Tablero_Motor_Clinico.html, así el tablero queda al día junto con el Excel.
 const DIR_TABLERO = process.env.TABLERO_SCRIPTS || join(homedir(), ".claude", "scheduled-tasks", "hvcp-analisis-diario-motor");
 
+// GitHub (rama main) es la fuente única del motor y la nube puede publicar cambios: antes de exportar
+// se trae la última versión, solo si la carpeta está en main y sin cambios locales (nunca se descarta nada).
+function actualizarMotor() {
+  const git = (...a) => execFileSync("git", a, { cwd: RAIZ, stdio: "pipe", timeout: 60000 }).toString().trim();
+  try {
+    if (git("rev-parse", "--abbrev-ref", "HEAD") !== "main") return "motor sin actualizar (la carpeta no está en main)";
+    if (git("status", "--porcelain", "--untracked-files=no")) return "motor sin actualizar (hay cambios locales sin guardar)";
+    const antes = git("rev-parse", "--short", "HEAD");
+    git("pull", "--ff-only", "--quiet", "origin", "main");
+    const despues = git("rev-parse", "--short", "HEAD");
+    return antes === despues ? `motor al día (${despues})` : `motor actualizado ${antes}→${despues}`;
+  } catch (e) { return "motor sin actualizar (" + String(e.stderr || e.message).trim().split(/\r?\n/).pop().slice(0, 80) + ")"; }
+}
+
 function generarTablero(carpeta) {
   const g1 = join(DIR_TABLERO, "generar_tablero.py"), g2 = join(DIR_TABLERO, "generar_tablero_html.py");
   if (!existsSync(g1) || !existsSync(g2)) return "tablero: no se encontraron los scripts";
@@ -106,6 +120,7 @@ async function main() {
   await mkdir(join(carpeta, "datos"), { recursive: true });
   await mkdir(join(carpeta, "Reportes", "tablero"), { recursive: true });
   const log = join(carpeta, "exportacion.log");
+  const motor = actualizarMotor();
   try {
     const r = await exportar(cfg);
     const xlsx = Buffer.from(r.b64, "base64");
@@ -114,11 +129,11 @@ async function main() {
     await escribirSeguro(join(carpeta, "datos", "registro.json"), JSON.stringify(r.datos));
     let tab;
     try { tab = generarTablero(carpeta); } catch (e) { tab = "tablero: ERROR " + String(e.stderr || e.message).trim().split(/\r?\n/).pop(); }
-    const linea = `${ahoraSV()} · OK · ${r.n} casos (${r.cerrados} cerrados) · ${tab}${ok ? "" : " · el Excel principal estaba abierto: se actualizará en la próxima ejecución"}`;
+    const linea = `${ahoraSV()} · OK · ${r.n} casos (${r.cerrados} cerrados) · ${motor} · ${tab}${ok ? "" : " · el Excel principal estaba abierto: se actualizará en la próxima ejecución"}`;
     await appendFile(log, linea + "\n");
     console.log(linea);
   } catch (e) {
-    await appendFile(log, `${ahoraSV()} · ERROR · ${e.message}\n`);
+    await appendFile(log, `${ahoraSV()} · ERROR · ${motor} · ${e.message}\n`);
     console.error("Error:", e.message);
     process.exitCode = 1;
   }
