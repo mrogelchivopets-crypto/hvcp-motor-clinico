@@ -2320,6 +2320,8 @@ window.avisoM10=function(f){
 };
 window.avisoM10Ir=function(){avisoCerrar();const s=document.querySelector(".reg-tests");if(s&&s.scrollIntoView)s.scrollIntoView({behavior:"smooth",block:"center"})};
 })();
+// M11 (26/11/2026): Anaplasmosis canina y Babesiosis cuentan como «Hemoparásitos» en los indicadores del registro (no cambia puntajes). Caso de origen: MC-7DLPEQ.
+(()=>{Object.assign(DX_EQUIV,{"PER-INF-HEM-004":"PER-INF-HEM-003","GEN-HEM-020":"PER-INF-HEM-003"})})();
 const ST = {hxs:new Set(),motivo2:null,soapSel:new Set(),openSys:new Set(),motivo:null,esp:null,peso:null,edad:null,sexo:null,hemo:null,vac:new Set(),signs:new Set(),ans:{},open:new Set(),
   fl:{tipo:"rl",desh:"0",horas:"24",perd:0,form:"b",ped:false,na:"",iris:{crea:"",sdma:"",upc:"",pas:""}}};
 
@@ -3076,7 +3078,7 @@ const MOTOR_VER="7.9.7";
 // Compilación (M8, 24/11/2026): identifica la publicación exacta de la página sin cambiar la versión del motor.
 // Se guarda junto a la versión en el registro («7.9.7+2026-11-24b»), así un caso hecho con una página en caché se distingue
 // aunque el número de versión sea el mismo. Actualícela (fecha y letra) en cada publicación.
-const MOTOR_BUILD="2026-11-25a";
+const MOTOR_BUILD="2026-11-26a";
 const VC=new Map(VCIE.map(r=>[r[0],r]));
 // Sinónimos del buscador VetCIE-1 (24/11/2026): solo amplían la búsqueda; no cambian el catálogo ni los códigos.
 const VC_SINON={"GEN-HEP-023":"colecistitis mucocele biliar","GEN-URI-335":"sedimento urinario cristaluria cristales arenilla calculos vesicales","FEL-URI-MET-035":"sedimento urinario cristaluria arenilla tapon uretral"};

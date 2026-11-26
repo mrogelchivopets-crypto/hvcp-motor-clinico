@@ -1,5 +1,18 @@
 # Historial de cambios del Motor Clínico
 
+## v7.9.7 · 26/11/2026 11:00 · anaplasmosis y babesiosis equivalen a hemoparásitos en los indicadores (M11)
+
+Origen: análisis del registro del 26/11 a las 10:35 (203 casos y 103 cierres). Aprobado por la Dirección General. Caso de origen: MC-7DLPEQ (anaplasmosis canina confirmada por 4Dx, contada como «fuera del catálogo»).
+
+- `DX_EQUIV` agrega Anaplasmosis canina (PER-INF-HEM-004) y Babesiosis (GEN-HEM-020) → Hemoparásitos (PER-INF-HEM-003), en un bloque antes de `const ST`. Los códigos equivalentes cuentan como contemplados por el motor (`MOTOR_C`) y como acierto en los indicadores del registro.
+- No cambia ningún diagnóstico ni puntaje. MC-7DLPEQ pasa de «fuera del catálogo» a 6.º lugar en los indicadores; con el 4Dx del cierre, Hemoparásitos queda 1.º.
+- `MOTOR_BUILD` pasa a `2026-11-26a`; `MOTOR_VER` no cambia.
+
+### Verificación
+- Sintaxis: `node --check` del script, OK.
+- 203 casos del registro: misma lista completa de diagnósticos con puntajes y misma lista de alta probabilidad; `regDatosCierre` sin diferencias. Solo cambia el indicador de MC-7DLPEQ.
+- 1200 casos generados desde las reglas de cada diagnóstico: 0 diferencias en el top-5, la lista de alta y las alertas. Sin errores de página.
+
 ## v7.9.7 · 25/11/2026 11:40 · aviso de base de confirmación sin resultado (M10)
 
 Origen: análisis del registro del 25/11 a las 10:43 (153 casos y 72 cierres). Aprobado por la Dirección General como aviso no bloqueante. Casos de origen: MC-4EAY72, MC-CUTRND, MC-CFCABE, MC-PY3M3H, MC-PS4XJ2 y MC-XVPFSA (base «imagen» sin ningún examen de imagen); MC-782BSM, MC-2TVB5F, MC-HJURA4, MC-DC4FQ4 y MC-PWTG2Z (base «laboratorio» sin valores ni pruebas).
