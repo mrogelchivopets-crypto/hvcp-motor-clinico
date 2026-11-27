@@ -80,7 +80,7 @@ test("V5: perfiles, PIN, bloqueo, «Mis casos» y cierre desde el panel (celular
   await d1.page.locator("#miscasosbtn").click();
   await expect(d1.page.locator("#miscasos")).toContainText(casoA, { timeout: 20000 });
   await expect(d1.page.locator("#miscasos")).not.toContainText(casoB);
-  await expect(d1.page.locator("#miscasos")).toContainText("Pendientes de cerrar (1)");
+  await expect(d1.page.locator("#miscasos")).toContainText("Pendientes de cerrar, últimas 30 h (1)");
   await d1.page.screenshot({ path: "docs/v8/capturas/v5-mis-casos-celular.png" });
 
   // Cerrar el caso desde el panel
@@ -124,6 +124,28 @@ test("«Sin signos vitales»: sin más datos, el caso se registra y se cierra si
   const { data, error } = await ADM.from("cierres").select("sin_dx, dx_codigo, notas, casos!inner(codigo, rcp, especie)").eq("casos.codigo", cod);
   if (!error) { expect(data).toHaveLength(1); expect(data[0].sin_dx).toBe(true); expect(data[0].dx_codigo).toBe(null); expect(data[0].casos.rcp).toBe(true); }
   else console.log("Consulta directa de cierres no permitida para este usuario; se verificó por la cola vacía y el mensaje:", error.message);
+  expect(D.errores).toEqual([]);
+  await D.ctx.close();
+});
+
+test("Crítico ER: la marca no se pierde al completar el examen y admin_casos entrega médico y conciencia (migración 09)", async ({ browser }) => {
+  const M = { nombre: `Prueba D ${sufijo}`, pin: "1357" };
+  const D = await dispositivo(browser, CEL);
+  await crearPerfil(D.page, M);
+  await D.page.evaluate(() => resetAll());
+  await llenar(D.page, { ...COMPLETO, conc: "crit" });
+  await D.page.evaluate(() => genSOAP());
+  await expect(D.page.locator("#regmsg")).toContainText("registrado", { timeout: 30000 });
+  const cod = await D.page.evaluate(() => REG.cur && REG.cur.id); creados.push(cod);
+  // Después completa la evaluación (alerta) y vuelve a generar la nota: mismo caso, se actualiza
+  await D.page.evaluate(async () => { setConc("alerta"); genSOAP(); await REG.cola; });
+  await expect.poll(() => D.page.evaluate(() => colaLeer().length), { timeout: 30000 }).toBe(0);
+  expect(await D.page.evaluate(() => REG.cur && REG.cur.id)).toBe(cod);
+  const { data, error } = await ADM.rpc("admin_casos", { p_desde: new Date(Date.now() - 36e5).toISOString() });
+  expect(error).toBe(null);
+  const c = data.map((r) => r.caso).find((x) => x.id === cod);
+  expect(c.medico).toBe(M.nombre); expect(c.vet).toBe(M.nombre);
+  expect(c.ent.conc).toBe("alerta"); expect(c.ent.critico).toBe(true); expect(c.ent.rcp).toBe(false);
   expect(D.errores).toEqual([]);
   await D.ctx.close();
 });

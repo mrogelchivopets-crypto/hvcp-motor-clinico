@@ -3597,16 +3597,30 @@ function pct(k,n){return n?Math.round(k/n*100)+"%":"—"}
 function regEval(){
   return REG.casos.map(c=>{const k=REG.cierres.get(c.id);if(!k||!k.dx||!k.conf)return null;
     const EQ=x=>DX_EQUIV[x]||x, d=EQ(k.dx.c),top=c.sal.top.map(t=>EQ(t.c)),soap=c.sal.soap.map(EQ),alta=c.sal.alta.map(EQ);
-    const r={c,k,d,h1:!!d&&top[0]===d,h3:!!d&&top.slice(0,3).includes(d),hs:!!d&&soap.includes(d),hA:!!d&&alta.includes(d),inM:!!d&&MOTOR_C.has(d),obj:CONF_OBJ.has(k.conf)||CONF_OBJ.has(k.conf2),cap:k.dx.cap||"",insuf:c.sal.insuf};
+    const r={c,k,d,h1:!!d&&top[0]===d,h3:!!d&&top.slice(0,3).includes(d),hs:!!d&&soap.includes(d),hA:!!d&&alta.includes(d),inM:!!d&&MOTOR_C.has(d),obj:CONF_OBJ.has(k.conf)||CONF_OBJ.has(k.conf2),cap:k.dx.cap||"",insuf:c.sal.insuf,rcp:esRCP(c),crit:!!c.ent.critico};
     // Posición con los datos completos: el caso reproducido en el motor actual con los resultados del cierre que no se ingresaron.
     const ck=k.fc||"";if(!c._dc||c._dc.k!==ck){const ex=regDatosCierre(k,c.ent),l=Object.keys(ex).length?motorConDatos(c.ent,ex):null;c._dc={k:ck,n:Object.keys(ex).length,top:l?l.map(EQ):null}}
     r.dc=c._dc.n>0&&!!c._dc.top;const t2=r.dc?c._dc.top:top;r.hc1=!!d&&t2[0]===d;r.hc3=!!d&&t2.slice(0,3).includes(d);
     return r;
   }).filter(Boolean);
 }
+// Casos de paro (sin signos vitales): no cuentan para el acierto del motor (no calcula presuntivos); se reportan aparte.
+function esRCP(c){return !!(c.ent&&(c.ent.rcp||c.ent.conc==="ssv"))}
 function regStats(){
-  const ev=regEval(),N=REG.casos.length,st={N,ev,nEv:ev.length};
+  const evTodos=regEval(),ev=evTodos.filter(r=>!r.rcp),N=REG.casos.length,st={N,ev,nEv:ev.length};
   const g=(arr,f)=>({n:arr.length,k:arr.filter(f).length});
+  const est=c=>estadoCaso(c.f,REG.cierres.get(c.id)),evm=new Map(ev.map(r=>[r.c.id,r]));
+  // Resumen de un grupo de casos: cuántos, cuántos con diagnóstico definitivo evaluable y su acierto.
+  const grupo=(l,C)=>{const E=C.map(c=>evm.get(c.id)).filter(Boolean);return {l,n:C.length,nEv:E.length,h1:E.filter(r=>r.h1).length,h3:E.filter(r=>r.h3).length}};
+  const rcpC=REG.casos.filter(esRCP),noRcp=REG.casos.filter(c=>!esRCP(c));
+  st.rcp={n:rcpC.length,cerr:rcpC.filter(c=>est(c)==="cerr").length,sinDx:rcpC.filter(c=>(REG.cierres.get(c.id)||{}).sinDx).length,nEv:evTodos.filter(r=>r.rcp).length};
+  const critC=noRcp.filter(c=>c.ent.critico);
+  st.crit={...grupo("Crítico ER",critC),completo:critC.filter(c=>c.ent.conc&&c.ent.conc!=="crit").length};
+  st.porConc=[...P_CONC.filter(p=>p[0]!=="ssv").map(p=>grupo(p[1],noRcp.filter(c=>c.ent.conc===p[0]))),grupo("Sin marcar (casos anteriores a la v8.0)",noRcp.filter(c=>!c.ent.conc))];
+  st.porHemo=[...P_HEMO.filter(p=>p[0]!=="pcr").map(p=>grupo(p[1],noRcp.filter(c=>c.ent.hemo===p[0]))),grupo("Sin marcar",noRcp.filter(c=>!c.ent.hemo||c.ent.hemo==="pcr"))];
+  const pm=new Map();REG.casos.forEach(c=>{const m=c.medico||"Sin perfil (anterior a la v8.0)";if(!pm.has(m))pm.set(m,[]);pm.get(m).push(c)});
+  st.porMed=[...pm.entries()].map(([m,C])=>({...grupo(m,C.filter(c=>!esRCP(c))),gen:C.length,pend:C.filter(c=>est(c)==="pend").length,cerr:C.filter(c=>est(c)==="cerr").length,venc:C.filter(c=>est(c)==="venc").length}))
+    .sort((a,b)=>(a.l.startsWith("Sin perfil")-b.l.startsWith("Sin perfil"))||b.gen-a.gen||a.l.localeCompare(b.l,"es"));
   const sets={todos:ev,obj:ev.filter(r=>r.obj),motor:ev.filter(r=>r.inM)};
   st.acc={};for(const[s,a]of Object.entries(sets))st.acc[s]={h1:g(a,r=>r.h1),h3:g(a,r=>r.h3),hs:g(a,r=>r.hs),hc3:g(a,r=>r.hc3)};
   st.nDc=ev.filter(r=>r.dc).length;
@@ -3730,8 +3744,9 @@ function cargarXLSX(){return window.XLSX?Promise.resolve():new Promise((res,rej)
 function regLibro(etq){
     const st=regStats(),evm=new Map(st.ev.map(r=>[r.c.id,r])),wb=XLSX.utils.book_new();
     const filas=REG.casos.map(c=>{const e=c.ent,s=c.sal,x=e.ex||{},k=REG.cierres.get(c.id)||{},r=evm.get(c.id),o={
-      "Código":c.id,"Fecha":fIso(c.f),"Versión motor":String(c.v||"").split("+")[0],"Compilación":String(c.v||"").split("+")[1]||"","Veterinario":c.vet||"",
-      "Especie":lab(P_ESP,e.esp),"Peso (kg)":e.peso,"Edad":lab(P_EDAD,e.edad),"Sexo":lab(P_SEXO,e.sexo),"Estado hemodinámico":lab(P_HEMO,e.hemo),"Estado hemodinámico analizado":e.hemoEf?lab(P_HEMO,e.hemoEf):"",
+      "Código":c.id,"Fecha":fIso(c.f),"Versión motor":String(c.v||"").split("+")[0],"Compilación":String(c.v||"").split("+")[1]||"","Veterinario":c.vet||"","Médico":c.medico||"","Estado del caso":{pend:"Pendiente",cerr:"Cerrado",venc:"Cerrado por tiempo"}[estadoCaso(c.f,REG.cierres.get(c.id))],"Cerrado por":k.cerradoPor||"",
+      "Especie":lab(P_ESP,e.esp),"Peso (kg)":e.peso,"Edad":lab(P_EDAD,e.edad),"Sexo":lab(P_SEXO,e.sexo),"Estado hemodinámico":lab(P_HEMO,e.hemo),"Estado hemodinámico analizado":e.hemoEf?lab(P_HEMO,e.hemoEf):"","Estado de conciencia":e.conc?lab(P_CONC,e.conc):"",
+      "Crítico ER":e.critico==null?"":e.critico?"Sí":"No","Completó el examen después":e.critico?(e.conc&&e.conc!=="crit"?"Sí":"No"):"","RCP":e.rcp==null?"":e.rcp?"Sí":"No",
       "FC":numX(x.fc),"FR":numX(x.fr),"Temperatura":numX(x.temp),"Mucosas":lab(EX_MUC,x.muc),"TLLC":lab(EX_TLLC,x.tllc),"Pulso":lab(EX_PULSO,x.pulso),"Deshidratación":lab(EX_DH,x.dh),"CC (1-5)":numX(x.cc),
       "Ausc. cardíaca":lab(EX_CARD,x.card),"Ausc. pulmonar":lab(EX_PULM,x.pulm),"Vejiga":lab(EX_VEJ,x.vej),
       "Motivo":nombreMotivo(e.motivo),"Motivo secundario":e.motivo2?nombreMotivo(e.motivo2):"",
@@ -3747,25 +3762,41 @@ function regLibro(etq){
       Object.assign(o,{"Otros resultados":k.otros||"","Notas":k.notas||""});
       return o});
     XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(filas),"Casos");
-    const A=st.acc,f=o=>o.n?`${pct(o.k,o.n)} (${o.k}/${o.n})`:"—";
+    const A=st.acc,f=o=>o.n?`${pct(o.k,o.n)} (${o.k}/${o.n})`:"—",fG=(r,h)=>r.nEv?`${pct(r[h],r.nEv)} (${r[h]}/${r.nEv})`:"—";
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Indicadores del Motor Clínico HVCP"],["Período",etq],["Generado",fCorta(new Date().toISOString())],[],
       ["Casos registrados",st.N],["Con diagnóstico definitivo",st.nEv],["Datos insuficientes",st.insuf],[],
       ["Acierto","Todos","Confirmación objetiva","Dx en el motor"],["Top-1",f(A.todos.h1),f(A.obj.h1),f(A.motor.h1)],["Top-3",f(A.todos.h3),f(A.obj.h3),f(A.motor.h3)],["SOAP",f(A.todos.hs),f(A.obj.hs),f(A.motor.hs)],[],
+      ["El acierto excluye los casos sin signos vitales (RCP): el motor no calcula presuntivos en el paro."],
+      ["Casos sin signos vitales (RCP)",st.rcp.n],["  cerrados",st.rcp.cerr],["  sin diagnóstico definitivo",st.rcp.sinDx],["  con diagnóstico definitivo (fuera del acierto)",st.rcp.nEv],[],
+      ["Pacientes «Crítico ER»",st.crit.n],["  completaron el examen físico después",st.crit.completo],["  con diagnóstico definitivo",st.crit.nEv],["  acierto top-1",fG(st.crit,"h1")],["  acierto top-3",fG(st.crit,"h3")],[],
+      ["Estado de conciencia","Casos","Con dx definitivo","Top-1","Top-3"],...st.porConc.map(r=>[r.l,r.n,r.nEv,fG(r,"h1"),fG(r,"h3")]),[],
+      ["Estado hemodinámico","Casos","Con dx definitivo","Top-1","Top-3"],...st.porHemo.map(r=>[r.l,r.n,r.nEv,fG(r,"h1"),fG(r,"h3")]),[],
       ["Médico cambió el dx del motor",st.medVsMotor.n],["Acertó el médico",st.medVsMotor.med],["Acertó el motor",st.medVsMotor.mot],["Ninguno",st.medVsMotor.ning],[],
       ["Capítulo","n","Top-1","Top-3"],...st.cap.map(r=>[VCAP[r.c]||"Sin código",r.n,pct(r.h1,r.n),pct(r.h3,r.n)])]),"Indicadores");
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Médico","Casos generados","Pendientes (menos de "+VENCE_H+" h)","Cerrados","Cerrados por tiempo","% cerrados por el médico","Con dx definitivo","Top-1","Top-3"],
+      ...st.porMed.map(r=>[r.l,r.gen,r.pend,r.cerr,r.venc,pct(r.cerr,r.gen),r.nEv,fG(r,"h1"),fG(r,"h3")]),[],
+      ["Los casos anteriores a la v8.0 no tienen médico: se agrupan como «Sin perfil». El acierto excluye los casos sin signos vitales (RCP)."]]),"Por médico");
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Diagnóstico","Código","En el motor","n","Top-1","Top-3"],...st.dx.map(r=>[r.n,r.c,r.inM?"Sí":"No",r.cnt,r.h1,r.h3])]),"Por diagnóstico");
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Diagnóstico","Código VetCIE-1","Casos","Como principal"],...st.fuera.map(r=>[r.n,r.c||"No está en VetCIE-1",r.cnt,r.prin])]),"Fuera del motor");
     const sk=Object.keys(SIGNS),qk=QS.map(q=>q.id);
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["codigo","especie","edad","sexo","peso","hemo","fc","fr","temp","mucosas","tllc","pulso","dh","cc","motivo",...sk.map(z=>"s_"+z),...qk.map(q=>"q_"+q),"dx_def","conf","conf2"],
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["codigo","especie","edad","sexo","peso","hemo","fc","fr","temp","mucosas","tllc","pulso","dh","cc","motivo","conciencia","critico","rcp","medico","estado",...sk.map(z=>"s_"+z),...qk.map(q=>"q_"+q),"dx_def","conf","conf2"],
       ...REG.casos.map(c=>{const e=c.ent,x=e.ex||{},k=REG.cierres.get(c.id)||{},S=new Set(e.signsAll||[]);
-        return [c.id,e.esp||"",e.edad||"",e.sexo||"",e.peso??"",e.hemo||"",numX(x.fc),numX(x.fr),numX(x.temp),x.muc||"",x.tllc||"",x.pulso||"",x.dh||"",numX(x.cc),e.motivo||"",...sk.map(z=>S.has(z)?1:0),...qk.map(q=>(e.ans||{})[q]??""),k.dx?k.dx.c||"NUEVO":"",k.conf||"",k.conf2||""]})]),"Matriz ML");
+        return [c.id,e.esp||"",e.edad||"",e.sexo||"",e.peso??"",e.hemo||"",numX(x.fc),numX(x.fr),numX(x.temp),x.muc||"",x.tllc||"",x.pulso||"",x.dh||"",numX(x.cc),e.motivo||"",e.conc||"",e.critico==null?"":e.critico?1:0,e.rcp==null?"":e.rcp?1:0,c.medico||"",estadoCaso(c.f,REG.cierres.get(c.id)),...sk.map(z=>S.has(z)?1:0),...qk.map(q=>(e.ans||{})[q]??""),k.dx?k.dx.c||"NUEVO":"",k.conf||"",k.conf2||""]})]),"Matriz ML");
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Columna","Significado"],...sk.map(z=>["s_"+z,SIGNS[z][0]]),...QS.map(q=>["q_"+q.id,q.t+" — "+q.o.map(o=>o[0]+"="+o[1]).join("; ")]),
       ["Confirmación 2","Hoja Casos: segunda base de la confirmación del diagnóstico definitivo (opcional; vacía en los cierres que solo tienen una). Mismos valores que «Confirmación»: "+CONF.map(c=>c[1]).join("; ")+"."],
       ["Confirmación objetiva","Hoja Casos: «Sí» si «Confirmación» o «Confirmación 2» es histopatología o necropsia, prueba de laboratorio específica, imagen diagnóstica o hallazgo quirúrgico; «No» en otro caso; vacía si el caso no tiene confirmación."],
       ...LABT.filter(t=>["rxa","rxcab","rxcad"].includes(t[0])).map(t=>[t[1],"Hoja Casos: resultado de la "+t[1].toLowerCase()+" registrado en el cierre: «Anormal» o «Normal»; vacía si no se registró."]),
       ["Compilación","Hoja Casos: publicación exacta de la página con que se registró el caso (fecha y letra, p. ej. 2026-11-24b). Vacía en los casos anteriores al 24/11/2026. Si un caso nuevo trae una compilación vieja, esa tableta usa una página en caché."],
       ["Hallazgos específicos","Hoja Casos: hallazgo principal de cada examen anormal o 4Dx positivo. Obligatorio desde el 24/11/2026 (M9); «No determinado» cuando no se pudo precisar."],
-      ["conf2","Hoja Matriz ML: segunda base de la confirmación (código; vacía si no hay)."]]),"Diccionario");
+      ["conf2","Hoja Matriz ML: segunda base de la confirmación (código; vacía si no hay)."],
+      ["Médico / medico","Perfil del médico que generó la nota SOAP (v8.0). Vacío en los casos anteriores a la v8.0."],
+      ["Estado del caso / estado","Pendiente (pend): sin cierre y menos de "+VENCE_H+" h desde la nota SOAP. Cerrado (cerr): el médico registró el diagnóstico definitivo o «sin diagnóstico definitivo». Cerrado por tiempo (venc): más de "+VENCE_H+" h sin cierre."],
+      ["Cerrado por","Perfil del médico que registró el cierre (v8.0)."],
+      ["Estado de conciencia / conciencia","Marcado en el motor (v8.0): "+P_CONC.map(p=>p[0]+" = "+p[1]).join("; ")+". Vacío en los casos anteriores a la v8.0."],
+      ["Crítico ER / critico","Sí (1) si el paciente se marcó como «Crítico ER» en algún momento (examen físico diferido). Vacío en los casos anteriores a la v8.0."],
+      ["Completó el examen después","Solo en pacientes «Crítico ER»: «Sí» si después se registró el estado de conciencia y el examen físico completo."],
+      ["RCP / rcp","Sí (1) si el paciente llegó sin signos vitales. Estos casos no cuentan para el acierto del motor. Vacío en los casos anteriores a la v8.0."],
+      ["hemo","Hoja Matriz ML: estado hemodinámico (est = estable, comp = shock compensado, desc = shock descompensado, pcr = paro). Desde la v8.0 lo calcula el motor."]]),"Diccionario");
     return wb;
 }
 async function regExportar(){

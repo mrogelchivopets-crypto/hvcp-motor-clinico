@@ -338,3 +338,60 @@ test("Casos con más de 30 h sin cierre: salen de Pendientes y pasan a «Cerrado
   expect(errores).toEqual([]);
   await ctx.close();
 });
+
+test("Excel: columnas nuevas, RCP fuera del acierto, crítico, conciencia, estado hemodinámico y hoja «Por médico»", async ({ browser }) => {
+  const { ctx, page, errores } = await abrir(browser);
+  const r = await page.evaluate(async () => {
+    const h = (n) => new Date(Date.now() - n * 36e5).toISOString();
+    const top = [{ c: "GEN-DIG-001", n: "Gastritis", sc: 40 }, { c: "GEN-DIG-002", n: "Otro", sc: 30 }];
+    const caso = (id, n, ent, medico) => ({ id, f: h(n), v: "8.0+2026-11-27", vet: medico || "Anónimo", medico, ent: { esp: "c", ex: {}, signsAll: [], ...ent },
+      sal: { top, alta: [], soap: ["GEN-DIG-001"], soapAuto: true, insuf: false, faltan: [], qPend: [], qVis: 0 } });
+    REG.casos = [
+      caso("MC-AAAAA2", 2, { conc: "alerta", hemo: "est", critico: false, rcp: false }, "Dra. Uno"),
+      caso("MC-AAAAA3", 40, { conc: "crit", hemo: "desc", critico: true, rcp: false }, "Dra. Uno"),
+      caso("MC-AAAAA4", 5, { conc: "alerta", hemo: "comp", critico: true, rcp: false }, "Dr. Dos"),
+      caso("MC-AAAAA5", 5, { conc: "ssv", hemo: "pcr", critico: false, rcp: true }, "Dr. Dos"),
+      caso("MC-AAAAA6", 60, { hemo: "est" }, undefined),
+    ];
+    const dx = (c) => ({ dx: { c, n: c, cap: "" }, conf: "lab", fc: h(1) });
+    REG.cierres = new Map([["MC-AAAAA2", dx("GEN-DIG-001")], ["MC-AAAAA4", dx("GEN-DIG-002")], ["MC-AAAAA5", dx("GEN-DIG-001")], ["MC-AAAAA6", { sinDx: true, fc: h(1) }]]);
+    await cargarXLSX();
+    const wb = regLibro("Prueba"), hoja = (n) => XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, defval: "" });
+    const casos = XLSX.utils.sheet_to_json(wb.Sheets["Casos"], { defval: "" });
+    const col = (k) => casos.map((x) => x[k]);
+    const ind = hoja("Indicadores"), fila = (t) => { const v = (ind.find((x) => x[0] === t) || []).slice(1, 5); while (v.length && v[v.length - 1] === "") v.pop(); return v; };
+    const ml = hoja("Matriz ML");
+    return {
+      hojas: wb.SheetNames,
+      medico: col("Médico"), estado: col("Estado del caso"), conc: col("Estado de conciencia"), crit: col("Crítico ER"),
+      completo: col("Completó el examen después"), rcp: col("RCP"), top1: col("Acierto top-1"),
+      acc: fila("Top-1"), rcpN: fila("Casos sin signos vitales (RCP)"), rcpEv: fila("  con diagnóstico definitivo (fuera del acierto)"),
+      critN: fila("Pacientes «Crítico ER»"), critComp: fila("  completaron el examen físico después"), critTop3: fila("  acierto top-3"),
+      alerta: fila("Alerta"), desc: fila("Shock descompensado"), sinConc: fila("Sin marcar (casos anteriores a la v8.0)"),
+      porMed: hoja("Por médico").slice(0, 4),
+      mlCab: ml[0].slice(15, 20), mlFila: ml[1].slice(15, 20),
+    };
+  });
+  expect(r.hojas).toContain("Por médico");
+  expect(r.medico).toEqual(["Dra. Uno", "Dra. Uno", "Dr. Dos", "Dr. Dos", ""]);
+  expect(r.estado).toEqual(["Cerrado", "Cerrado por tiempo", "Cerrado", "Cerrado", "Cerrado"]);
+  expect(r.conc).toEqual(["Alerta", "Crítico ER", "Alerta", "Sin signos vitales", ""]);
+  expect(r.crit).toEqual(["No", "Sí", "Sí", "No", ""]);
+  expect(r.completo).toEqual(["", "No", "Sí", "", ""]);
+  expect(r.rcp).toEqual(["No", "No", "No", "Sí", ""]);
+  expect(r.top1).toEqual([1, "", 0, "", ""]);           // el caso RCP con diagnóstico no cuenta para el acierto
+  expect(r.acc[0]).toBe("50% (1/2)");
+  expect(r.rcpN).toEqual([1]); expect(r.rcpEv).toEqual([1]);
+  expect(r.critN).toEqual([2]); expect(r.critComp).toEqual([1]); expect(r.critTop3).toEqual(["100% (1/1)"]);
+  expect(r.alerta).toEqual([2, 2, "50% (1/2)", "100% (2/2)"]);
+  expect(r.desc).toEqual([1, 0, "—", "—"]);
+  expect(r.sinConc).toEqual([1, 0, "—", "—"]);
+  expect(r.porMed[0]).toEqual(["Médico", "Casos generados", "Pendientes (menos de 30 h)", "Cerrados", "Cerrados por tiempo", "% cerrados por el médico", "Con dx definitivo", "Top-1", "Top-3"]);
+  expect(r.porMed[1].slice(0, 6)).toEqual(["Dr. Dos", 2, 0, 2, 0, "100%"]);
+  expect(r.porMed[2].slice(0, 6)).toEqual(["Dra. Uno", 2, 0, 1, 1, "50%"]);
+  expect(r.porMed[3].slice(0, 6)).toEqual(["Sin perfil (anterior a la v8.0)", 1, 0, 1, 0, "100%"]);
+  expect(r.mlCab).toEqual(["conciencia", "critico", "rcp", "medico", "estado"]);
+  expect(r.mlFila).toEqual(["alerta", 0, 0, "Dra. Uno", "cerr"]);
+  expect(errores).toEqual([]);
+  await ctx.close();
+});

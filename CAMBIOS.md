@@ -78,6 +78,31 @@ Rama `v8.0`, un commit por cambio; PR a `main` sin fusionar (lo aprueba la Direc
 - **Pendiente:** la exportación y el análisis lo incorporan en la segunda parte; estos casos no cuentan para el acierto.
 - **Verificación:** `v8.spec.js` (límites 29.9 h y 30.1 h, filtros, conteos y «Mis casos»). **Resultado:** OK.
 
+### Segunda parte: exportación y análisis (27/11/2026)
+
+#### Excel (`regLibro`, `regStats`; lo usan «Exportar a Excel» y la exportación de las 10:00 y 16:00)
+- **Hoja «Casos», columnas nuevas:** Médico, Estado del caso (Pendiente · Cerrado · Cerrado por tiempo), Cerrado por, Estado de conciencia, Crítico ER, Completó el examen después, RCP. «Estado hemodinámico» ya existía. Vacías en los casos anteriores a la v8.0.
+- **Hoja «Matriz ML»:** columnas `conciencia`, `critico`, `rcp`, `medico`, `estado`.
+- **Hoja «Indicadores»:** el acierto **excluye los casos sin signos vitales (RCP)**, que se reportan aparte (cuántos, cerrados, sin diagnóstico, con diagnóstico). Aparte también: pacientes «Crítico ER» (cuántos, cuántos completaron el examen después, acierto top-1 y top-3), acierto por estado de conciencia y por estado hemodinámico.
+- **Hoja nueva «Por médico»:** casos generados, pendientes (< 30 h), cerrados, cerrados por tiempo, % cerrados, con diagnóstico definitivo, top-1 y top-3. Los casos anteriores a la v8.0 quedan como «Sin perfil».
+- **Diccionario:** las columnas nuevas.
+
+#### Migración 09 (`20261127000900_v8_lector_y_marcas.sql`)
+- **Corrige un error de la 08:** la 08 volvía a limitar `admin_casos` a administradores y la cuenta lectora de la exportación automática dejaba de leer el registro. La 09 vuelve a `puede_leer()` y conserva el nombre del médico.
+- **`critico` y `rcp` ya no se pierden:** un disparador conserva `true` aunque el médico complete el examen y vuelva a generar la nota; así se sabe cuántos críticos completaron el examen después. `conciencia` guarda el último valor.
+- **Proyecto de prueba:** aplicadas la 06 (no estaba) y la 09. **Producción:** aplicar 08 y 09 juntas antes de fusionar.
+
+#### Tablero y análisis diario
+- `scripts/tablero/generar_tablero.py`: campos `medico`, `estado`, `cerrado_por_tiempo`, `conciencia`, `critico`, `critico_completo`, `rcp`; los casos RCP no son evaluables. «Cerrado» ahora usa la misma regla que el motor (antes contaba cualquier cierre, aunque no tuviera diagnóstico ni confirmación: con los datos del 27/11, 122 → 111 cerrados).
+- `scripts/tablero/generar_tablero_html.py`: «Por dispositivo» → «Por médico»; «Abiertos más de 48 h» → «Cerrados por tiempo»; sección nueva «Grupos que se reportan aparte» (RCP, Crítico ER, conciencia, estado hemodinámico). El acierto no cambia con los datos actuales (67/104 top-1, 85/104 top-3).
+- `scripts/retroalimentacion.mjs`: no analiza casos RCP.
+- Instrucciones de la tarea «hvcp-analisis-diario-motor»: versión nueva en `docs/v8/analisis_diario_SKILL_v8.md` (estados, resumen por médico, RCP fuera del acierto, crítico, conciencia y estado hemodinámico). **Se activan cuando la Dirección General lo apruebe**, copiándolas con los dos scripts del tablero a la carpeta de la tarea.
+
+#### Verificación
+- `v8.spec.js`: prueba del Excel (columnas, RCP fuera del acierto, crítico, conciencia, estado hemodinámico, «Por médico» y Matriz ML). 24 pruebas sin red OK.
+- `v8_medicos.spec.js` contra el proyecto de prueba: «Crítico ER» → alerta conserva `critico = true` y `admin_casos` entrega médico y conciencia. 3 pruebas OK.
+- Exportación manual de prueba con los datos de producción (cuenta lectora, carpeta temporal): 237 casos, 112 cerrados, 113 cerrados por tiempo, 12 pendientes; columnas nuevas vacías (producción aún sin la 08). Muestra con columnas llenas en el proyecto de prueba (3 casos, anulados después).
+
 ### Regresión (`tests/regresion_v8.mjs`, resultado en `docs/v8/regresion_v8.json`)
 - Identidad clínica: **600 de 600** combinaciones con top-5 y puntajes idénticos (v7.9.7 con el mismo estado hemodinámico que calcula la v8.0; conciencia = Deprimido).
 - Simulación por perfiles (142 perfiles, uno por diagnóstico; 3000 casos por semilla), acierto top-1 v7.9.7 vs. v8.0: semilla 1 — 66,7 % vs. 66,7 %; semilla 2 — 66,8 % vs. 66,8 %. Sin errores de página en ninguna de las dos versiones. Ningún diagnóstico baja.
@@ -89,7 +114,7 @@ Rama `v8.0`, un commit por cambio; PR a `main` sin fusionar (lo aprueba la Direc
 `conciencia`, `hemo` (calculado), `hemoCriterios`, `medicoId`, `medico`, `rcp`, `critico`, `version` (8.0). En el servidor: `casos.conciencia`, `critico`, `rcp`, `hemo_criterios`, `medico_id`; `cierres.cerrado_por_medico`.
 
 ### Pendientes / límites conocidos
-- **Antes de fusionar:** aplicar la migración 08 en producción (`bjvdjznnktgfweipeshn`). Sin ella, la v8.0 no puede crear ni usar perfiles.
+- **Antes de fusionar:** aplicar las migraciones 08 y 09 en producción (`bjvdjznnktgfweipeshn`), en ese orden. Sin la 08, la v8.0 no puede crear ni usar perfiles; sin la 09, la exportación automática deja de leer el registro.
 - Seguridad del PIN: 4 dígitos con bcrypt y bloqueo por intentos; protege contra errores y uso casual, no contra alguien con acceso a la cuenta del dispositivo.
 - Si se aplica después la 06 (rol lector), su `admin_casos` debe conservar el nombre del médico de la 08.
 - Borrador por dispositivo (localStorage): no pasa de un dispositivo a otro.
