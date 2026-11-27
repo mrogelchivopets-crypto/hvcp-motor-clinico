@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>HVCP ER Motor Clínico v7.9.7 · registro en línea</title>
+<title>HVCP ER Motor Clínico · registro en línea</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -391,14 +391,14 @@ details[open]>summary .sg-ocu{display:inline}
 <body>
 <header>
   <span class="badge">HVCP ER</span>
-  <div><div class="htitle">Motor Clínico de Urgencias v7.9.7 · registro en línea</div><div class="hsub">Signos → sistemas implicados → diagnósticos presuntivos · Codificación VetCIE-1</div><div class="hclock" id="hclock" aria-label="Fecha y hora"></div></div>
+  <div><div class="htitle" id="htitle">Motor Clínico de Urgencias · registro en línea</div><div class="hsub">Signos → sistemas implicados → diagnósticos presuntivos · Codificación VetCIE-1</div><div class="hclock" id="hclock" aria-label="Fecha y hora"></div></div>
   <span class="hspace"></span>
   <span class="netst" id="netst" role="status" aria-live="polite"></span>
   <button class="reset" id="medbtn" onclick="medCambiar()" title="Médico activo">Elegir médico</button>
   <button class="reset" id="miscasosbtn" onclick="misCasosAbrir()">Mis casos</button>
   <button class="reset" id="themebtn" onclick="toggleTheme()" title="Cambiar a modo claro u oscuro">Modo claro</button>
   <button class="reset" id="regbtn" onclick="regToggle(!REG.abierto)">Registro de casos</button>
-  <button class="reset" onclick="if(REG.abierto)regToggle(false);resetAll()">Nuevo paciente</button>
+  <button class="reset" onclick="nuevoPaciente()">Nuevo paciente</button>
 </header>
 <div id="perfil" class="pf-fondo" style="display:none" role="dialog" aria-modal="true" aria-label="Perfil del médico"></div>
 <div id="miscasos" class="pf-fondo" style="display:none" role="dialog" aria-modal="true" aria-label="Mis casos"></div>
@@ -3124,7 +3124,7 @@ function genSOAPbase(){
   L.push("Hospitalización o alta: ");
   L.push("Se explica al propietario: ");
   L.push("");
-  L.push("Nota generada con el Motor Clínico HVCP v7.9.7 como apoyo; revisada y validada por el médico veterinario tratante.");
+  L.push("Nota generada con el Motor Clínico HVCP v"+MC_VERSION+" como apoyo; revisada y validada por el médico veterinario tratante.");
   document.getElementById("soap").value=L.join("\n");
   document.getElementById("soapmsg").textContent=auto?"Nota generada con el diagnóstico más probable (no hay ninguno marcado en «SOAP»).":`Nota generada con ${alta.length} diagnóstico${alta.length>1?"s":""} seleccionado${alta.length>1?"s":""}.`;
 }
@@ -3158,11 +3158,16 @@ const VCAP={"14":"Enfermedades de la Piel y Tejido Subcutáneo","01":"Enfermedad
 // ═══════════════════════════════════════════════════════════════
 // REGISTRO DE CASOS — sin datos del propietario
 // ═══════════════════════════════════════════════════════════════
-const MOTOR_VER="7.9.7";
+// V6 (v8.0): única fuente de la versión. Se usa en el título, el encabezado, la nota SOAP, el pie y el registro.
+// version.json (raíz del repositorio) debe tener los mismos valores: «Nuevo paciente» lo compara para actualizar.
+const MC_VERSION="8.0", MC_BUILD="2026-11-27a";
+const MOTOR_VER=MC_VERSION; // nombre anterior (registro, scripts de catálogo, exportación y retroalimentación)
+document.title="HVCP ER Motor Clínico v"+MC_VERSION+" · registro en línea";
+{const h=document.getElementById("htitle");if(h)h.textContent="Motor Clínico de Urgencias v"+MC_VERSION+" · registro en línea";}
 // Compilación (M8, 24/11/2026): identifica la publicación exacta de la página sin cambiar la versión del motor.
 // Se guarda junto a la versión en el registro («7.9.7+2026-11-24b»), así un caso hecho con una página en caché se distingue
 // aunque el número de versión sea el mismo. Actualícela (fecha y letra) en cada publicación.
-const MOTOR_BUILD="2026-11-27a";
+const MOTOR_BUILD=MC_BUILD;
 const VC=new Map(VCIE.map(r=>[r[0],r]));
 // Sinónimos del buscador VetCIE-1 (24/11/2026): solo amplían la búsqueda; no cambian el catálogo ni los códigos.
 const VC_SINON={"GEN-HEP-023":"colecistitis mucocele biliar","GEN-URI-335":"sedimento urinario cristaluria cristales arenilla calculos vesicales","FEL-URI-MET-035":"sedimento urinario cristaluria arenilla tapon uretral"};
@@ -3357,6 +3362,17 @@ function misCasosIr(cod){misCasosCerrar();regToggle(true);REG.sel=null;REG.accCo
 // Sin perfil activo, «Generar nota SOAP» (y la barra inferior y «Copiar») abre la pantalla de perfil.
 {const _g=genSOAP; genSOAP=function(){if(!MED){perfilAbrir();return}return _g.apply(this,arguments)}}
 setTimeout(medPintar,0);
+
+// ═══ V6 (v8.0) — Actualización al dar «Nuevo paciente» ═══
+async function nuevoPaciente(){
+  if(REG.abierto)regToggle(false);
+  try{const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),4000);
+    const r=await fetch("version.json",{cache:"no-store",signal:ctl.signal});clearTimeout(t);
+    if(r.ok){const j=await r.json();
+      if(j&&j.build&&(j.build!==MC_BUILD||(j.version&&j.version!==MC_VERSION))){location.replace(location.pathname+"?v="+encodeURIComponent(j.build));return}}}
+  catch(e){} // sin red o sin version.json: se sigue sin bloquear
+  resetAll();
+}
 
 function regToggle(on){
   const app=document.querySelector(".app"),rv=document.getElementById("regview"),b=document.getElementById("regbtn");
@@ -3843,7 +3859,7 @@ function regEvento(tipo){if(!REG.sb||!REG.uid||!navigator.onLine)return;REG.sb.r
   setInterval(()=>{if(document.visibilityState==="visible"&&REG.sesion&&navigator.onLine)REG.sb.rpc("latido",{p_sesion:REG.sesion}).then(()=>{},()=>{});colaEnviar()},60000);
 })();
 
-document.getElementById("foot").innerHTML = `HVCP ER Motor Clínico v7.9.7 · registro en línea (reglas y registro de casos) · ${DX.length} diagnósticos presuntivos en ${Object.keys(SYS).length} sistemas · Herramienta de apoyo a la decisión: no sustituye el examen clínico ni el criterio del médico veterinario. Las dosis deben verificarse contra la presentación disponible y el estado del paciente.<br>
+document.getElementById("foot").innerHTML = `HVCP ER Motor Clínico v${MC_VERSION} · registro en línea (reglas y registro de casos) · ${DX.length} diagnósticos presuntivos en ${Object.keys(SYS).length} sistemas · Herramienta de apoyo a la decisión: no sustituye el examen clínico ni el criterio del médico veterinario. Las dosis deben verificarse contra la presentación disponible y el estado del paciente.<br>
 Bibliografía base: Plumb's Veterinary Drug Handbook 10ª ed. (2023); Silverstein & Hopper, Small Animal Critical Care Medicine 3ª ed. (2022); Ettinger, Textbook of Veterinary Internal Medicine 9ª ed. (2024); Sykes, Greene's Infectious Diseases of the Dog and Cat 5ª ed. (2021); AAHA Fluid Therapy Guidelines for Dogs and Cats (2024); IRIS Staging of CKD (modificado 2026); RECOVER CPR Guidelines (2024); WSAVA Vaccination Guidelines (2024); consensos ACVIM, ISCAID e IRIS citados en cada diagnóstico.`;
 renderAll();
 </script>

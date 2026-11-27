@@ -225,3 +225,37 @@ test("V4: «Crítico ER» con el examen vacío genera presuntivos, prioridad 1 y
   expect(errores).toEqual([]);
   await ctx.close();
 });
+
+// ─── V6: versión única y actualización al dar «Nuevo paciente» ───
+test("V6: la versión 8.0 sale de una sola constante (título, encabezado y SOAP)", async ({ browser }) => {
+  const { ctx, page } = await abrir(browser);
+  expect(await page.title()).toBe("HVCP ER Motor Clínico v8.0 · registro en línea");
+  await expect(page.locator("#htitle")).toHaveText("Motor Clínico de Urgencias v8.0 · registro en línea");
+  await llenar(page, { ...COMPLETO, conc: "alerta" });
+  expect((await generar(page)).soap).toContain("Motor Clínico HVCP v8.0 como apoyo");
+  const q = await page.evaluate(() => JSON.parse(localStorage.getItem("mc_cola_registro"))[0].p.v);
+  expect(q).toBe("8.0+" + (await page.evaluate(() => MC_BUILD)));
+  await ctx.close();
+});
+
+test("V6: «Nuevo paciente» recarga si version.json trae otro build; igual o sin red, reinicia sin error", async ({ browser }) => {
+  const { ctx, page, errores } = await abrir(browser);
+  // Igual: no recarga
+  await ctx.route("**/version.json", (r) => page.evaluate(() => ({ version: MC_VERSION, build: MC_BUILD })).then((j) => r.fulfill({ contentType: "application/json", body: JSON.stringify(j) })));
+  await page.evaluate(() => { setEsp("c"); window.__marca = 1; });
+  await page.evaluate(() => nuevoPaciente());
+  expect(await page.evaluate(() => [window.__marca, ST.esp])).toEqual([1, null]);
+  // Sin red: no recarga, reinicia
+  await ctx.unroute("**/version.json");
+  await ctx.route("**/version.json", (r) => r.abort());
+  await page.evaluate(() => { setEsp("f"); });
+  await page.evaluate(() => nuevoPaciente());
+  expect(await page.evaluate(() => [window.__marca, ST.esp])).toEqual([1, null]);
+  // Otro build: recarga con ?v=<build>
+  await ctx.unroute("**/version.json");
+  await ctx.route("**/version.json", (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ version: "8.0", build: "2099-01-01z" }) }));
+  await Promise.all([page.waitForURL(/\?v=2099-01-01z/), page.evaluate(() => nuevoPaciente())]);
+  expect(await page.evaluate(() => window.__marca)).toBeUndefined();
+  expect(errores).toEqual([]);
+  await ctx.close();
+});
