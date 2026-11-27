@@ -2322,6 +2322,15 @@ window.avisoM10Ir=function(){avisoCerrar();const s=document.querySelector(".reg-
 })();
 // M11 (26/11/2026): Anaplasmosis canina y Babesiosis cuentan como «Hemoparásitos» en los indicadores del registro (no cambia puntajes). Caso de origen: MC-7DLPEQ.
 (()=>{Object.assign(DX_EQUIV,{"PER-INF-HEM-004":"PER-INF-HEM-003","GEN-HEM-020":"PER-INF-HEM-003"})})();
+// M14 (27/11/2026): heridas por mordedura frente a politrauma. La mordedura no usaba la pregunta «¿Pelea, mordedura
+// o herida punzante?» y el politrauma sumaba igual con mecanismo de pelea. Casos de origen: MC-ZDEHF2 (pelea = sí,
+// politrauma 40 vs mordedura 35) y MC-AXY2FR (empate 45–45, sin la pregunta respondida). En shock no se penaliza el
+// politrauma: una mordedura puede causar lesiones internas graves.
+(()=>{const D=id=>DX.find(x=>x.id===id);
+  D("mordedura").r.push(["pelea",["si"],20,"Pelea o mordedura reciente"]);
+  D("politrauma").r.push(["traumt",["mord"],-10,"Mecanismo de pelea en paciente estable: ver heridas por mordedura",["hemo",["est"]]],
+                         ["pelea",["si"],-10,"",["hemo",["est"]]]);
+})();
 const ST = {hxs:new Set(),motivo2:null,soapSel:new Set(),openSys:new Set(),motivo:null,esp:null,peso:null,edad:null,sexo:null,hemo:null,vac:new Set(),signs:new Set(),ans:{},open:new Set(),
   fl:{tipo:"rl",desh:"0",horas:"24",perd:0,form:"b",ped:false,na:"",iris:{crea:"",sdma:"",upc:"",pas:""}}};
 
@@ -3078,7 +3087,7 @@ const MOTOR_VER="7.9.7";
 // Compilación (M8, 24/11/2026): identifica la publicación exacta de la página sin cambiar la versión del motor.
 // Se guarda junto a la versión en el registro («7.9.7+2026-11-24b»), así un caso hecho con una página en caché se distingue
 // aunque el número de versión sea el mismo. Actualícela (fecha y letra) en cada publicación.
-const MOTOR_BUILD="2026-11-26a";
+const MOTOR_BUILD="2026-11-27a";
 const VC=new Map(VCIE.map(r=>[r[0],r]));
 // Sinónimos del buscador VetCIE-1 (24/11/2026): solo amplían la búsqueda; no cambian el catálogo ni los códigos.
 const VC_SINON={"GEN-HEP-023":"colecistitis mucocele biliar","GEN-URI-335":"sedimento urinario cristaluria cristales arenilla calculos vesicales","FEL-URI-MET-035":"sedimento urinario cristaluria arenilla tapon uretral"};

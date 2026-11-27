@@ -1,5 +1,30 @@
 # Historial de cambios del Motor Clínico
 
+## v7.9.7 · 27/11/2026 10:45 · heridas por mordedura frente a politrauma (M14)
+
+Origen: análisis del registro del 26/11 a las 15:43 (211 casos y 97 cierres), hecho en Claude Code. Aprobado por la Dirección General el 27/11. Casos de origen:
+- MC-ZDEHF2: pelea = sí y paciente estable. Politrauma 40, heridas por mordedura 35 (3.er lugar).
+- MC-AXY2FR: empate 45–45 sin la pregunta de pelea respondida.
+De 5 cierres por heridas por mordedura, solo 2 quedaban en 1.er lugar.
+
+- Heridas por mordedura: **+20** con «¿Pelea, mordedura o herida punzante en los últimos 3–10 días?» = Sí. Antes no usaba esa pregunta. Es el mismo peso que ya usa el absceso.
+- Politrauma: **−10** con mecanismo «Mordedura / pelea» y **−10** con pelea = Sí, solo con estado hemodinámico estable. En shock no se penaliza: una mordedura puede causar lesiones internas graves.
+- Es un bloque IIFE antes de `const ST`. `MOTOR_BUILD` pasa a `2026-11-27a`; `MOTOR_VER` no cambia.
+- MC-AXY2FR no cambia: sin la pregunta respondida es una omisión de datos, no un ajuste.
+- La numeración sigue después de M12 y M13, propuestas por el análisis del 26/11 a las 16:35 y pendientes de aprobación.
+
+### Verificación
+- Sintaxis: `node --check` del script, OK.
+- 231 casos del registro (exportación del 27/11 a las 10:19):
+  - cambian 5 en el top-5 y 4 en la lista de alta, todos con pelea o mordedura respondida;
+  - 0 cambios en las alertas y sin errores de página;
+  - MC-ZDEHF2: heridas por mordedura del 3.º al 1.er lugar (55 contra 30);
+  - ningún caso cerrado empeora; MC-E3UBVH sigue 1.º.
+- 1200 casos generados con `generarYAplicar` de `tests/equivalencia.spec.js`, 166 de ellos con pelea o mordedura:
+  - 17 cambian en el top-5 y 12 en la lista de alta, todos con pelea o mordedura;
+  - 0 cambios en los casos sin pelea y 0 en las alertas;
+  - sin errores de página.
+
 ## v7.9.7 · 26/11/2026 11:00 · anaplasmosis y babesiosis equivalen a hemoparásitos en los indicadores (M11)
 
 Origen: análisis del registro del 26/11 a las 10:35 (203 casos y 103 cierres). Aprobado por la Dirección General. Caso de origen: MC-7DLPEQ (anaplasmosis canina confirmada por 4Dx, contada como «fuera del catálogo»).
