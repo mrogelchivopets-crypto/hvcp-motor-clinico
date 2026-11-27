@@ -78,3 +78,71 @@ test("V2: cada obligatorio vacío, uno a la vez, bloquea la nota y el registro; 
   expect(errores).toEqual([]);
   await ctx.close();
 });
+
+// ─── V3: estado hemodinámico automático ───
+const N = { fc: "110", temp: "38.6", muc: "rosa", tllc: "n", pulso: "n" };
+const VECTORES = [
+  ["perro grande (30 kg), todo en rango", { esp: "c", peso: "30", edad: "e2", ex: N }, "est"],
+  ["perro grande, FC 160 (> 140)", { esp: "c", peso: "30", edad: "e2", ex: { ...N, fc: "160" } }, "comp"],
+  ["perro pequeño (5 kg), FC 150 (≤ 160)", { esp: "c", peso: "5", edad: "e2", ex: { ...N, fc: "150" } }, "est"],
+  ["perro pequeño (5 kg), FC 175", { esp: "c", peso: "5", edad: "e2", ex: { ...N, fc: "175" } }, "comp"],
+  ["cachorro (< 6 meses), FC 190 (≤ 200)", { esp: "c", peso: "8", edad: "e0", ex: { ...N, fc: "190" } }, "est"],
+  ["perro, TLLC 2–3 s", { esp: "c", peso: "20", edad: "e2", ex: { ...N, tllc: "l" } }, "comp"],
+  ["perro, TLLC > 3 s", { esp: "c", peso: "20", edad: "e2", ex: { ...N, tllc: "l3" } }, "desc"],
+  ["perro, pulso filiforme con PAS normal", { esp: "c", peso: "20", edad: "e2", ex: { ...N, pulso: "fil" }, pas: "n" }, "desc"],
+  ["perro, pulso ausente", { esp: "c", peso: "20", edad: "e2", ex: { ...N, pulso: "aus" } }, "desc"],
+  ["perro, mucosas grisáceas", { esp: "c", peso: "20", edad: "e2", ex: { ...N, muc: "gris" } }, "desc"],
+  ["perro, PAS < 90 con el resto en rango", { esp: "c", peso: "20", edad: "e2", ex: N, pas: "bajo" }, "desc"],
+  ["perro, PAS no registrada y taquicardia", { esp: "c", peso: "20", edad: "e2", ex: { ...N, fc: "170" } }, "comp"],
+  ["perro, bradicardia (50) con mucosas pálidas", { esp: "c", peso: "30", edad: "e2", ex: { ...N, fc: "50", muc: "pali" } }, "desc"],
+  ["perro, bradicardia (50) sin hipoperfusión", { esp: "c", peso: "30", edad: "e2", ex: { ...N, fc: "50" } }, "est"],
+  ["gato, todo en rango (FC 180)", { esp: "f", peso: "4", edad: "e2", ex: { ...N, fc: "180" } }, "est"],
+  ["gato, FC 240", { esp: "f", peso: "4", edad: "e2", ex: { ...N, fc: "240" } }, "comp"],
+  ["gato con tríada: FC 110, 36.5 °C y PAS < 90", { esp: "f", peso: "4", edad: "e3", ex: { ...N, fc: "110", temp: "36.5" }, pas: "bajo" }, "desc"],
+  ["gato sin tríada: FC 110 e hipotermia, PAS normal", { esp: "f", peso: "4", edad: "e3", ex: { ...N, fc: "110", temp: "36.5" }, pas: "n" }, "est"],
+  ["perro, mucosas rojas", { esp: "c", peso: "20", edad: "e2", ex: { ...N, muc: "roja" } }, "comp"],
+  ["perro, pulso débil", { esp: "c", peso: "20", edad: "e2", ex: { ...N, pulso: "deb" } }, "comp"],
+  ["perro, pulso saltón", { esp: "c", peso: "20", edad: "e2", ex: { ...N, pulso: "salt" } }, "est"],
+  ["datos incompletos: sin TLLC", { esp: "c", peso: "20", edad: "e2", ex: { ...N, tllc: "" } }, null],
+  ["datos incompletos pero pulso filiforme", { esp: "c", peso: "20", edad: "e2", ex: { fc: "120", pulso: "fil" } }, "desc"],
+];
+
+test("V3: tabla de vectores del estado hemodinámico", async ({ browser }) => {
+  const { ctx, page, errores } = await abrir(browser);
+  const res = [];
+  for (const [nombre, v, esperado] of VECTORES) {
+    const k = await page.evaluate((v) => {
+      resetAll(); setEsp(v.esp); setPeso(v.peso); setEdad(v.edad);
+      for (const [c, x] of Object.entries(v.ex)) if (x !== "") setEx(c, x);
+      if (v.pas) ST.ans.pas = v.pas;
+      return { k: hemoCalc().k, crit: hemoCalc().crit, hemo: HEMO() };
+    }, v);
+    res.push({ nombre, esperado, obtenido: k.k, crit: k.crit.join(", ") });
+  }
+  console.log(res.map((r) => `${r.obtenido === r.esperado ? "OK " : "MAL"} ${r.nombre} → ${r.obtenido ?? "pendiente"}${r.crit ? " (" + r.crit + ")" : ""}`).join("\n"));
+  expect(res.filter((r) => r.obtenido !== r.esperado)).toEqual([]);
+  expect(errores).toEqual([]);
+  await ctx.close();
+});
+
+test("V3: la nota SOAP dice «Estado hemodinámico (calculado)» y no hay selector manual", async ({ browser }) => {
+  const { ctx, page } = await abrir(browser);
+  await llenar(page, { ...COMPLETO, fc: "170", tllc: "l", conc: "alerta" });
+  await expect(page.locator("#s1")).not.toContainText("Estado hemodinámico al ingreso");
+  await expect(page.locator(".hemobox.y")).toContainText("Shock compensado");
+  const r = await generar(page);
+  expect(r.soap).toContain("Estado hemodinámico (calculado): Shock compensado — taquicardia (170 lpm), TLLC 2–3 s");
+  await ctx.close();
+});
+
+test("V3: capturas de los tres colores en modo claro y oscuro", async ({ browser }) => {
+  const { ctx, page } = await abrir(browser, { viewport: { width: 820, height: 1180 } });
+  for (const tema of ["oscuro", "claro"]) {
+    if (tema === "claro") await page.evaluate(() => toggleTheme());
+    for (const [nombre, ex] of [["estable", N], ["compensado", { ...N, fc: "170" }], ["descompensado", { ...N, pulso: "fil" }]]) {
+      await page.evaluate((ex) => { resetAll(); setEsp("c"); setPeso("20"); setEdad("e2"); for (const [c, x] of Object.entries(ex)) setEx(c, x); }, ex);
+      await page.locator(".hemobox").screenshot({ path: `test-results/capturas/v3-${nombre}-${tema}.png` });
+    }
+  }
+  await ctx.close();
+});

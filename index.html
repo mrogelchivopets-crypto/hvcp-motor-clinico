@@ -116,7 +116,12 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .tx-c{font-size:11.5px;color:var(--sub)}
 .tx-calc{font-family:var(--mono);font-size:11.5px;color:#86EFAC}
 .inv{font-size:10.5px;padding:1px 6px;border-radius:3px;margin-left:6px;vertical-align:1px}
-.inv.p{background:#3F2A08;color:#FCD28A}.inv.s{background:#0F3520;color:#86EFAC}.inv.n{background:#4A1616;color:#FFB4B4}
+.inv.p{background:#3F2A08;color:#FCD28A}.inv.s{background:#0F3520;color:#86EFAC}
+.hemobox{border:1px solid;border-radius:8px;padding:8px 12px;font-size:13.5px;line-height:1.4}
+.hemobox.g{background:#0F3520;border-color:#22C55E;color:#BBF7D0}.hemobox.y{background:#3A2A05;border-color:#F59E0B;color:#FFECC4}
+.hemobox.r{background:#4A0F0F;border-color:#EF4444;color:#FFE1E1}.hemobox.p{background:#1E222E;border-color:#5B6178;color:#B9BFD3}
+:root[data-theme="light"] .hemobox.g{background:#DCFCE7;border-color:#15803D;color:#0B3D1E}:root[data-theme="light"] .hemobox.y{background:#FFF1CF;border-color:#C98A00;color:#4A3300}
+:root[data-theme="light"] .hemobox.r{background:#FDE2E2;border-color:#C62828;color:#5C0B0B}:root[data-theme="light"] .hemobox.p{background:#EEF0F5;border-color:#9AA1B4;color:#3B4256}.inv.n{background:#4A1616;color:#FFB4B4}
 .proc{color:#E8EAF0}
 .ref{font-size:11px;color:var(--faint);margin-top:8px}
 
@@ -1867,6 +1872,41 @@ function hemoInfo(){
 }
 function HEMO(){return hemoInfo().eff}
 
+// ═══ V3 (v8.0) — Estado hemodinámico automático (criterios aprobados por la Dirección General, 26/11/2026) ═══
+// Orden: el primero que se cumpla manda. 1) Descompensado; 2) Compensado; 3) Estable; si faltan datos: pendiente.
+// Rangos de FC (los que ya usaba el motor): taquicardia gato > 220; perro cachorro (< 6 meses) > 200, < 10 kg > 160,
+// resto > 140. Bradicardia gato < 120 (< 160 con hipoperfusión); perro < 60, < 10 kg < 80 (< 100 con hipoperfusión).
+// Decisiones del 27/11: pulso débil o mucosas rojas solos = compensado; pulso saltón o déficit de pulso solos = estable.
+function hemoCalc(){
+  const e=ST.ex||{}, cat=ST.esp==="f", kg=parseFloat(ST.peso), num=k=>{const n=parseFloat(e[k]),R=RANGO[k];return isNaN(n)||(R&&(n<R[0]||n>R[1]))?NaN:n};
+  const fc=num("fc"), t=num("temp"), pas=(ST.ans||{}).pas, tl=e.tllc, mu=e.muc, pu=e.pulso;
+  const falta=[]; if(!ST.esp)falta.push("especie"); if(isNaN(fc))falta.push("FC"); if(!tl)falta.push("TLLC"); if(!mu)falta.push("mucosas"); if(!pu)falta.push("pulso femoral");
+  const hipo=["l","l3"].includes(tl)||["pali","gris"].includes(mu)||["deb","fil","aus"].includes(pu);
+  const taq=!!ST.esp&&!isNaN(fc)&&(cat?fc>220:fc>(ST.edad==="e0"?200:(kg&&kg<10?160:140)));
+  const brad=!!ST.esp&&!isNaN(fc)&&fc<(cat?(hipo?160:120):(hipo?100:(kg&&kg<10?80:60)));
+  const d=[];
+  if(pas==="bajo")d.push("PAS < 90 mmHg");
+  if(pu==="fil")d.push("pulso filiforme"); if(pu==="aus")d.push("pulso ausente");
+  if(mu==="gris")d.push("mucosas grisáceas"); if(tl==="l3")d.push("TLLC > 3 s");
+  if(brad&&hipo)d.push("bradicardia ("+fc+" lpm) con hipoperfusión");
+  if(cat&&brad&&!isNaN(t)&&t<37.5&&pas==="bajo")d.push("tríada felina: bradicardia, hipotermia e hipotensión");
+  if(d.length)return {k:"desc",crit:d,falta};
+  const c=[];
+  if(taq)c.push("taquicardia ("+fc+" lpm)"); if(tl==="l")c.push("TLLC 2–3 s"); if(mu==="pali")c.push("mucosas pálidas");
+  if(mu==="roja")c.push("mucosas rojas o congestivas"); if(pu==="deb")c.push("pulso débil");
+  if(c.length)return {k:"comp",crit:c,falta};
+  if(falta.length)return {k:null,crit:[],falta};
+  return {k:"est",crit:["FC "+fc+" lpm","TLLC "+lab(EX_TLLC,tl),"mucosas "+lab(EX_MUC,mu).toLowerCase(),"pulso "+lab(EX_PULSO,pu).toLowerCase()],falta};
+}
+// El valor calculado alimenta todo lo que leía el estado elegido (mismas claves: est, comp, desc, pcr).
+hemoInfo=function(){if(ST.hemo==="pcr")return {sel:"pcr",eff:"pcr",cambio:"",motivo:""};const k=hemoCalc().k||"";return {sel:k,eff:k,cambio:"",motivo:""}};
+function hemoBox(){
+  if(HEMO()==="pcr")return '<div class="hemobox r"><b>Sin signos vitales</b> — protocolo RCP</div>';
+  const h=hemoCalc(), C={est:"g",comp:"y",desc:"r"};
+  if(!h.k)return '<div class="hemobox p"><b>Pendiente</b>: falta '+esc(h.falta.join(", "))+'</div>';
+  return '<div class="hemobox '+C[h.k]+'"><b>'+esc(lab(P_HEMO,h.k))+'</b> — '+esc(h.crit.join(", "))+'</div>';
+}
+
 // ═══ v7.9.7 — Oliguria: obstructiva vs renal ═══
 (function(){
 const D=id=>DX.find(x=>x.id===id), R=(id,q,vals,dl,txt)=>{const d=D(id); if(d) d.r.push([q,vals,dl,txt||""])};
@@ -2409,8 +2449,8 @@ function optBtns(list,cur,fn,multi){
 
 // ─── EXAMEN FÍSICO (constantes y hallazgos) ───
 const EX_MUC=[["rosa","Rosadas"],["pali","Pálidas"],["icter","Ictéricas"],["cian","Cianóticas"],["marron","Marrón / achocolatadas"],["roja","Rojas / congestivas"],["gris","Grisáceas / blancas"]];
-const EX_TLLC=[["r","< 1 s"],["n","1–2 s"],["l","> 2 s"]];
-const EX_PULSO=[["n","Normal (fuerte y regular)"],["deb","Débil o filiforme"],["salt","Saltón (hiperdinámico)"],["def","Déficit de pulso (irregular)"],["aus","Ausente"]];
+const EX_TLLC=[["r","< 1 s"],["n","1–2 s"],["l","2–3 s"],["l3","> 3 s"]]; // V3: «> 3 s» separado (antes «l» = «> 2 s»)
+const EX_PULSO=[["n","Normal (fuerte y regular)"],["deb","Débil"],["fil","Filiforme"],["salt","Saltón (hiperdinámico)"],["def","Déficit de pulso (irregular)"],["aus","Ausente"]];
 const EX_DH=[["0","< 5%"],["5","5–6%"],["7","6–8%"],["9","8–10%"],["11","10–12%"],["12","> 12% (shock)"]];
 const EX_CARD=[["n","Normal"],["soplo","Soplo"],["galope","Ritmo de galope"],["arrit","Arritmia"],["apag","Ruidos apagados"]];
 const EX_VEJ=[["n","Normal"],["grande","Distendida y firme"],["peq","Pequeña o no palpable"]];
@@ -2509,8 +2549,8 @@ function exDerive(){
   if(e.muc==="pali"||e.muc==="gris") sg.add("pali");
   if(e.muc==="icter") sg.add("icter"); if(e.muc==="cian") sg.add("cian"); if(e.muc==="marron") sg.add("methb");
   const pu=e.pulso;
-  if(e.tllc==="l"||e.muc==="gris"){sg.add("tlc"); a.perf="hipo"}
-  else if(pu==="deb"||pu==="aus") a.perf="hipo";
+  if(["l","l3"].includes(e.tllc)||e.muc==="gris"){sg.add("tlc"); a.perf="hipo"}
+  else if(["deb","fil","aus"].includes(pu)) a.perf="hipo";
   else if((e.tllc==="r"&&e.muc==="roja")||(pu==="salt"&&(e.muc==="roja"||e.tllc==="r"))) a.perf="hiper";
   else if(e.tllc&&(e.muc||pu)) a.perf="n";
   if(pu==="def"){sg.add("arrit"); a.card="si"}
@@ -2565,7 +2605,7 @@ function renderS1(){
    <div class="field${missC("edad")}"><span class="flabel">${lb("edad","Edad")}</span><div class="opts">${optBtns(P_EDAD,ST.edad,"setEdad")}</div></div>
    <div class="field${missC("sexo")}"><span class="flabel">${lb("sexo","Sexo y estado reproductivo")}</span><div class="opts">${optBtns(P_SEXO,ST.sexo,"setSexo")}</div></div>
    ${vac}
-   <div class="field${missC("hemo")}"><span class="flabel">${lb("hemo","Estado hemodinámico al ingreso")}</span><div class="opts">${optBtns(P_HEMO,ST.hemo,"setHemo")}</div></div>
+   <div class="field"><span class="flabel">${lb("hemo","Estado hemodinámico (calculado)")}</span>${hemoBox()}</div>
    <div class="field${missC("hx")}"><span class="flabel">${lb("hx","Antecedentes clínicos (puede marcar varios)")}</span><div class="opts">${optBtns(HXS.filter(h=>h[0]!=="retro"||ST.esp!=="c"),ST.hxs,"setHx",true)}</div></div>
    ${examHtml()}`;
 }
@@ -2677,16 +2717,16 @@ function renderAlerts(){
   {const hi=hemoInfo(), L=x=>(P_HEMO.find(p=>p[0]===x)||[,"sin marcar"])[1].toLowerCase();
    if(hi.cambio==="baja") al.push(["y","Estado hemodinámico no concuerda con las constantes",`Marcó ${L(hi.sel)}, pero ${hi.motivo} están en rango normal. El motor analiza al paciente como ESTABLE (diagnósticos, fluidos y AINE). Si el shock es real, reevalúe y registre las constantes alteradas.`]);
    if(hi.cambio==="sube") al.push(["r","Constantes compatibles con shock",`Marcó ${hi.sel?L(hi.sel):"sin estado hemodinámico"}, pero hay ${hi.motivo}. El motor analiza al paciente como ${L(hi.eff).toUpperCase()} y activa la reanimación con fluidos. Corrija el triaje si no corresponde.`]);}
-  if(!ST.hemo&&A.perf==="hipo"&&hemoInfo().cambio!=="sube") al.push(["y","Hipoperfusión en el examen físico","TLLC > 2 s, mucosas grisáceas o pulso débil: indique el estado hemodinámico (shock compensado o descompensado) para activar la reanimación con fluidos."]);
+  if(false) al.push(["y","Hipoperfusión en el examen físico","TLLC > 2 s, mucosas grisáceas o pulso débil: indique el estado hemodinámico (shock compensado o descompensado) para activar la reanimación con fluidos."]);
   if(A.hemo==="pcr") al.push(["r","RCP inmediata (RECOVER 2024)","Compresiones 100–120/min, 1/3–1/2 del ancho del tórax, ciclos de 2 min sin interrupciones. Intubar y ventilar 10 rpm. Adrenalina 0.01 mg/kg IV/IO cada 3–5 min. Monitorear capnografía."]);
   if(A.hemo==="desc") al.push(["r","Shock descompensado","Estabilizar antes de diagnosticar: O₂, acceso venoso, bolo de cristaloide y reevaluar (ver Fluidoterapia)."]);
   if(s.has("cian")||(["insp","rapsup","parad"].includes(A.patron)&&A.ausc!=="n")) al.push(["r","Oxígeno inmediato","Mínima manipulación (sobre todo en gatos). Rayos X solo cuando esté estable."]);
   {const e=ST.ex||{},cat=ST.esp==="f",fc=parseFloat(e.fc);
    if(s.has("vom")&&A.expul==="reg") al.push(["y","Verifique: vómito y regurgitación","Marcó vómito pero respondió que expulsa la comida sin esfuerzo (regurgitación). Son cuadros distintos: corrija el que no corresponda."]);
    if(e.pulso==="aus") al.push(["r","Pulso femoral ausente","Confirmar con auscultación y Doppler: si no hay latido efectivo, iniciar RCP. Si es unilateral, sospechar tromboembolismo."]);
-   if(e.muc==="pali"&&e.tllc&&e.tllc!=="l"&&!["deb","aus"].includes(e.pulso)&&!["comp","desc","pcr"].includes(HEMO())) al.push(["b","Palidez con perfusión conservada","Sugiere anemia más que hipoperfusión: medir Hto/PT. En hemorragia aguda la palidez puede preceder a la caída del TLLC y del pulso: reevaluar en 15–30 min."]);
-   if(ST.hemo==="desc"&&["n","pre","alto","salto"].includes(A.pas)) al.push(["y","Verifique el estado hemodinámico","Marcó shock descompensado, pero la PAS es ≥ 90 mmHg: con presión conservada corresponde a shock compensado. Revise la medición o el estado elegido (cambia el volumen de los bolos)."]);
-   if(A.pas==="bajo"&&!["comp","desc","pcr"].includes(ST.hemo)) al.push(["r","Hipotensión (PAS < 90 mmHg)","El paciente está en shock descompensado aunque el estado hemodinámico no lo indique: marque el estado para activar la reanimación."]);
+   if(e.muc==="pali"&&e.tllc&&!["l","l3"].includes(e.tllc)&&!["deb","fil","aus"].includes(e.pulso)&&!["comp","desc","pcr"].includes(HEMO())) al.push(["b","Palidez con perfusión conservada","Sugiere anemia más que hipoperfusión: medir Hto/PT. En hemorragia aguda la palidez puede preceder a la caída del TLLC y del pulso: reevaluar en 15–30 min."]);
+   if(false) al.push(["y","Verifique el estado hemodinámico","Marcó shock descompensado, pero la PAS es ≥ 90 mmHg: con presión conservada corresponde a shock compensado. Revise la medición o el estado elegido (cambia el volumen de los bolos)."]);
+   if(false) al.push(["r","Hipotensión (PAS < 90 mmHg)","El paciente está en shock descompensado aunque el estado hemodinámico no lo indique: marque el estado para activar la reanimación."]);
    if(e.tllc==="n"&&["hipo","hiper"].includes(ST.ans.perf)) al.push(["y","Verifique la perfusión","La respuesta de perfusión contradice el TLLC de 1–2 s registrado en el examen físico."]);
    if(false) al.push(["y","Verifique el estado hemodinámico","Marcó shock, pero FC, TLLC y mucosas registradas están en rango normal; esto cambia la fluidoterapia (bolos)."]);
    if(e.vej==="grande"&&!["estr","olig","hemu","nodef","incont"].some(x=>s.has(x))) al.push(["y","Vejiga distendida sin signos urinarios","Confirme si orina: descartar retención (neurogénica, dolor, sedación) u obstrucción."]);}
@@ -3005,11 +3045,11 @@ function genSOAPbase(){
   L.push(...qLines(q=>Q_S.includes(q.id)));
   L.push("");
   L.push("O — OBJETIVO");
-  {const hi=hemoInfo(); if(ST.hemo||hi.eff) L.push(`Estado hemodinámico al ingreso: ${ST.hemo?lab(P_HEMO,ST.hemo):"sin marcar"}${hi.cambio?` — analizado como ${lab(P_HEMO,hi.eff)} por las constantes (${hi.motivo})`:""}`);}
+  {const h=hemoCalc(); if(HEMO()==="pcr") L.push("Estado hemodinámico (calculado): sin signos vitales"); else if(h.k) L.push(`Estado hemodinámico (calculado): ${lab(P_HEMO,h.k)} — ${h.crit.join(", ")}`); else L.push(`Estado hemodinámico (calculado): pendiente (falta ${h.falta.join(", ")})`);}
   {const e=ST.ex||{},p=[];if(e.fc)p.push(`FC ${e.fc} lpm`);if(e.fr)p.push(`FR ${e.fr} rpm`);if(e.temp){const tc=tempCls(e.temp);p.push(`T ${e.temp} °C${tc?" ("+tc.s+")":""}`)}if(e.muc)p.push(`mucosas ${lab(EX_MUC,e.muc).toLowerCase()}`);if(e.tllc)p.push(`TLLC ${lab(EX_TLLC,e.tllc)}`);if(e.pulso)p.push(`pulso femoral ${lab(EX_PULSO,e.pulso).toLowerCase()}`);if(e.dh)p.push(`deshidratación ${lab(EX_DH,e.dh)}`);if(e.gluc)p.push(`glucemia ${e.gluc} mg/dL`);if(e.dolor)p.push(`dolor: ${lab(EX_DOL,e.dolor).split(" (")[0].toLowerCase()}`);if(e.cc)p.push(`CC ${e.cc}/5`);if(e.vej)p.push(`vejiga ${lab(EX_VEJ,e.vej).toLowerCase()}`);if(e.abm==="si")p.push("masa abdominal/esplenomegalia");if(e.mam==="si")p.push("nódulos mamarios");if(e.linf&&e.linf!=="no")p.push(`linfonodos: aumento ${e.linf==="gen"?"generalizado":"localizado"}`);if(e.ecto&&e.ecto!=="no")p.push(`ectoparásitos: ${{garr:"garrapatas",pulg:"pulgas",ambos:"garrapatas y pulgas"}[e.ecto]}`);if(e.card)p.push(`ausc. cardíaca: ${lab(EX_CARD,e.card).toLowerCase()}`);if(e.pulm)p.push(`ausc. pulmonar: ${lab(EX_PULM,e.pulm).toLowerCase()}`);if(p.length)L.push(`Constantes: ${p.join(", ")}`)}
   const ex=qLines(q=>!Q_S.includes(q.id)&&!q.lab); if(ex.length){L.push("Examen físico:");L.push(...ex)}
   const lb=qLines(q=>q.lab);
-  if(!ST.hemo&&!ex.length&&!lb.length&&!Object.values(ST.ex||{}).some(v=>v)) L.push("- (sin hallazgos registrados en el motor)");
+  if(!HEMO()&&!ex.length&&!lb.length&&!Object.values(ST.ex||{}).some(v=>v)) L.push("- (sin hallazgos registrados en el motor)");
   L.push("");
   L.push("A — ANÁLISIS");
   if(lb.length){L.push("Interpretación de exámenes:");L.push(...lb)} else L.push("Interpretación de exámenes: sin resultados registrados en el motor.");
@@ -3055,7 +3095,7 @@ function copySOAP(){
 
 function renderRight(){const all=scoreDx(),l=altaList(all),act=activeList(all);renderAlerts();renderSystems();renderDx(l,all);renderLabs(act);renderFluids(act);renderIRIS();renderBar(l,all);renderNav()}
 function irA(id){const e=document.getElementById(id);if(!e)return;const off=(document.getElementById("stepnav").offsetHeight||0)+6;window.scrollTo({top:e.getBoundingClientRect().top+window.scrollY-off,behavior:"smooth"})}
-function renderNav(){const n=document.getElementById("stepnav");if(!n)return;const e=ST.ex||{},exOk=!faltantes().some(x=>x.g==="ex"),pac=!!ST.hemo&&!faltantes().some(x=>x.g==="pac"),sg=ST.motivo&&ST.signs.size>0,nq=Object.keys(ST.ans).length;
+function renderNav(){const n=document.getElementById("stepnav");if(!n)return;const e=ST.ex||{},exOk=!faltantes().some(x=>x.g==="ex"),pac=!faltantes().some(x=>x.g==="pac"),sg=ST.motivo&&ST.signs.size>0,nq=Object.keys(ST.ans).length;
  const b=(id,num,t,ok)=>`<button class="${ok?"ok":""}" onclick="irA('${id}')"><span class="n">${num}</span>${t}${ok?" ✓":""}</button>`;
  n.innerHTML=b("sec1","1","Paciente",pac)+b("exfis","2","Examen",exOk)+b("sec2","3","Signos",sg)+b("sec3","4",`Preguntas${nq?" ("+nq+")":""}`,nq>0)+b("secDx","5","Resultado",false)+b("secSoap","6","SOAP",!!(document.getElementById("soap")||{}).value)}
 function renderBar(l,all){const el=document.getElementById("bbar");if(!el)return;const al=ST._al||[],nr=al.filter(a=>a[0]==="r").length,ny=al.filter(a=>a[0]==="y").length;
@@ -3152,7 +3192,7 @@ function regSnapshot(){
   [["fc","FC"],["fr","FR"],["temp","Temperatura"],["muc","Mucosas"],["tllc","TLLC"],["dh","% deshidratación"],["cc","Condición corporal"]].forEach(([k,n])=>{if(!e[k])faltan.push(n)});
   const vq=visibleQs(),mini=x=>({id:x.d.id,c:x.d.c,n:x.d.n,sys:x.d.sys,sc:Math.round(x.sc)});
   return JSON.parse(JSON.stringify({
-    ent:{esp:ST.esp,peso:ST.peso,edad:ST.edad,sexo:ST.sexo,hemo:ST.hemo,hemoEf:HEMO(),vac:[...ST.vac],hxs:[...ST.hxs],ex:e,motivo:ST.motivo,motivo2:ST.motivo2,signs:[...ST.signs],signsAll:[...SG()],ans:ST.ans},
+    ent:{esp:ST.esp,peso:ST.peso,edad:ST.edad,sexo:ST.sexo,hemo:HEMO()||null,hemoEf:HEMO()||null,hemoCrit:hemoCalc().crit,vac:[...ST.vac],hxs:[...ST.hxs],ex:e,motivo:ST.motivo,motivo2:ST.motivo2,signs:[...ST.signs],signsAll:[...SG()],ans:ST.ans},
     sal:{top:all.slice(0,8).map(mini),alta:alta.map(x=>x.d.c),insuf:!alta.length&&all.length>0,sinDx:!all.length,soap:soap.map(x=>x.d.c),soapAuto:auto,faltan,qVis:vq.length,qPend:vq.filter(q=>ST.ans[q.id]===undefined).map(q=>q.id)}
   }));
 }
