@@ -3375,10 +3375,11 @@ function mcDx(c){const top=c.top||[],soap=c.soap||[];const s=top.find(t=>soap.in
 function misCasosRender(){
   const el=document.getElementById("miscasos");if(!el)return;
   const item=c=>'<div class="mc-item"><div class="mc-t"><b>'+esc(c.codigo)+'</b><span>'+esc(fCorta(c.f))+' · '+esc(c.cerrado?(c.sinDx?"Sin diagnóstico definitivo":"Definitivo: "+(c.dx||"")):"SOAP: "+mcDx(c))+'</span></div><button class="pf-btn" style="min-height:40px" onclick="misCasosIr(\''+c.codigo+'\')">'+(c.cerrado?"Ver cierre":"Cerrar")+'</button></div>';
-  const pend=(MC.casos||[]).filter(c=>!c.cerrado),cerr=(MC.casos||[]).filter(c=>c.cerrado);
+  const vc=c=>!c.cerrado&&vencido(c.f,null),pend=(MC.casos||[]).filter(c=>!c.cerrado&&!vc(c)),cerr=(MC.casos||[]).filter(c=>c.cerrado),venc=(MC.casos||[]).filter(vc);
   el.innerHTML='<div class="pf-caja"><h2>Mis casos</h2><p class="muted">'+esc(MED?MED.nombre:"")+'</p>'+(MC.msg?'<p class="muted">'+esc(MC.msg)+'</p>':"")+
-    (MC.casos?'<h3 style="font-size:15px;margin:10px 0 4px">Pendientes de cerrar ('+pend.length+')</h3>'+(pend.map(item).join("")||'<p class="muted">Ninguno.</p>')+
-      '<h3 style="font-size:15px;margin:14px 0 4px">Cerrados ('+cerr.length+')</h3>'+(cerr.map(item).join("")||'<p class="muted">Ninguno.</p>'):"")+
+    (MC.casos?'<h3 style="font-size:15px;margin:10px 0 4px">Pendientes de cerrar, últimas '+VENCE_H+' h ('+pend.length+')</h3>'+(pend.map(item).join("")||'<p class="muted">Ninguno.</p>')+
+      '<h3 style="font-size:15px;margin:14px 0 4px">Cerrados ('+cerr.length+')</h3>'+(cerr.map(item).join("")||'<p class="muted">Ninguno.</p>')+
+      (venc.length?'<h3 style="font-size:15px;margin:14px 0 4px">Cerrados por tiempo ('+venc.length+')</h3><p class="muted">Más de '+VENCE_H+' h sin cierre. Si tiene el diagnóstico definitivo, todavía puede registrarlo.</p>'+venc.map(item).join(""):""):"")+
     '<div class="pf-fila"><button class="pf-btn" onclick="misCasosCerrar()">Volver al motor</button></div></div>';
 }
 function misCasosIr(cod){misCasosCerrar();regToggle(true);REG.sel=null;REG.accCod=cod;regRender();regAbrirCodigo()}
@@ -3456,6 +3457,11 @@ function regConf(v){const E=REG.ed;if(!E)return;
   if(E.conf===v){E.conf=E.conf2||"";E.conf2=""}else if(E.conf2===v){E.conf2=""}else if(!E.conf){E.conf=v}else{E.conf2=v}
   regRender()}
 function cerrado(k){return !!(k&&(k.sinDx||(k.dx&&k.conf)))}
+// «Cerrado por tiempo»: caso sin cierre del médico con más de 30 h desde la nota SOAP. Es un estado calculado
+// (no se escribe nada en el servidor): sale de «Pendientes» y el médico todavía puede cerrarlo con su diagnóstico.
+const VENCE_H=30;
+function vencido(f,k){return !cerrado(k)&&!!f&&(Date.now()-new Date(f).getTime())>VENCE_H*36e5}
+function estadoCaso(f,k){return cerrado(k)?"cerr":vencido(f,k)?"venc":"pend"}
 
 function regRender(){
   const el=document.getElementById("regbody");if(!el||!REG.abierto)return;
@@ -3472,17 +3478,18 @@ function regRender(){
 }
 
 function regLista(){
-  const rows=REG.casos.filter(x=>{const k=REG.cierres.get(x.id);return REG.filtro==="todos"?true:REG.filtro==="cerr"?cerrado(k):!cerrado(k)});
+  const est=x=>estadoCaso(x.f,REG.cierres.get(x.id));
+  const rows=REG.casos.filter(x=>REG.filtro==="todos"||est(x)===REG.filtro);
   const q=REG.busca.trim().toUpperCase();
   const vis=q?rows.filter(x=>x.id.includes(q)):rows;
-  const nP=REG.casos.filter(x=>!cerrado(REG.cierres.get(x.id))).length;
-  return `<div class="reg-tools"><div class="opts">${[["pend",`Pendientes (${nP})`],["cerr",`Cerrados (${REG.casos.length-nP})`],["todos",`Todos (${REG.casos.length})`]].map(([v,n])=>`<button class="opt ${REG.filtro===v?"on":""}" onclick="regSet('filtro','${v}')">${n}</button>`).join("")}</div>
+  const nE={pend:0,venc:0,cerr:0};REG.casos.forEach(x=>nE[est(x)]++);
+  return `<div class="reg-tools"><div class="opts">${[["pend",`Pendientes (${nE.pend})`],["cerr",`Cerrados (${nE.cerr})`],["venc",`Cerrados por tiempo (${nE.venc})`],["todos",`Todos (${REG.casos.length})`]].map(([v,n])=>`<button class="opt ${REG.filtro===v?"on":""}" onclick="regSet('filtro','${v}')">${n}</button>`).join("")}</div>
    <div class="wt" style="flex-wrap:wrap"><input id="regbusca" value="${esc(REG.busca)}" placeholder="Código MC (ej. MC-7K3PQ2)" style="width:240px;font-family:var(--sans)" onkeydown="if(event.key==='Enter')regBuscar()"><button class="opt" onclick="regBuscar()">Buscar</button>${q?`<button class="opt" onclick="REG.busca='';regRender()">Limpiar</button>`:""}</div></div>
    ${vis.length?`<div class="reg-list">${vis.map(x=>{const k=REG.cierres.get(x.id),t=x.sal.top[0],e=x.ent;
      return `<button class="reg-row" onclick="regAbrir('${x.id}')"><span class="code">${esc(x.id)}</span><span class="reg-rf">${esc(fCorta(x.f))}</span>
      <span class="reg-rm"><b>${cerrado(k)?(k.sinDx?"Sin diagnóstico definitivo":esc(k.dx.n||"")):(t?esc(t.n):"Sin presuntivo")}</b><span class="muted">${esc(lab(P_ESP,e.esp)||"—")}${e.edad?" · "+esc(lab(P_EDAD,e.edad)):""} · ${esc(nombreMotivo(e.motivo))}${x.vet?" · "+esc(x.vet):""}</span></span>
-     <span class="reg-rb">${x.migrado?`<span class="lk t">Migrado</span>`:""}${x.sal.insuf?`<span class="lk m">Datos insuficientes</span>`:""}${cerrado(k)?`<span class="lk s">Cerrado</span>`:k?`<span class="lk b">En curso</span>`:`<span class="lk b">Pendiente</span>`}</span></button>`}).join("")}</div>`
-     :`<div class="empty">${REG.casos.length?"Ningún caso con este filtro.":"Aún no hay casos registrados en este período. Cada nota SOAP generada en el motor crea un caso."}</div>`}`;
+     <span class="reg-rb">${x.migrado?`<span class="lk t">Migrado</span>`:""}${x.sal.insuf?`<span class="lk m">Datos insuficientes</span>`:""}${cerrado(k)?`<span class="lk s">Cerrado</span>`:vencido(x.f,k)?`<span class="lk m" title="Más de ${VENCE_H} h sin cierre del médico">Cerrado por tiempo</span>`:k?`<span class="lk b">En curso</span>`:`<span class="lk b">Pendiente</span>`}</span></button>`}).join("")}</div>`
+     :`<div class="empty">${REG.casos.length?(REG.filtro==="pend"?`Ningún caso pendiente de las últimas ${VENCE_H} h.`:"Ningún caso con este filtro."):"Aún no hay casos registrados en este período. Cada nota SOAP generada en el motor crea un caso."}</div>`}`;
 }
 function regBuscar(){REG.busca=(document.getElementById("regbusca").value||"").trim();regRender()}
 
@@ -3503,6 +3510,7 @@ function regFicha(){
    <p><b>Motivo:</b> ${esc(nombreMotivo(e.motivo))}${e.motivo2?` · secundario: ${esc(nombreMotivo(e.motivo2))}`:""}</p>
    ${cons.length?`<p><b>Constantes:</b> ${esc(cons.join(", "))}</p>`:""}
    ${sig.length?`<p><b>Signos:</b> ${esc(sig.join(", "))}</p>`:""}
+   ${vencido(x.f,k)?`<div class="alert y" style="margin:4px 0 8px"><b>Cerrado por tiempo</b>Pasaron más de ${VENCE_H} h sin que el médico registrara el cierre. Si tiene el diagnóstico definitivo, todavía puede registrarlo.</div>`:""}
    <h4>Salida del motor</h4>
    ${s.insuf?`<div class="alert y" style="margin:4px 0 8px"><b>Datos insuficientes</b>Faltaban: ${esc(s.faltan.join(", ")||"—")}; ${s.qPend.length} de ${s.qVis} preguntas sin responder.</div>`:""}
    <table class="kcl"><tr><th>#</th><th>Diagnóstico</th><th>Puntaje</th><th></th></tr>${s.top.slice(0,6).map((t,i)=>`<tr><td>${i+1}</td><td>${esc(t.n)} <span class="code">${esc(t.c)}</span></td><td class="code">${t.sc}</td><td>${s.alta.includes(t.c)?`<span class="lk a">Alta</span>`:""} ${s.soap.includes(t.c)?`<span class="lk s">SOAP</span>`:""}</td></tr>`).join("")}</table>
@@ -3633,7 +3641,7 @@ function regUso(){
   const C=REG.casos;
   if(!C.length)return `<div class="empty">Sin casos en el período elegido.</div>`;
   const desde=regDesde(),hoy=new Date(),nDias=Math.max(1,Math.round((hoy-desde)/864e5));
-  const cerr=C.filter(c=>cerrado(REG.cierres.get(c.id)));
+  const cerr=C.filter(c=>cerrado(REG.cierres.get(c.id))),nVenc=C.filter(c=>vencido(c.f,REG.cierres.get(c.id))).length;
   const minSoap=mediana(C.map(c=>c.min));
   const minCierre=mediana(cerr.map(c=>{const k=REG.cierres.get(c.id);return k&&k.fc?(new Date(k.fc)-new Date(c.f))/6e4:null}).filter(x=>x!=null&&x>=0));
   const ses=(REG.ses||[]).filter(s=>!REG.vet||s.usuario===REG.vet);
@@ -3664,7 +3672,8 @@ function regUso(){
   const card=(t,b,nota)=>`<div class="card"><div class="card-h">${t}</div><div class="card-b">${b}${nota?`<p class="muted" style="margin-top:8px">${nota}</p>`:""}</div></div>`;
   return `<div class="reg-kpis">
     <div><span class="reg-k">${C.length}</span><span class="muted">casos · ${C.length/nDias>=1?(C.length/nDias).toFixed(1)+" por día":(C.length/nDias*7).toFixed(1)+" por semana"}</span></div>
-    <div><span class="reg-k">${pct(cerr.length,C.length)}</span><span class="muted">cerrados (${cerr.length} de ${C.length})</span></div>
+    <div><span class="reg-k">${pct(cerr.length,C.length)}</span><span class="muted">cerrados por el médico (${cerr.length} de ${C.length})</span></div>
+    <div><span class="reg-k">${pct(nVenc,C.length)}</span><span class="muted">cerrados por tiempo, más de ${VENCE_H} h sin cierre (${nVenc} de ${C.length})</span></div>
     <div><span class="reg-k">${fDur(minSoap)}</span><span class="muted">mediana hasta la nota SOAP</span></div>
     <div><span class="reg-k">${fDur(minCierre)}</span><span class="muted">mediana desde la nota hasta el cierre</span></div>
     <div><span class="reg-k">${new Set(C.map(c=>c.por)).size}</span><span class="muted">dispositivos o usuarios que registraron</span></div>

@@ -308,3 +308,33 @@ test("Hipotermia: grados de la escala de hipotermia secundaria (Oncken 2001) sin
   expect(errores).toEqual([]);
   await ctx.close();
 });
+
+test("Casos con más de 30 h sin cierre: salen de Pendientes y pasan a «Cerrado por tiempo»", async ({ browser }) => {
+  const { ctx, page, errores } = await abrir(browser);
+  const r = await page.evaluate(() => {
+    const h = (n) => new Date(Date.now() - n * 36e5).toISOString();
+    const est = [[h(2), null], [h(29.9), null], [h(30.1), null], [h(72), { dx: null, conf: "", labs: {} }], [h(72), { sinDx: true }], [h(72), { dx: { c: "X", n: "X" }, conf: "clin" }], [h(1), { sinDx: true }]]
+      .map(([f, k]) => estadoCaso(f, k));
+    // Lista del administrador
+    REG.casos = [["MC-A", 2, null], ["MC-B", 40, null], ["MC-C", 50, { sinDx: true }], ["MC-D", 31, { dx: null, conf: "" }]].map(([id, n, k]) => {
+      if (k) REG.cierres.set(id, k);
+      return { id, f: h(n), v: "8.0", ent: { esp: "c" }, sal: { top: [], insuf: false } };
+    });
+    const lista = (f) => { REG.filtro = f; const d = document.createElement("div"); d.innerHTML = regLista(); return [...d.querySelectorAll(".reg-row .code")].map((e) => e.textContent); };
+    const botones = (() => { const d = document.createElement("div"); d.innerHTML = regLista(); return [...d.querySelectorAll(".reg-tools .opts .opt")].map((b) => b.textContent); })();
+    const filas = { pend: lista("pend"), cerr: lista("cerr"), venc: lista("venc"), todos: lista("todos").length };
+    // «Mis casos» del médico
+    MC.casos = [{ codigo: "MC-1", f: h(3), cerrado: false }, { codigo: "MC-2", f: h(45), cerrado: false }, { codigo: "MC-3", f: h(45), cerrado: true, sinDx: true }];
+    misCasosRender();
+    const mc = document.getElementById("miscasos").innerText;
+    return { est, botones, filas, mc };
+  });
+  expect(r.est).toEqual(["pend", "pend", "venc", "venc", "cerr", "cerr", "cerr"]);
+  expect(r.botones).toEqual(["Pendientes (1)", "Cerrados (1)", "Cerrados por tiempo (2)", "Todos (4)"]);
+  expect(r.filas).toEqual({ pend: ["MC-A"], cerr: ["MC-C"], venc: ["MC-B", "MC-D"], todos: 4 });
+  expect(r.mc).toContain("Pendientes de cerrar, últimas 30 h (1)");
+  expect(r.mc).toContain("Cerrados (1)");
+  expect(r.mc).toContain("Cerrados por tiempo (1)");
+  expect(errores).toEqual([]);
+  await ctx.close();
+});

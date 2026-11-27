@@ -71,6 +71,13 @@ Rama `v8.0`, un commit por cambio; PR a `main` sin fusionar (lo aprueba la Direc
 - **Zonas:** `tempCls()`, ayuda de «Temperatura».
 - **Verificación:** prueba con 10 temperaturas en los límites de cada grado (`v8.spec.js`). **Resultado:** OK.
 
+#### «Cerrado por tiempo»: casos con más de 30 h sin cierre del médico
+- **Motivo:** muchos casos de más de 24 h nunca se cierran (el médico está de acuerdo con el presuntivo, lo olvidó o no quiso), y eso no deja ver los pendientes reales.
+- **Qué cambió:** todo caso sin cierre con más de 30 h desde la nota SOAP pasa a **«Cerrado por tiempo»** y sale de «Pendientes». Es un estado calculado (`VENCE_H = 30`, `vencido()`, `estadoCaso()`): no se escribe nada en el servidor ni hace falta migración. Se separa de «Sin diagnóstico definitivo», que es una decisión del médico. El médico todavía puede registrar el diagnóstico definitivo; entonces pasa a «Cerrado».
+- **Dónde se ve:** la lista del registro (filtros Pendientes · Cerrados · Cerrados por tiempo · Todos, y la etiqueta en cada fila), el aviso en la ficha, «Mis casos» (pendientes de las últimas 30 h, cerrados y cerrados por tiempo) y los indicadores de uso (porcentaje de cerrados por el médico y por tiempo).
+- **Pendiente:** la exportación y el análisis lo incorporan en la segunda parte; estos casos no cuentan para el acierto.
+- **Verificación:** `v8.spec.js` (límites 29.9 h y 30.1 h, filtros, conteos y «Mis casos»). **Resultado:** OK.
+
 ### Regresión (`tests/regresion_v8.mjs`, resultado en `docs/v8/regresion_v8.json`)
 - Identidad clínica: **600 de 600** combinaciones con top-5 y puntajes idénticos (v7.9.7 con el mismo estado hemodinámico que calcula la v8.0; conciencia = Deprimido).
 - Simulación por perfiles (142 perfiles, uno por diagnóstico; 3000 casos por semilla), acierto top-1 v7.9.7 vs. v8.0: semilla 1 — 66,7 % vs. 66,7 %; semilla 2 — 66,8 % vs. 66,8 %. Sin errores de página en ninguna de las dos versiones. Ningún diagnóstico baja.
