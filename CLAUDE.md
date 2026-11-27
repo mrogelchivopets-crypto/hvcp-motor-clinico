@@ -12,7 +12,7 @@
 
 ## Al terminar un cambio del motor
 1. Solo cambios autorizados por la Dirección General.
-2. No cambiar el nombre ni `MOTOR_VER` (hoy 7.9.7) salvo indicación expresa. Actualizar `MOTOR_BUILD` (fecha y letra, p. ej. `2026-11-27a`).
+2. No cambiar el nombre ni `MC_VERSION` (hoy 8.0) salvo indicación expresa. Actualizar `MC_BUILD` (fecha y letra, p. ej. `2026-11-27a`) y `version.json` con los mismos valores: «Nuevo paciente» lo compara para actualizar los dispositivos. `MOTOR_VER` y `MOTOR_BUILD` son alias; no editarlos.
 3. Ajustes de reglas o pesos: bloque IIFE antes de `const ST = {`.
 4. Verificar: `node --check` del script inline, reproducción de todos los casos del registro antes/después y `tests/equivalencia.spec.js` (≥ 800 casos) comparando top-5, lista de alta probabilidad y alertas.
 5. Agregar una sección al inicio de `CAMBIOS.md` con fecha, hora, propuesta (M#) y los códigos de caso que la originaron.

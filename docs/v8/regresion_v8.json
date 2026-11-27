@@ -1,0 +1,30 @@
+{
+ "identidad": {
+  "combinaciones": 600,
+  "iguales": 600,
+  "diferencias": 0,
+  "ejemplos": []
+ },
+ "simulacion": {
+  "semilla 1": {
+   "casos": 3000,
+   "perfiles": 142,
+   "acierto_v797": 66.7,
+   "acierto_v80": 66.7,
+   "diferencia": 0,
+   "cayeron": []
+  },
+  "semilla 2": {
+   "casos": 3000,
+   "perfiles": 142,
+   "acierto_v797": 66.8,
+   "acierto_v80": 66.8,
+   "diferencia": 0,
+   "cayeron": []
+  }
+ },
+ "errores": {
+  "v797": 0,
+  "v80": 0
+ }
+}

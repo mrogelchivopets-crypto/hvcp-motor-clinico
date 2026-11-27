@@ -1,5 +1,77 @@
 # Historial de cambios del Motor Clínico
 
+## v8.0 — compilación 2026-11-27a (base: v7.9.7 compilación 2026-11-27a)
+
+Rama `v8.0`, un commit por cambio; PR a `main` sin fusionar (lo aprueba la Dirección General).
+
+**Decisiones de Melvyn (26/11/2026):** criterios del estado hemodinámico automático aprobados tal cual; escala de conciencia de 5 estados con puntaje acotado aprobada tal cual, más el estado «Crítico ER» (libera los obligatorios del examen físico para priorizar al paciente); perfil por médico opción A (nombre + PIN); número de versión v8.0. El registro deja de ser anónimo.
+
+**Decisiones de Melvyn (27/11/2026), preguntadas antes de programar:**
+- Numeración V1–V7 (no M12–M18: M12 y M13 ya son propuestas pendientes del análisis en la nube).
+- Perfiles en el servidor (Supabase, migración 08), no solo en el dispositivo.
+- Se agregan opciones de examen que faltaban para los criterios: TLLC «2–3 s» y «> 3 s»; pulso «Débil» y «Filiforme» por separado.
+- La simulación se reconstruye (los scripts originales de 3000 casos no están en el repositorio; solo `Simulacion_Motor_Clinico_v7_0.xlsx`).
+- Criterios que no cabían en el pedido: pulso débil solo → compensado; mucosas rojas solas → compensado; pulso saltón o déficit de pulso solos → estable.
+
+### V1 · Condición corporal obligatoria — `f6c444d`
+- **Qué cambió:** se quitó el botón de atajo de la condición corporal; `cc` entra en `REQ` (obligatorio).
+- **Motivo:** la condición corporal quedaba sin llenar en la mayoría de casos.
+- **Zonas:** bloque CC del examen físico, `REQ`.
+- **Verificación:** `tests/v8.spec.js` (sin CC no genera SOAP; con CC sí). **Resultado:** OK.
+
+### V2 · Obligatorios reales y sin atajos — `80844df`
+- **Qué cambió:** `REQ` = especie, conciencia, peso, edad, sexo, vacunas, FC, FR, temperatura, mucosas, TLLC, pulso, deshidratación, auscultación cardíaca y pulmonar, CC. `genSOAPbase` y `regTrasSOAP` no avanzan con faltantes ni sin médico. Excepciones: «Sin signos vitales» solo pide especie; «Crítico ER» omite el grupo del examen físico.
+- **Atajos encontrados:** solo el botón de CC (V1). No había otros.
+- **Zonas:** `REQ`, `faltantes()`, `genSOAPbase`, `regTrasSOAP`.
+- **Verificación:** aviso de obligatorios en pantalla y bloqueo de SOAP/registro (`v8.spec.js`). **Resultado:** OK.
+
+### V3 · Estado hemodinámico automático — `e7b86c1`
+- **Qué cambió:** el médico ya no marca el estado; `hemoCalc()` lo calcula desde el examen y lo muestra en un recuadro de solo lectura con color (verde estable, amarillo compensado, rojo descompensado, gris «Pendiente» si falta un dato). La nota SOAP dice «Estado hemodinámico (calculado): X — criterios». Se apagaron las alertas de incoherencia shock/estado marcado (ya no hay estado marcado).
+- **Opciones agregadas (decisión 27/11):** TLLC `2–3 s` y `> 3 s`; pulso `Débil` y `Filiforme`.
+- **Rangos de FC usados:** taquicardia — gato > 220, cachorro > 200, perro < 10 kg > 160, otros perros > 140. Bradicardia — gato < 120 (< 160 con hipoperfusión), perro < 60, perro < 10 kg < 80 (< 100 con hipoperfusión).
+- **Zonas:** `EX_TLLC`, `EX_PULSO`, `hemoCalc`, `hemoInfo` (envoltura), `hemoBox`, CSS claro/oscuro, SOAP, instantánea del registro.
+- **Verificación:** 23 vectores clínicos con el estado esperado (`v8.spec.js`). **Resultado:** 23/23.
+
+### V4 · Estado de conciencia (6 estados) — `e7171e9`
+- **Qué cambió:** escala Alerta / Deprimido / Estupor / Coma, más «Crítico ER» y «Sin signos vitales». Alertas: «Prioridad 1 (triaje)» en estupor, coma y Crítico ER; recordatorio de completar el examen en Crítico ER; recordatorio de peso para RCP. SOAP: línea de conciencia, «examen físico diferido» con los campos faltantes, texto de RCP.
+- **Magnitud del puntaje:** ±10 (`CONC_SUBE` / `CONC_BAJA`) solo en los diagnósticos que alteran la conciencia: TCE, hipoglucemia, encefalopatía hepática, anticolinesterásicos, ivermectina, etilenglicol, golpe de calor, epilepsia. Justificación: es el mismo peso que un signo de apoyo; ordena entre candidatos sin crear un diagnóstico por sí solo. La hiponatremia no es diagnóstico del motor; no se creó.
+- **«Sin signos vitales»:** no calcula diagnósticos (`scoreDx` devuelve vacío); el caso se registra como RCP sin motivo de consulta.
+- **Zonas:** `P_CONC`, `answers` (`A.conc`), `scoreDx` (envoltura), `setConc`, alertas, SOAP, `regTrasSOAP`.
+- **Verificación:** `v8.spec.js`. **Resultado:** OK.
+
+### V5 · Perfil por médico (nombre + PIN) — `ab5dba6`
+- **Qué cambió:** pantalla de perfil al abrir el motor; botones «Médico» y «Mis casos» en el encabezado. Cada caso y cierre lleva `medicoId`. «Mis casos» lista los casos del médico pendientes de cerrar.
+- **Desviación del pedido:** el PIN no se guarda con SHA-256 en el navegador, sino con bcrypt en el servidor (`extensions.crypt`); 5 intentos fallidos = espera de 60 s. Es más seguro y permite usar el mismo perfil en cualquier dispositivo.
+- **Migración 08** (`supabase/migrations/20261127000800_v8_medicos.sql`): tablas `medicos` y `medico_dispositivo`; columnas nuevas en `casos` y `cierres`; funciones `listar_medicos`, `crear_medico`, `entrar_medico`, `salir_medico`, `mis_casos`; `registrar_caso`, `guardar_cierre` y `admin_casos` actualizadas. Compatible con la v7.9.7 publicada (campos nuevos opcionales). **Aplicada solo en el proyecto de prueba.**
+- **Verificación:** `tests/v8_medicos.spec.js` contra el proyecto de prueba (perfiles, PIN, bloqueo, «Mis casos» y cierre desde el panel, en celular y tablet). **Resultado:** OK.
+
+### V6 · Versión única 8.0 y actualización — `21ce3b7`
+- **Qué cambió:** `MC_VERSION="8.0"` y `MC_BUILD="2026-11-27a"` son la única fuente; título, encabezado, SOAP, pie y registro la leen de ahí (`MOTOR_VER`/`MOTOR_BUILD` quedan como alias). `version.json` en la raíz. «Nuevo paciente» consulta `version.json` sin caché y recarga si hay una compilación nueva; sin red sigue normal.
+- **Zonas:** constantes de versión, `nuevoPaciente()`, `scripts/catalogo_lib.mjs` (`cambiarVersion`, `leerBuild`, `actualizarVersionJson`), `scripts/catalogo_importar.mjs`.
+- **Verificación:** `v8.spec.js` (misma versión: no recarga; versión distinta: recarga con `?v=`). **Resultado:** OK.
+
+### V7 · Protección contra recarga accidental — `7043e96`
+- **Qué cambió:** sin recarga por arrastre (`overscroll-behavior-y: contain`); borrador automático del paciente en curso cada ~2 s por médico (`hvcp_borrador_<medicoId>`); barra «Recuperar paciente en curso» con Recuperar / Descartar; aviso del navegador al salir con paciente sin nota SOAP. El borrador se borra al generar la SOAP o con «Nuevo paciente» y sobrevive a la recarga por versión nueva.
+- **Zonas:** CSS, `#borrador`, `bor*`, `renderRight` (envoltura), `beforeunload`.
+- **Verificación:** `v8.spec.js` (recargar → recuperar idéntico; descartar; SOAP borra). **Resultado:** OK.
+
+### Regresión (`tests/regresion_v8.mjs`, resultado en `docs/v8/regresion_v8.json`)
+- Identidad clínica: **600 de 600** combinaciones con top-5 y puntajes idénticos (v7.9.7 con el mismo estado hemodinámico que calcula la v8.0; conciencia = Deprimido).
+- Simulación por perfiles (142 perfiles, uno por diagnóstico; 3000 casos por semilla), acierto top-1 v7.9.7 vs. v8.0: semilla 1 — 66,7 % vs. 66,7 %; semilla 2 — 66,8 % vs. 66,8 %. Sin errores de página en ninguna de las dos versiones. Ningún diagnóstico baja.
+- La cifra absoluta no es comparable con el 85,6 % de referencia: esa simulación (3000 casos, 113 perfiles) no está disponible; esta se reconstruyó desde las reglas del motor.
+- Consola sin errores en Chromium y WebKit, en escritorio, tablet y celular (`tests/v8_consola.spec.js`).
+- Capturas en `docs/v8/capturas`.
+
+### Campos nuevos del registro
+`conciencia`, `hemo` (calculado), `hemoCriterios`, `medicoId`, `medico`, `rcp`, `critico`, `version` (8.0). En el servidor: `casos.conciencia`, `critico`, `rcp`, `hemo_criterios`, `medico_id`; `cierres.cerrado_por_medico`.
+
+### Pendientes / límites conocidos
+- **Antes de fusionar:** aplicar la migración 08 en producción (`bjvdjznnktgfweipeshn`). Sin ella, la v8.0 no puede crear ni usar perfiles.
+- Seguridad del PIN: 4 dígitos con bcrypt y bloqueo por intentos; protege contra errores y uso casual, no contra alguien con acceso a la cuenta del dispositivo.
+- Si se aplica después la 06 (rol lector), su `admin_casos` debe conservar el nombre del médico de la 08.
+- Borrador por dispositivo (localStorage): no pasa de un dispositivo a otro.
+- Segunda parte: columnas nuevas en la exportación y cambios en el análisis.
+
 ## v7.9.7 · 27/11/2026 10:45 · heridas por mordedura frente a politrauma (M14)
 
 Origen: análisis del registro del 26/11 a las 15:43 (211 casos y 97 cierres), hecho en Claude Code. Aprobado por la Dirección General el 27/11. Casos de origen:
