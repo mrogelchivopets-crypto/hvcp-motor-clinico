@@ -295,3 +295,16 @@ test("V7: arrastrar hacia abajo en pantalla táctil no recarga la página", asyn
   expect(await page.evaluate(() => window.__sigue)).toBe(true);
   await ctx.close();
 });
+
+test("Hipotermia: grados de la escala de hipotermia secundaria (Oncken 2001) sin cambiar el puntaje", async ({ browser }) => {
+  const { ctx, page, errores } = await abrir(browser);
+  const r = await page.evaluate(() => [37.6, 37.4, 36.7, 36.6, 35.5, 35.4, 34.6, 33, 32.9, 30].map((t) => { const c = tempCls(t); return [t, c.s, c.c]; }));
+  expect(r).toEqual([
+    [37.6, "normotermia", "g"], [37.4, "hipotermia leve", "y"], [36.7, "hipotermia leve", "y"], [36.6, "hipotermia moderada", "y"],
+    [35.5, "hipotermia moderada", "y"], [35.4, "hipotermia severa", "r"], [34.6, "hipotermia severa", "r"], [33, "hipotermia severa", "r"],
+    [32.9, "hipotermia crítica", "r"], [30, "hipotermia crítica", "r"]]);
+  await page.evaluate(() => { setEsp("f"); setEx("temp", "34.6"); });
+  await expect(page.locator("#exfis")).toContainText("Hipotérmico (hipotermia severa)");
+  expect(errores).toEqual([]);
+  await ctx.close();
+});

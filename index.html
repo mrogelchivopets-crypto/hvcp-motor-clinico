@@ -1980,7 +1980,7 @@ const INFO={
  hx:"Enfermedades previas o tratamientos recientes que cambian el diagnóstico o el tratamiento. Si no hay, marque «Ningún antecedente».",
  fc:"Latidos por minuto (contar 15 s × 4). Normal: perro 60–140 (razas pequeñas hasta 160, cachorros hasta 200); gato 140–220. En el gato en shock es frecuente la bradicardia.",
  fr:"Respiraciones por minuto en reposo, sin jadeo (contar movimientos del tórax). Normal: perro 10–30; gato 20–40. Más de 40 en reposo indica dificultad respiratoria.",
- temp:"Temperatura rectal. Normal 37.5–39.2 °C. Fiebre > 39.5 °C; hipertermia grave > 41 °C (golpe de calor); hipotermia < 37.5 °C.",
+ temp:"Temperatura rectal. Normal 37.5–39.2 °C. Fiebre > 39.5 °C; hipertermia grave > 41 °C (golpe de calor); hipotermia < 37.5 °C: leve 36.7–37.5, moderada 35.5–36.7, severa 33–35.5, crítica < 33 °C (hipotermia secundaria, Oncken 2001).",
  gluc:"Glucómetro. Normal 70–150 mg/dL. < 60: hipoglucemia (bolo de dextrosa). > 250 con cetonas: cetoacidosis diabética.",
  muc:"Encías o conjuntiva. Rosadas: normal. Pálidas: anemia o vasoconstricción. Rojas: shock temprano, sepsis, golpe de calor. Grises o cianóticas: hipoxemia. Amarillas: ictericia. Marrón: metahemoglobina (paracetamol en gatos).",
  tllc:"Tiempo de llenado capilar: presione la encía hasta blanquearla y cuente cuánto tarda en volver el color. Normal 1–2 s. < 1 s: shock hiperdinámico o fiebre. > 2 s: hipoperfusión.",
@@ -2615,7 +2615,11 @@ function setEx(k,v){ST.ex=ST.ex||{};ST.ex[k]=v; if(k==="dh"){ST.fl.desh=v||"0"} 
 function tempCls(t){
   if(t==null||t===""||isNaN(parseFloat(t)))return null; t=parseFloat(t);
   const S=ST.signs||new Set(), noFeb=["calor","temb","fasc","conv"].some(x=>S.has(x));
-  if(t<37.5){const g=t<28?"severa":t<32?"moderada":"leve";return {k:"hipo",lbl:`Hipotérmico (hipotermia ${g})`,s:`hipotermia ${g}`,c:t<32?"r":"y"}}
+  // Grado de hipotermia: escala de hipotermia SECUNDARIA (enfermedad, trauma, fármacos), la habitual en urgencias:
+  // leve 36.7–37.7, moderada 35.5–36.7, severa 33–35.5, crítica < 33 °C (Oncken, Kirby y Rudloff 2001; Brodeur et al. 2017).
+  // La escala de hipotermia primaria por exposición (leve 32–37, moderada 28–32, severa < 28) subestima al paciente enfermo.
+  // Solo cambia la etiqueta, el color y el texto de la SOAP: el puntaje sigue usando < 37.5 °C.
+  if(t<37.5){const g=t<33?"crítica":t<35.5?"severa":t<36.7?"moderada":"leve";return {k:"hipo",lbl:`Hipotérmico (hipotermia ${g})`,s:`hipotermia ${g}`,c:t<35.5?"r":"y"}}
   if(t<39.5)return {k:"normo",lbl:"Normotérmico",s:"normotermia",c:"g"};
   if(t<=41)return noFeb?{k:"hiper",lbl:"Hipertérmico (probable origen no febril: calor, temblores, fasciculaciones o convulsiones)",s:"hipertermia, probable origen no febril",c:"y"}:{k:"fiebre",lbl:"Febril",s:"fiebre",c:"y"};
   return {k:"hiper",lbl:"Hipertermia severa (> 41 °C)",s:"hipertermia severa",c:"r"};
