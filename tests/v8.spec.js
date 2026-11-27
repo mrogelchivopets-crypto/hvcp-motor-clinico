@@ -9,12 +9,13 @@ export async function abrir(browser, opts = {}, { medico = true } = {}) {
   // Perfil activo simulado (sin servidor no se verifica el PIN); medico: false = dispositivo sin perfil.
   if (medico) await ctx.addInitScript(() => { try { localStorage.setItem("hvcp_medico", JSON.stringify({ id: "00000000-0000-4000-8000-000000000001", nombre: "Médico de prueba" })); localStorage.setItem("hvcp_aviso_pin", "1"); } catch (e) {} });
   const page = await ctx.newPage();
-  const errores = [];
+  const errores = [], dialogos = [];
   page.on("pageerror", (e) => errores.push(String(e)));
-  page.on("dialog", (d) => d.dismiss());
+  // El aviso de salida (beforeunload) se acepta y se registra; los demás diálogos se cierran.
+  page.on("dialog", (d) => { dialogos.push(d.type()); return d.type() === "beforeunload" ? d.accept() : d.dismiss(); });
   await page.goto("/index.html");
   await page.evaluate(() => localStorage.removeItem("mc_cola_registro"));
-  return { ctx, page, errores };
+  return { ctx, page, errores, dialogos };
 }
 
 // Paciente completo (todos los obligatorios). `sin` deja vacío uno o varios.
@@ -257,5 +258,70 @@ test("V6: «Nuevo paciente» recarga si version.json trae otro build; igual o si
   await Promise.all([page.waitForURL(/\?v=2099-01-01z/), page.evaluate(() => nuevoPaciente())]);
   expect(await page.evaluate(() => window.__marca)).toBeUndefined();
   expect(errores).toEqual([]);
+  await ctx.close();
+});
+
+// ─── V7: protección contra recarga accidental ───
+const estadoST = (page) => page.evaluate(() => JSON.stringify({ esp: ST.esp, peso: ST.peso, edad: ST.edad, sexo: ST.sexo, conc: ST.conc, vac: [...ST.vac], ex: ST.ex, motivo: ST.motivo, signs: [...ST.signs].sort(), ans: ST.ans }));
+async function medioCaso(page) {
+  await page.evaluate(() => { setEsp("c"); setPeso("12.5"); setEdad("e3"); setSexo("he"); setVac("aldia"); setConc("dep");
+    setEx("fc", "130"); setEx("temp", "39.6"); setEx("muc", "pali"); ST.avisoMot = true; setMotivo("dig"); toggleSign("diar"); answer("dur", "d1"); });
+}
+
+test("V7: medio caso, recarga y «Recuperar» con todos los campos, signos y respuestas; tras la SOAP el borrador desaparece", async ({ browser }) => {
+  const { ctx, page, errores, dialogos } = await abrir(browser, { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  await medioCaso(page);
+  const antes = await estadoST(page);
+  await page.waitForTimeout(2600);
+  await page.reload();
+  await expect(page.locator("#borrador")).toContainText(/Recuperar paciente en curso \(\d\d:\d\d/);
+  await page.screenshot({ path: "test-results/capturas/v7-recuperar-celular.png" });
+  await page.locator("#borrador").getByRole("button", { name: "Recuperar" }).click();
+  expect(await estadoST(page)).toBe(antes);
+  await expect(page.locator("#borrador")).toBeHidden();
+  // Completar y generar la nota: el borrador se borra
+  await llenar(page, { fr: "24", tllc: "n", pulso: "n", dh: "0", card: "n", pulm: "n", cc: "3" });
+  const r = await generar(page); expect(r.soap).not.toBe("");
+  expect(await page.evaluate(() => localStorage.getItem(borKey()))).toBeNull();
+  await page.reload();
+  await expect(page.locator("#borrador")).toBeHidden();
+  expect(errores).toEqual([]);
+  await ctx.close();
+});
+
+test("V7: aviso al salir solo con paciente en curso sin SOAP; «Descartar» y «Nuevo paciente» borran el borrador", async ({ browser }) => {
+  const { ctx, page } = await abrir(browser);
+  await ctx.route("**/version.json", (r) => r.abort());
+  // Sin paciente: no hay aviso
+  expect(await page.evaluate(() => { const e = new Event("beforeunload", { cancelable: true }); window.dispatchEvent(e); return e.defaultPrevented; })).toBe(false);
+  await medioCaso(page);
+  expect(await page.evaluate(() => { const e = new Event("beforeunload", { cancelable: true }); window.dispatchEvent(e); return e.defaultPrevented; })).toBe(true);
+  // El aviso también guarda el borrador al instante
+  expect(await page.evaluate(() => !!localStorage.getItem(borKey()))).toBe(true);
+  await page.evaluate(() => nuevoPaciente()); await page.waitForTimeout(300);
+  expect(await page.evaluate(() => localStorage.getItem(borKey()))).toBeNull();
+  await ctx.close();
+});
+
+test("V7: el borrador sobrevive a la recarga por versión nueva (V6)", async ({ browser }) => {
+  const { ctx, page } = await abrir(browser);
+  await medioCaso(page); const antes = await estadoST(page);
+  await ctx.route("**/version.json", (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ version: "8.0", build: "2099-01-01z" }) }));
+  await Promise.all([page.waitForURL(/\?v=2099-01-01z/), page.evaluate(() => nuevoPaciente())]);
+  await expect(page.locator("#borrador")).toContainText("Recuperar paciente en curso");
+  await page.locator("#borrador").getByRole("button", { name: "Recuperar" }).click();
+  expect(await estadoST(page)).toBe(antes);
+  await ctx.close();
+});
+
+test("V7: arrastrar hacia abajo en pantalla táctil no recarga la página", async ({ browser }) => {
+  const { ctx, page } = await abrir(browser, { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  expect(await page.evaluate(() => [getComputedStyle(document.documentElement).overscrollBehaviorY, getComputedStyle(document.body).overscrollBehaviorY])).toEqual(["contain", "contain"]);
+  await page.evaluate(() => { window.__sigue = true; window.scrollTo(0, 0); });
+  const cdp = await ctx.newCDPSession(page);
+  const t = (type, y) => cdp.send("Input.dispatchTouchEvent", { type, touchPoints: type === "touchEnd" ? [] : [{ x: 195, y }] });
+  await t("touchStart", 120); for (let y = 140; y <= 700; y += 40) await t("touchMove", y); await t("touchEnd", 700);
+  await page.waitForTimeout(800);
+  expect(await page.evaluate(() => window.__sigue)).toBe(true);
   await ctx.close();
 });

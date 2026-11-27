@@ -183,6 +183,9 @@ details.qsys[open]>summary::before{transform:rotate(90deg)}
 /* ── Compatibilidad iOS / Safari ── */
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 html,body{max-width:100%;overflow-x:hidden}
+html,body,.rcol,.pf-fondo,.av-fondo,.reg-scroll{overscroll-behavior-y:contain} /* V7: sin recarga por arrastre */
+.borbar{position:sticky;top:0;z-index:65;display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:#3A2A05;border-bottom:1px solid #F59E0B;color:#FFECC4;padding:8px 14px;font-size:14px}
+.borbar .opt{min-height:40px}:root[data-theme="light"] .borbar{background:#FFF1CF;color:#4A3300;border-color:#C98A00}
 @supports (overflow:clip){html,body{overflow-x:clip}}
 button,.chip,.opt,.mot,.mot2b,summary,label.soapchk{touch-action:manipulation;-webkit-tap-highlight-color:rgba(61,126,245,.25);cursor:pointer;-webkit-user-select:none;user-select:none}
 .dx-row,.dx-row .dx-h,.dx-main,.q,.opts,.lab>div{min-width:0}
@@ -400,6 +403,7 @@ details[open]>summary .sg-ocu{display:inline}
   <button class="reset" id="regbtn" onclick="regToggle(!REG.abierto)">Registro de casos</button>
   <button class="reset" onclick="nuevoPaciente()">Nuevo paciente</button>
 </header>
+<div id="borrador" class="borbar" style="display:none" role="status"></div>
 <div id="perfil" class="pf-fondo" style="display:none" role="dialog" aria-modal="true" aria-label="Perfil del médico"></div>
 <div id="miscasos" class="pf-fondo" style="display:none" role="dialog" aria-modal="true" aria-label="Mis casos"></div>
 <div id="jswarn"><b>El motor no se está ejecutando.</b><br>En iPhone, la vista previa de WhatsApp o de la app Archivos no ejecuta la página. Ábrala con el enlace en <b>Safari</b> (o Chrome), o use «Compartir → Abrir en Safari».</div>
@@ -3360,7 +3364,7 @@ function misCasosRender(){
 }
 function misCasosIr(cod){misCasosCerrar();regToggle(true);REG.sel=null;REG.accCod=cod;regRender();regAbrirCodigo()}
 // Sin perfil activo, «Generar nota SOAP» (y la barra inferior y «Copiar») abre la pantalla de perfil.
-{const _g=genSOAP; genSOAP=function(){if(!MED){perfilAbrir();return}return _g.apply(this,arguments)}}
+{const _g=genSOAP; genSOAP=function(){if(!MED){perfilAbrir();return}const r=_g.apply(this,arguments);if(soapHecha())borBorrar();return r}}
 setTimeout(medPintar,0);
 
 // ═══ V6 (v8.0) — Actualización al dar «Nuevo paciente» ═══
@@ -3369,10 +3373,39 @@ async function nuevoPaciente(){
   try{const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),4000);
     const r=await fetch("version.json",{cache:"no-store",signal:ctl.signal});clearTimeout(t);
     if(r.ok){const j=await r.json();
-      if(j&&j.build&&(j.build!==MC_BUILD||(j.version&&j.version!==MC_VERSION))){location.replace(location.pathname+"?v="+encodeURIComponent(j.build));return}}}
+      if(j&&j.build&&(j.build!==MC_BUILD||(j.version&&j.version!==MC_VERSION))){borGuardar();window.__recargaVersion=true;location.replace(location.pathname+"?v="+encodeURIComponent(j.build));return}}}
   catch(e){} // sin red o sin version.json: se sigue sin bloquear
-  resetAll();
+  borBorrar();borBarra(false);resetAll();
 }
+
+// ═══ V7 (v8.0) — Protección contra recarga accidental ═══
+// Borrador del paciente en curso en este dispositivo (clave por perfil de médico), ~2 s después de cada cambio.
+// Se borra al generar la nota SOAP o con «Nuevo paciente»; sobrevive a la recarga por versión nueva (V6).
+const BOR_PRE="hvcp_borrador_";
+function borKey(){return BOR_PRE+(MED?MED.id:"sin_medico")}
+function pacienteEnCurso(){return !!(ST.esp||ST.motivo||ST.signs.size||Object.keys(ST.ex||{}).length||ST.conc)}
+function soapHecha(){const t=document.getElementById("soap");return !!(t&&t.value.trim())}
+let borT=null, borPausa=false;
+function borEstado(){return {t:Date.now(),esp:ST.esp,peso:ST.peso,edad:ST.edad,sexo:ST.sexo,conc:ST.conc,vac:[...ST.vac],hxs:[...ST.hxs],ex:ST.ex||{},
+  motivo:ST.motivo,motivo2:ST.motivo2,signs:[...ST.signs],ans:ST.ans||{},soapSel:[...ST.soapSel],fl:ST.fl,t0:ST.t0?new Date(ST.t0).toISOString():null}}
+function borGuardar(){clearTimeout(borT);try{if(!pacienteEnCurso()||soapHecha())return;localStorage.setItem(borKey(),JSON.stringify(borEstado()))}catch(e){}}
+function borGuardarPronto(){if(borPausa)return;clearTimeout(borT);borT=setTimeout(borGuardar,2000)}
+function borBorrar(){clearTimeout(borT);try{localStorage.removeItem(borKey())}catch(e){}}
+function borLeer(){try{return JSON.parse(localStorage.getItem(borKey())||"null")}catch(e){return null}}
+function borBarra(on){const el=document.getElementById("borrador");if(!el)return;if(!on){el.style.display="none";el.innerHTML="";return}
+  const b=borLeer();if(!b){el.style.display="none";return}
+  const hh=new Date(b.t).toLocaleTimeString("es-SV",{hour:"2-digit",minute:"2-digit"});
+  el.innerHTML='<span>Recuperar paciente en curso ('+esc(hh)+')</span><button class="opt on" onclick="borRecuperar()">Recuperar</button><button class="opt" onclick="borDescartar()">Descartar</button>';el.style.display="flex"}
+function borRevisar(){if(!pacienteEnCurso()&&borLeer())borBarra(true);else borBarra(false)}
+function borRecuperar(){const b=borLeer();if(!b)return;borPausa=true;
+  Object.assign(ST,{esp:b.esp,peso:b.peso,edad:b.edad,sexo:b.sexo,conc:b.conc||null,ex:b.ex||{},motivo:b.motivo,motivo2:b.motivo2,ans:b.ans||{},fl:b.fl||ST.fl,t0:b.t0?new Date(b.t0):null});
+  ["vac","hxs","signs","soapSel"].forEach(k=>{ST[k].clear();(b[k]||[]).forEach(x=>ST[k].add(x))});
+  borPausa=false;borBarra(false);renderAll()}
+function borDescartar(){borBorrar();borBarra(false)}
+{const _rr=renderRight; renderRight=function(){const r=_rr.apply(this,arguments);borGuardarPronto();return r}}
+{const _mg=medGuardar; medGuardar=function(m){_mg.apply(this,arguments);setTimeout(borRevisar,0)}}
+window.addEventListener("beforeunload",ev=>{if(window.__recargaVersion)return;if(pacienteEnCurso()&&!soapHecha()){borGuardar();ev.preventDefault();ev.returnValue=""}});
+setTimeout(borRevisar,0);
 
 function regToggle(on){
   const app=document.querySelector(".app"),rv=document.getElementById("regview"),b=document.getElementById("regbtn");
