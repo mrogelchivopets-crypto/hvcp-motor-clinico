@@ -152,9 +152,9 @@ test("V4: estupor y coma suben esos diagnósticos sin desplazar uno con evidenci
   await ctx.close();
 });
 
-test("V4: «Sin signos vitales» solo exige la especie, no calcula presuntivos y registra rcp: true", async ({ browser }) => {
+test("V4: «Sin signos vitales» no exige nada más, no calcula presuntivos, registra rcp: true y cierra sin diagnóstico", async ({ browser }) => {
   const { ctx, page, errores } = await abrir(browser);
-  await page.evaluate(() => { setEsp("c"); setConc("ssv"); });
+  await page.evaluate(() => { setConc("ssv"); });
   expect(await page.evaluate(() => faltantes().map((x) => x.k))).toEqual([]);
   await expect(page.locator("#alerts")).toContainText("Registre el peso (aunque sea estimado) para las dosis de RCP");
   await expect(page.locator("#alerts")).toContainText("RCP inmediata (RECOVER 2024)");
@@ -163,7 +163,9 @@ test("V4: «Sin signos vitales» solo exige la especie, no calcula presuntivos y
   expect(r.soap).toContain("Estado de conciencia: Sin signos vitales — protocolo RCP");
   expect(r.soap).toContain("RCP (RECOVER 2024): Compresiones");
   const q = await cola(page);
-  expect(q).toHaveLength(1); expect(q[0].p.ent.rcp).toBe(true); expect(q[0].p.ent.hemo).toBe("pcr");
+  expect(q).toHaveLength(2); expect(q[0].t).toBe("caso"); expect(q[0].p.ent.rcp).toBe(true); expect(q[0].p.ent.hemo).toBe("pcr"); expect(q[0].p.ent.esp ?? null).toBe(null);
+  expect(q[1].t).toBe("cierre"); expect(q[1].k).toBe(q[0].k); expect(q[1].p.sinDx).toBe(true); expect(q[1].p.dx).toBe(null);
+  expect(await page.evaluate(() => cerrado(colaLeer()[1].p))).toBe(true);
   expect(errores).toEqual([]);
   await ctx.close();
 });

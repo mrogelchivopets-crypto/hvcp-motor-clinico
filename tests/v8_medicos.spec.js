@@ -112,3 +112,18 @@ test("V5: perfiles, PIN, bloqueo, «Mis casos» y cierre desde el panel (celular
   expect(d1.errores).toEqual([]); expect(d2.errores).toEqual([]);
   await d1.ctx.close(); await d2.ctx.close();
 });
+
+test("«Sin signos vitales»: sin más datos, el caso se registra y se cierra sin diagnóstico en el servidor", async ({ browser }) => {
+  const C = { nombre: `Prueba C ${sufijo}`, pin: "2468" };
+  const D = await dispositivo(browser, CEL);
+  await crearPerfil(D.page, C);
+  await D.page.evaluate(() => { resetAll(); setConc("ssv"); genSOAP(); });
+  await expect(D.page.locator("#regmsg")).toContainText("cerrado sin diagnóstico definitivo", { timeout: 30000 });
+  const cod = await D.page.evaluate(() => REG.cur && REG.cur.id); creados.push(cod);
+  expect(await D.page.evaluate(() => colaLeer().length)).toBe(0);
+  const { data, error } = await ADM.from("cierres").select("sin_dx, dx_codigo, notas, casos!inner(codigo, rcp, especie)").eq("casos.codigo", cod);
+  if (!error) { expect(data).toHaveLength(1); expect(data[0].sin_dx).toBe(true); expect(data[0].dx_codigo).toBe(null); expect(data[0].casos.rcp).toBe(true); }
+  else console.log("Consulta directa de cierres no permitida para este usuario; se verificó por la cola vacía y el mensaje:", error.message);
+  expect(D.errores).toEqual([]);
+  await D.ctx.close();
+});

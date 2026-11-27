@@ -1956,11 +1956,11 @@ const q=QS.find(x=>x.id==="leuco"); if(q) ["disn","taqp","cian"].forEach(x=>{if(
 const REQ={esp:["Especie","pac"],conc:["Estado de conciencia","pac"],peso:["Peso","pac"],edad:["Edad","pac"],sexo:["Sexo","pac"],vac:["Vacunación","pac"],fc:["FC","ex"],fr:["FR","ex"],temp:["Temperatura","ex"],muc:["Color de mucosas","ex"],tllc:["TLLC","ex"],pulso:["Pulso femoral","ex"],dh:["% deshidratación","ex"],card:["Auscultación cardíaca","ex"],pulm:["Auscultación pulmonar","ex"],cc:["Condición corporal","ex"]};
 const RANGO={fc:[20,350,"lpm"],fr:[4,150,"rpm"],temp:[30,44,"°C"]};
 function faltantes(){
-  // V2/V4: «Sin signos vitales» solo exige la especie; «Crítico ER» libera el examen físico (constantes y hallazgos).
+  // V2/V4: «Sin signos vitales» no exige nada más (se atiende el paro); «Crítico ER» libera el examen físico (constantes y hallazgos).
   const e=ST.ex||{}, out=[], ssv=ST.conc==="ssv", crit=ST.conc==="crit";
   for(const k in REQ){
     const [l,g]=REQ[k];
-    if(ssv&&k!=="esp") continue;
+    if(ssv) continue;
     if(g==="ex"&&crit) continue;
     let v; if(k==="esp")v=ST.esp; else if(k==="conc")v=ST.conc; else if(k==="peso")v=ST.peso; else if(k==="edad")v=ST.edad; else if(k==="sexo")v=ST.sexo; else if(k==="vac")v=ST.vac&&ST.vac.size?1:""; else v=e[k];
     if(v==null||v===""){out.push({k,l,g});continue}
@@ -3256,6 +3256,21 @@ function regTrasSOAP(){
   if(!REG.cur){const d=new Date();REG.cur={id:nuevoId(),f:d.toISOString()}}
   if(!prueba){const t=document.getElementById("soap");t.value+=`\nRegistro Motor Clínico: ${REG.cur.id}`}
   REG.cola=REG.cola.then(()=>regGuardar(prueba));
+  if(ST.conc==="ssv"){const id=REG.cur.id;REG.cola=REG.cola.then(()=>regCierreRCP(id,prueba))}
+}
+// «Sin signos vitales»: cierre automático sin diagnóstico definitivo. Va en la cola local después del caso,
+// así que también se envía si no hay red en ese momento.
+async function regCierreRCP(id,prueba){
+  const f=new Date().toISOString();
+  const doc={dx:null,sinDx:true,conf:"",conf2:"",con:[],labs:{},tests:{},otros:"",
+    notas:"Cierre automático: paciente sin signos vitales al ingreso (RCP). Sin diagnóstico definitivo.",
+    fc:f,fa:f,por:REG.uid||null,medicoId:MED?MED.id:null,auto:"rcp"};
+  colaPoner({t:"cierre",k:id,p:doc});
+  const r=await colaEnviar();
+  if(r.ok&&REG.cierres instanceof Map)REG.cierres.set(id,doc);
+  if(prueba)return;
+  if(r.ok)regMsg(`Caso ${id} registrado y cerrado sin diagnóstico definitivo (sin signos vitales).`,"ok");
+  else regMsg(`Caso ${id} guardado en este dispositivo con su cierre sin diagnóstico: se enviará en cuanto haya conexión.`,"warn");
 }
 // Arma el caso y lo deja en la cola local; colaEnviar() lo sube en cuanto haya red y sesión.
 async function regGuardar(prueba){
@@ -3816,7 +3831,7 @@ const COLA_KEY="mc_cola_registro";
 function colaLeer(){try{return JSON.parse(localStorage.getItem(COLA_KEY)||"[]")}catch(e){return []}}
 function colaEscribir(c){try{localStorage.setItem(COLA_KEY,JSON.stringify(c))}catch(e){}netPintar()}
 function colaPoner(it){const c=colaLeer().filter(x=>!(x.t===it.t&&x.k===it.k));it.n=0;c.push(it);colaEscribir(c)}
-function colaTiene(k){return colaLeer().some(x=>x.k===k)}
+function colaTiene(k){return colaLeer().some(x=>x.k===k&&x.t!=="cierre")}
 let colaCorriendo=null;
 function colaEnviar(){if(!colaCorriendo)colaCorriendo=colaEnviar_().finally(()=>{colaCorriendo=null});return colaCorriendo}
 async function colaEnviar_(){
@@ -3824,8 +3839,8 @@ async function colaEnviar_(){
   if(!navigator.onLine||!(await regSesionLista()))return {ok:false};
   await regSesionUso();
   for(const it of ini){
-    if(!it.p.sesion&&REG.sesion)it.p.sesion=REG.sesion;
-    const {error}=await REG.sb.rpc("registrar_caso",{p:it.p});
+    if(it.t!=="cierre"&&!it.p.sesion&&REG.sesion)it.p.sesion=REG.sesion;
+    const {error}=it.t==="cierre"?await REG.sb.rpc("guardar_cierre",{p_codigo:it.k,p:it.p}):await REG.sb.rpc("registrar_caso",{p:it.p});
     let c=colaLeer();
     if(!error){c=c.filter(x=>!(x.t===it.t&&x.k===it.k&&x.p.fa===it.p.fa));colaEscribir(c);continue}
     const msg=String(error.message||"");
@@ -3837,7 +3852,7 @@ async function colaEnviar_(){
   }
   return {ok:!colaLeer().length};
 }
-function netPintar(){const el=document.getElementById("netst");if(!el)return;const n=colaLeer().filter(x=>!x.p.prueba).length;
+function netPintar(){const el=document.getElementById("netst");if(!el)return;const n=colaLeer().filter(x=>!x.p.prueba&&x.t!=="cierre").length;
   if(!REG.listo){el.textContent="";return}
   if(n){el.textContent=`${n} caso${n>1?"s":""} pendiente${n>1?"s":""}`;el.className="netst warn";el.title="Se enviarán al registro en cuanto haya conexión"}
   else if(!REG.sb||!navigator.onLine){el.textContent="Sin conexión";el.className="netst err";el.title="El motor funciona; los casos se guardan en este dispositivo"}
