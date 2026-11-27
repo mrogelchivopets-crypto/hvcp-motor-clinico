@@ -146,3 +146,80 @@ test("V3: capturas de los tres colores en modo claro y oscuro", async ({ browser
   }
   await ctx.close();
 });
+
+// ─── V4: estado de conciencia ───
+const cola = (page) => page.evaluate(() => JSON.parse(localStorage.getItem("mc_cola_registro") || "[]"));
+test("V4: el puntaje de conciencia está en los 8 diagnósticos indicados y en ningún otro", async ({ browser }) => {
+  const { ctx, page } = await abrir(browser);
+  const r = await page.evaluate(() => ({ con: DX.filter((d) => d.r.some((x) => x[0] === "conc")).map((d) => d.id).sort(), faltan: CONC_DX.filter((id) => !DX.find((d) => d.id === id)) }));
+  expect(r.faltan).toEqual([]);
+  expect(r.con).toEqual(["anticolin", "enc_hep", "epilepsia", "etilenglicol", "golpe_calor", "hipoglucemia", "ivermectina", "tce"]);
+  await ctx.close();
+});
+
+test("V4: estupor y coma suben esos diagnósticos sin desplazar uno con evidencia clara", async ({ browser }) => {
+  const { ctx, page } = await abrir(browser);
+  const caso = async (conc, datos) => page.evaluate(({ conc, datos }) => {
+    resetAll(); setEsp(datos.esp); setPeso(datos.peso); setEdad("e3"); setSexo(datos.sexo);
+    for (const [k, v] of Object.entries(datos.ex)) setEx(k, v);
+    ST.avisoMot = true; setMotivo(datos.motivo); datos.signos.forEach((x) => { if (!ST.signs.has(x)) toggleSign(x); });
+    Object.assign(ST.ans, datos.ans || {}); setConc(conc);
+    const l = scoreDx(); return { top: l.slice(0, 3).map((x) => x.d.id + ":" + x.sc), pos: (id) => 0, lista: l.map((x) => x.d.id + ":" + x.sc) };
+  }, { conc, datos });
+  // Obstrucción uretral felina con vejiga distendida: sigue 1.ª con coma
+  const obst = { esp: "f", peso: "5", sexo: "mc", motivo: "uro", signos: ["estr", "olig", "vom"], ex: { fc: "150", temp: "37.8", muc: "rosa", tllc: "n", pulso: "n", vej: "grande" }, ans: { orinq: "obst" } };
+  const o1 = await caso("dep", obst), o2 = await caso("coma", obst);
+  expect(o1.top[0].split(":")[0]).toBe("obs_uret_f");
+  expect(o2.top[0].split(":")[0]).toBe("obs_uret_f");
+  // Trauma craneoencefálico: con estupor sube 10 frente a deprimido, y con alerta baja 10
+  const tce = { esp: "c", peso: "20", sexo: "mc", motivo: "tra", signos: ["traum"], ex: { fc: "120", temp: "38.5", muc: "rosa", tllc: "n", pulso: "n" }, ans: {} };
+  const sc = (r) => Number((r.lista.find((x) => x.startsWith("tce:")) || "tce:0").split(":")[1]);
+  const [dep, est, ale] = [await caso("dep", tce), await caso("estupor", tce), await caso("alerta", tce)];
+  expect(sc(est) - sc(dep)).toBe(10);
+  expect(sc(dep) - sc(ale)).toBe(10);
+  console.log("TCE deprimido/estupor/alerta:", sc(dep), sc(est), sc(ale), "· obstrucción con coma:", o2.top.join(" | "));
+  await ctx.close();
+});
+
+test("V4: «Sin signos vitales» solo exige la especie, no calcula presuntivos y registra rcp: true", async ({ browser }) => {
+  const { ctx, page, errores } = await abrir(browser);
+  await page.evaluate(() => { setEsp("c"); setConc("ssv"); });
+  expect(await page.evaluate(() => faltantes().map((x) => x.k))).toEqual([]);
+  await expect(page.locator("#alerts")).toContainText("Registre el peso (aunque sea estimado) para las dosis de RCP");
+  await expect(page.locator("#alerts")).toContainText("RCP inmediata (RECOVER 2024)");
+  expect(await page.evaluate(() => scoreDx().length)).toBe(0);
+  const r = await generar(page);
+  expect(r.soap).toContain("Estado de conciencia: Sin signos vitales — protocolo RCP");
+  expect(r.soap).toContain("RCP (RECOVER 2024): Compresiones");
+  const q = await cola(page);
+  expect(q).toHaveLength(1); expect(q[0].p.ent.rcp).toBe(true); expect(q[0].p.ent.hemo).toBe("pcr");
+  expect(errores).toEqual([]);
+  await ctx.close();
+});
+
+test("V4: «Crítico ER» con el examen vacío genera presuntivos, prioridad 1 y SOAP diferida; luego iguala a un caso normal", async ({ browser }) => {
+  const { ctx, page, errores } = await abrir(browser);
+  const pac = { esp: "c", peso: "25", edad: "e2", sexo: "mc", vac: "aldia", conc: "crit" };
+  await llenar(page, pac);
+  expect(await page.evaluate(() => faltantes().map((x) => x.k))).toEqual([]);
+  await expect(page.locator("#alerts")).toContainText("Prioridad 1 (triaje)");
+  await expect(page.locator("#alerts")).toContainText("Paciente priorizado: complete el examen físico cuando esté estable");
+  expect(await page.evaluate(() => scoreDx().length)).toBeGreaterThan(0);
+  await expect(page.locator("#exfis .miss")).toHaveCount(0);
+  const r = await generar(page);
+  expect(r.soap).toContain("Estado de conciencia: Crítico ER — examen físico diferido");
+  expect(r.soap).toMatch(/Examen físico sin registrar: FC, FR, Temperatura/);
+  const q = await cola(page); expect(q[0].p.ent.critico).toBe(true);
+  // Se completa el examen y se cambia la conciencia: igual a un caso normal con los mismos datos
+  const despues = await page.evaluate((ex) => { for (const [k, v] of Object.entries(ex)) setEx(k, v); setConc("alerta"); return scoreDx().slice(0, 5).map((x) => x.d.id + ":" + x.sc); },
+    { fc: "110", fr: "24", temp: "38.6", muc: "rosa", tllc: "n", pulso: "n", dh: "0", card: "n", pulm: "n", cc: "3" });
+  expect(await page.evaluate(() => faltantes().length)).toBe(0);
+  const normal = await page.evaluate(() => { const sig = [...ST.signs], mot = ST.motivo; resetAll();
+    setEsp("c"); setPeso("25"); setEdad("e2"); setSexo("mc"); setVac("aldia");
+    for (const [k, v] of Object.entries({ fc: "110", fr: "24", temp: "38.6", muc: "rosa", tllc: "n", pulso: "n", dh: "0", card: "n", pulm: "n", cc: "3" })) setEx(k, v);
+    ST.avisoMot = true; setMotivo(mot); sig.forEach((x) => { if (!ST.signs.has(x)) toggleSign(x); }); setConc("alerta");
+    return scoreDx().slice(0, 5).map((x) => x.d.id + ":" + x.sc); });
+  expect(despues).toEqual(normal);
+  expect(errores).toEqual([]);
+  await ctx.close();
+});
