@@ -154,6 +154,7 @@ async function main() {
   for (const c of R.casos) {
     const k = R.cierres[c.id];
     if (!cerrado(k) || k.sinDx || !k.dx) continue;
+    if (c.ent && (c.ent.rcp || c.ent.conc === "ssv")) continue; // v8.0: el paro no cuenta para el acierto
     const cod = String(k.dx.c || "").trim();
     if (cod && esObjetiva(k)) objPorDx[cod] = (objPorDx[cod] || 0) + 1;
     const top1 = c.sal && c.sal.top && c.sal.top[0] ? c.sal.top[0].c : null;

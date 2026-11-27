@@ -29,7 +29,7 @@ mins = [c['min_soap'] for c in casos if c.get('min_soap') is not None]
 con_hemo = [c for c in casos if c.get('hemo_discordante') is not None]
 disc = sum(1 for c in con_hemo if c['hemo_discordante'])
 kpi = dict(total=n, ayer=sum(c['ayer'] for c in casos), d7=sum(c['ult7'] for c in casos),
-           pct_cerr=p(cerrados, n), cerrados=cerrados, ab48=sum(c['abierto_48h'] for c in casos),
+           pct_cerr=p(cerrados, n), cerrados=cerrados, venc=sum(bool(c.get('cerrado_por_tiempo')) for c in casos),
            mediana=statistics.median(mins) if mins else None,
            insuf=p(sum(c['insuficiente'] for c in casos), n), disc=disc, con_hemo=len(con_hemo), pct_disc=p(disc, len(con_hemo)))
 ev = [c for c in casos if c['evaluable']]
@@ -75,7 +75,7 @@ for c in ev:
 por_dia = OrderedDict()
 for c in sorted(casos, key=lambda c: c['dia']):
     r = por_dia.setdefault(c['dia'], [0, 0]); r[0 if c['cerrado'] else 1] += 1
-turnos = [(t, sum(1 for c in casos if c['turno'] == t)) for t in ('Mañana', 'Tarde', 'Noche')]
+turnos = [(t, sum(1 for c in casos if c['turno'] == t)) for t in ('Diurno', 'Nocturno')]
 faltan = Counter(f for c in casos for f in (c['faltan'] or '').split('; ') if f).most_common()
 def agrupar(s, clave):
     g = OrderedDict()
@@ -84,10 +84,24 @@ def agrupar(s, clave):
         r['n'] += 1; r['obj'] += c['objetiva']; r['t1'] += bool(c['top1']); r['t3'] += bool(c['top3'])
     return sorted(g.values(), key=lambda r: (-r['n'], r['nombre'] or ''))
 por_sis, por_dx = agrupar(ev, 'sistema'), agrupar(ev, 'dx_codigo')
+# Por médico (v8.0); los casos anteriores no tienen médico y se agrupan por dispositivo.
 disp = OrderedDict()
 for c in casos:
-    r = disp.setdefault(c['dispositivo'], [0, 0, 0]); r[0] += 1; r[1] += c['cerrado']; r[2] += bool(c['hemo_discordante'])
-disp = sorted(disp.items(), key=lambda x: -x[1][0])
+    nom = c.get('medico') or f"Sin perfil · disp. {c['dispositivo']}"
+    r = disp.setdefault(nom, [0, 0, 0, 0, 0]); r[0] += 1; r[1] += c.get('estado') == 'Pendiente'; r[2] += c['cerrado']; r[3] += bool(c.get('cerrado_por_tiempo')); r[4] += bool(c['hemo_discordante'])
+disp = sorted(disp.items(), key=lambda x: (x[0].startswith('Sin perfil'), -x[1][0], x[0]))
+# Grupos que se reportan aparte: RCP (fuera del acierto), Crítico ER, estado de conciencia y estado hemodinámico.
+def grupo(nom, s):
+    E = [c for c in s if c['evaluable']]
+    return (nom, len(s), len(E), f"{sum(1 for c in E if c['top1'])} ({pct(p(sum(1 for c in E if c['top1']), len(E)))})" if E else '—',
+            f"{sum(1 for c in E if c['top3'])} ({pct(p(sum(1 for c in E if c['top3']), len(E)))})" if E else '—')
+norcp = [c for c in casos if not c.get('rcp')]
+rcp_c = [c for c in casos if c.get('rcp')]
+crit_c = [c for c in norcp if c.get('critico')]
+crit_comp = sum(1 for c in crit_c if c.get('critico_completo'))
+CONC_ORD = ['Alerta', 'Deprimido u obnubilado', 'Estupor', 'Coma', 'Crítico ER']
+por_conc = [grupo(x, [c for c in norcp if c.get('conciencia') == x]) for x in CONC_ORD] + [grupo('Sin marcar (antes de la v8.0)', [c for c in norcp if not c.get('conciencia')])]
+por_hemo = [grupo(x, [c for c in norcp if c['hemo_marcado'] == x]) for x in ('Estable', 'Compensado', 'Descompensado')] + [grupo('Sin marcar', [c for c in norcp if c['hemo_marcado'] not in ('Estable', 'Compensado', 'Descompensado')])]
 
 # ---------- Gráficos SVG ----------
 C1, C2, C3, CR, CM = 'var(--c1)', 'var(--c2)', 'var(--c3)', 'var(--bad)', 'var(--muted-bar)'
@@ -202,7 +216,7 @@ def tabla(cab, filas, num=()):
     return f'<div class="tw"><table><thead><tr>{th}</tr></thead><tbody>{tb}</tbody></table></div>'
 
 tiles = [('Casos ayer', kpi['ayer'], 'día anterior al corte'), ('Casos', kpi['d7'], 'últimos 7 días'),
-         ('Casos cerrados', pct(kpi['pct_cerr']), f"{kpi['cerrados']} de {n}"), ('Abiertos más de 48 h', kpi['ab48'], 'al corte'),
+         ('Casos cerrados', pct(kpi['pct_cerr']), f"{kpi['cerrados']} de {n}"), ('Cerrados por tiempo', kpi['venc'], 'más de 30 h sin cierre'),
          ('Minutos hasta la nota SOAP', str(kpi['mediana']).replace('.', ',') if kpi['mediana'] is not None else '—', 'mediana'),
          ('Acierto top-3 (objetiva)', pct(t3o['pct']), f"IC 95 % {pct(t3o['lo'])}–{pct(t3o['hi'])} · n = {t3o['n']}")]
 tiles_html = ''.join(f'<div class="tile"><span class="lbl">{e(a)}</span><span class="val">{e(b)}</span><span class="win">{e(c)}</span></div>' for a, b, c in tiles)
@@ -248,7 +262,7 @@ tr.tot td{{font-weight:700;border-top:2px solid var(--line)}} .frase{{margin:10p
 <div class="tiles">{tiles_html}</div>
 <section><h2>Casos por día</h2><div class="legend"><span><i style="background:var(--c1)"></i>Cerrados</span><span><i style="background:var(--c2)"></i>Abiertos</span></div>{chart_dia()}</section>
 <div class="g2">
-<section><h2>Casos por turno</h2><p class="note">Mañana 7–14 h · tarde 15–22 h · noche 23–6 h.</p>{hbar([(t, v, f"{t}: {v} casos ({pct(p(v, n))})") for t, v in turnos], str)}</section>
+<section><h2>Casos por turno</h2><p class="note">Turno diurno 6:00 a. m.–6:00 p. m. · turno nocturno 6:00 p. m.–6:00 a. m. (hora de la nota SOAP).</p>{hbar([(t, v, f"{t}: {v} casos ({pct(p(v, n))})") for t, v in turnos], str)}</section>
 <section><h2>Campos que faltaron</h2><p class="note">Porcentaje de casos en que el motor señaló el campo como faltante. Datos insuficientes en el {pct(kpi['insuf'])} de los casos.</p>{hbar([(f, p(k, n), f"{f}: faltó en {k} casos") for f, k in faltan], pct, C2)}</section>
 </div>
 <section><h2>¿Dónde quedó el diagnóstico del médico?</h2><p class="note">Casos cerrados con diagnóstico definitivo codificado: en qué lugar de la lista del motor quedó ese diagnóstico.</p>
@@ -269,11 +283,12 @@ tr.tot td{{font-weight:700;border-top:2px solid var(--line)}} .frase{{margin:10p
 <section><h2>Diagnósticos definitivos que el motor no tiene</h2><p class="note">Se propone agregar uno cuando aparece 3 veces o más.</p>{tabla(['Caso', 'Código', 'Diagnóstico', 'Confirmación'], [(c['id'], c['dx_codigo'], c['dx_nombre'], conf_txt(c)) for c in ev if not c['dx_en_motor']])}</section>
 <section><h2>Propuestas pendientes de aprobación</h2><p class="note">Redactadas por el análisis diario. Ninguna está aplicada al motor.</p><div class="props">{props_html}</div></section>
 <div class="g2">
-<section><h2>Por dispositivo</h2><p class="note">Los casos no identifican al médico, así que se agrupan por dispositivo.</p>{tabla(['Dispositivo', 'Casos', 'Cerrados', '% cerrado', 'Triaje discordante'], [(k, v[0], v[1], pct(p(v[1], v[0])), v[2]) for k, v in disp], num=(1, 2, 3, 4))}</section>
+<section><h2>Por médico</h2><p class="note">Casos generados por cada perfil (v8.0). Pendientes: menos de 30 h sin cierre. Los casos anteriores a la v8.0 se agrupan por dispositivo.</p>{tabla(['Médico', 'Generados', 'Pendientes', 'Cerrados', 'Cerrados por tiempo', '% cerrado', 'Triaje discordante'], [(k, v[0], v[1], v[2], v[3], pct(p(v[2], v[0])), v[4]) for k, v in disp], num=(1, 2, 3, 4, 5, 6))}</section>
 <section><h2>Triaje que no concuerda con las constantes</h2><p class="note">Estado hemodinámico marcado distinto del analizado por el motor: {kpi['disc']} de {kpi['con_hemo']} casos ({pct(kpi['pct_disc'])}).</p>{tabla(['Caso', 'Disp.', 'Marcado', 'Analizado'], [(c['id'], c['dispositivo'], c['hemo_marcado'], c['hemo_analizado']) for c in casos if c.get('hemo_discordante')])}</section>
 </div>
-<section><h2>Casos abiertos con más de 48 horas</h2>{tabla(['Caso', 'Registro', 'Horas', 'Dispositivo', 'Especie'], [(c['id'], c['fecha'], c['horas'], c['dispositivo'], c['especie']) for c in sorted(casos, key=lambda c: -c['horas']) if c['abierto_48h']], num=(2,))}</section>
-<details><summary>Cómo se calculan los indicadores</summary><p>Se excluyen casos de prueba y anulados. Horas de El Salvador (UTC−6); «ayer» y «más de 48 h» se cuentan respecto al corte del registro. Un caso es evaluable cuando su cierre tiene un diagnóstico codificado; el acierto compara ese código con la lista del motor (los códigos compuestos «A / B» cuentan si coincide cualquiera). Intervalos de confianza del 95 % de Wilson. Fuente: Registro del motor › datos › registro.json. El detalle por caso está en el Excel Registro_Motor_Clinico_HVCP.xlsx de esta carpeta.</p></details>
+<section><h2>Grupos que se reportan aparte</h2><p class="note">Los casos sin signos vitales (RCP) no cuentan para el acierto: el motor no calcula presuntivos en el paro. RCP: {len(rcp_c)} casos, {sum(1 for c in rcp_c if c['cerrado'])} cerrados, {sum(1 for c in rcp_c if c.get('rcp_dx_codigo'))} con diagnóstico definitivo codificado. Crítico ER: {len(crit_c)} pacientes; {crit_comp} completaron el examen físico después.</p><div class="g2"><div>{tabla(['Estado de conciencia', 'Casos', 'Evaluables', 'Top-1', 'Top-3'], [grupo('Crítico ER (marcado alguna vez)', crit_c)] + por_conc, num=(1, 2, 3, 4))}</div><div>{tabla(['Estado hemodinámico', 'Casos', 'Evaluables', 'Top-1', 'Top-3'], por_hemo, num=(1, 2, 3, 4))}</div></div></section>
+<section><h2>Cerrados por tiempo (más de 30 h sin cierre)</h2>{tabla(['Caso', 'Registro', 'Horas', 'Médico o dispositivo', 'Especie'], [(c['id'], c['fecha'], c['horas'], c.get('medico') or c['dispositivo'], c['especie']) for c in sorted(casos, key=lambda c: -c['horas']) if c.get('cerrado_por_tiempo')], num=(2,))}</section>
+<details><summary>Cómo se calculan los indicadores</summary><p>Se excluyen casos de prueba y anulados. Horas de El Salvador (UTC−6); «ayer» y «más de 30 h» se cuentan respecto al corte del registro. Un caso es cerrado cuando el médico registró el diagnóstico definitivo con su confirmación o «sin diagnóstico definitivo»; sin eso y con más de 30 h, es «cerrado por tiempo». Un caso es evaluable cuando su cierre tiene un diagnóstico codificado y el paciente no llegó sin signos vitales (RCP); el acierto compara ese código con la lista del motor (los códigos compuestos «A / B» cuentan si coincide cualquiera). Intervalos de confianza del 95 % de Wilson. Fuente: Registro del motor › datos › registro.json. El detalle por caso está en el Excel Registro_Motor_Clinico_HVCP.xlsx de esta carpeta.</p></details>
 </main></body></html>'''
 open(salida, 'w', encoding='utf-8').write(page)
 print('Tablero HTML:', salida, '·', n, 'casos ·', len(desac), 'desaciertos')

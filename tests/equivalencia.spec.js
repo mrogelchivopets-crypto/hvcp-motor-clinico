@@ -108,7 +108,7 @@ function extraer(soloDx) {
   if (soloDx) return salida;
   genSOAPbase();
   // El número de versión de la nota puede diferir del original a propósito (p. ej. 7.9.6 → 7.9.7).
-  salida.soap = document.getElementById("soap").value.replace(/Motor Clínico HVCP v\d+\.\d+\.\d+/g, "Motor Clínico HVCP v·");
+  salida.soap = document.getElementById("soap").value.replace(/Motor Clínico HVCP v[\d.]+/g, "Motor Clínico HVCP v·");
   salida.soapmsg = document.getElementById("soapmsg").textContent;
   return salida;
 }

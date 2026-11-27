@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>HVCP ER Motor Clínico v7.9.7 · registro en línea</title>
+<title>HVCP ER Motor Clínico · registro en línea</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -116,7 +116,23 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .tx-c{font-size:11.5px;color:var(--sub)}
 .tx-calc{font-family:var(--mono);font-size:11.5px;color:#86EFAC}
 .inv{font-size:10.5px;padding:1px 6px;border-radius:3px;margin-left:6px;vertical-align:1px}
-.inv.p{background:#3F2A08;color:#FCD28A}.inv.s{background:#0F3520;color:#86EFAC}.inv.n{background:#4A1616;color:#FFB4B4}
+.inv.p{background:#3F2A08;color:#FCD28A}.inv.s{background:#0F3520;color:#86EFAC}
+.pf-fondo{position:fixed;inset:0;z-index:1000;background:rgba(8,10,16,.82);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 16px}
+.pf-caja{background:var(--surface);border:1px solid var(--border2);border-radius:12px;max-width:520px;width:100%;padding:20px;color:var(--text)}
+.pf-caja h2{font-size:20px;margin:0 0 6px}.pf-caja .muted{margin-bottom:10px}
+.pf-lista{display:flex;flex-direction:column;gap:8px;margin:12px 0}.pf-lista button,.pf-btn{min-height:48px;font-size:16px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);padding:10px 14px;text-align:left;cursor:pointer}
+.pf-btn.pri{background:var(--accent);border-color:var(--accent);color:#fff;text-align:center}.pf-fila{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.pf-fila .pf-btn{flex:1;text-align:center}
+.pf-in{width:100%;min-height:48px;font-size:18px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);padding:8px 12px;margin:6px 0}
+.pf-pin{letter-spacing:.5em;text-align:center;font-family:var(--mono)}
+.pf-msg{margin-top:8px;font-size:14px}.pf-msg.err{color:#FCA5A5}.pf-aviso{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:10px 12px;font-size:13.5px;margin:10px 0}
+.mc-item{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid var(--border);padding:10px 0}.mc-item:last-child{border-bottom:0}
+.mc-item .mc-t{display:flex;flex-direction:column;min-width:0}.mc-item .mc-t b{font-family:var(--mono)}.mc-item .mc-t span{font-size:13px;color:var(--sub)}
+:root[data-theme="light"] .pf-msg.err{color:#B42318}
+.hemobox{border:1px solid;border-radius:8px;padding:8px 12px;font-size:13.5px;line-height:1.4}
+.hemobox.g{background:#0F3520;border-color:#22C55E;color:#BBF7D0}.hemobox.y{background:#3A2A05;border-color:#F59E0B;color:#FFECC4}
+.hemobox.r{background:#4A0F0F;border-color:#EF4444;color:#FFE1E1}.hemobox.p{background:#1E222E;border-color:#5B6178;color:#B9BFD3}
+:root[data-theme="light"] .hemobox.g{background:#DCFCE7;border-color:#15803D;color:#0B3D1E}:root[data-theme="light"] .hemobox.y{background:#FFF1CF;border-color:#C98A00;color:#4A3300}
+:root[data-theme="light"] .hemobox.r{background:#FDE2E2;border-color:#C62828;color:#5C0B0B}:root[data-theme="light"] .hemobox.p{background:#EEF0F5;border-color:#9AA1B4;color:#3B4256}.inv.n{background:#4A1616;color:#FFB4B4}
 .proc{color:#E8EAF0}
 .ref{font-size:11px;color:var(--faint);margin-top:8px}
 
@@ -167,6 +183,9 @@ details.qsys[open]>summary::before{transform:rotate(90deg)}
 /* ── Compatibilidad iOS / Safari ── */
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 html,body{max-width:100%;overflow-x:hidden}
+html,body,.rcol,.pf-fondo,.av-fondo,.reg-scroll{overscroll-behavior-y:contain} /* V7: sin recarga por arrastre */
+.borbar{position:sticky;top:0;z-index:65;display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:#3A2A05;border-bottom:1px solid #F59E0B;color:#FFECC4;padding:8px 14px;font-size:14px}
+.borbar .opt{min-height:40px}:root[data-theme="light"] .borbar{background:#FFF1CF;color:#4A3300;border-color:#C98A00}
 @supports (overflow:clip){html,body{overflow-x:clip}}
 button,.chip,.opt,.mot,.mot2b,summary,label.soapchk{touch-action:manipulation;-webkit-tap-highlight-color:rgba(61,126,245,.25);cursor:pointer;-webkit-user-select:none;user-select:none}
 .dx-row,.dx-row .dx-h,.dx-main,.q,.opts,.lab>div{min-width:0}
@@ -375,13 +394,18 @@ details[open]>summary .sg-ocu{display:inline}
 <body>
 <header>
   <span class="badge">HVCP ER</span>
-  <div><div class="htitle">Motor Clínico de Urgencias v7.9.7 · registro en línea</div><div class="hsub">Signos → sistemas implicados → diagnósticos presuntivos · Codificación VetCIE-1</div><div class="hclock" id="hclock" aria-label="Fecha y hora"></div></div>
+  <div><div class="htitle" id="htitle">Motor Clínico de Urgencias · registro en línea</div><div class="hsub">Signos → sistemas implicados → diagnósticos presuntivos · Codificación VetCIE-1</div><div class="hclock" id="hclock" aria-label="Fecha y hora"></div></div>
   <span class="hspace"></span>
   <span class="netst" id="netst" role="status" aria-live="polite"></span>
+  <button class="reset" id="medbtn" onclick="medCambiar()" title="Médico activo">Elegir médico</button>
+  <button class="reset" id="miscasosbtn" onclick="misCasosAbrir()">Mis casos</button>
   <button class="reset" id="themebtn" onclick="toggleTheme()" title="Cambiar a modo claro u oscuro">Modo claro</button>
   <button class="reset" id="regbtn" onclick="regToggle(!REG.abierto)">Registro de casos</button>
-  <button class="reset" onclick="if(REG.abierto)regToggle(false);resetAll()">Nuevo paciente</button>
+  <button class="reset" onclick="nuevoPaciente()">Nuevo paciente</button>
 </header>
+<div id="borrador" class="borbar" style="display:none" role="status"></div>
+<div id="perfil" class="pf-fondo" style="display:none" role="dialog" aria-modal="true" aria-label="Perfil del médico"></div>
+<div id="miscasos" class="pf-fondo" style="display:none" role="dialog" aria-modal="true" aria-label="Mis casos"></div>
 <div id="jswarn"><b>El motor no se está ejecutando.</b><br>En iPhone, la vista previa de WhatsApp o de la app Archivos no ejecuta la página. Ábrala con el enlace en <b>Safari</b> (o Chrome), o use «Compartir → Abrir en Safari».</div>
 <noscript><div style="background:#4A1616;color:#FFC9C9;padding:14px;margin:16px;border-radius:8px">Esta herramienta necesita JavaScript. Ábrala en Safari o Chrome.</div></noscript>
 <nav class="stepnav" id="stepnav"></nav>
@@ -1867,6 +1891,41 @@ function hemoInfo(){
 }
 function HEMO(){return hemoInfo().eff}
 
+// ═══ V3 (v8.0) — Estado hemodinámico automático (criterios aprobados por la Dirección General, 26/11/2026) ═══
+// Orden: el primero que se cumpla manda. 1) Descompensado; 2) Compensado; 3) Estable; si faltan datos: pendiente.
+// Rangos de FC (los que ya usaba el motor): taquicardia gato > 220; perro cachorro (< 6 meses) > 200, < 10 kg > 160,
+// resto > 140. Bradicardia gato < 120 (< 160 con hipoperfusión); perro < 60, < 10 kg < 80 (< 100 con hipoperfusión).
+// Decisiones del 27/11: pulso débil o mucosas rojas solos = compensado; pulso saltón o déficit de pulso solos = estable.
+function hemoCalc(){
+  const e=ST.ex||{}, cat=ST.esp==="f", kg=parseFloat(ST.peso), num=k=>{const n=parseFloat(e[k]),R=RANGO[k];return isNaN(n)||(R&&(n<R[0]||n>R[1]))?NaN:n};
+  const fc=num("fc"), t=num("temp"), pas=(ST.ans||{}).pas, tl=e.tllc, mu=e.muc, pu=e.pulso;
+  const falta=[]; if(!ST.esp)falta.push("especie"); if(isNaN(fc))falta.push("FC"); if(!tl)falta.push("TLLC"); if(!mu)falta.push("mucosas"); if(!pu)falta.push("pulso femoral");
+  const hipo=["l","l3"].includes(tl)||["pali","gris"].includes(mu)||["deb","fil","aus"].includes(pu);
+  const taq=!!ST.esp&&!isNaN(fc)&&(cat?fc>220:fc>(ST.edad==="e0"?200:(kg&&kg<10?160:140)));
+  const brad=!!ST.esp&&!isNaN(fc)&&fc<(cat?(hipo?160:120):(hipo?100:(kg&&kg<10?80:60)));
+  const d=[];
+  if(pas==="bajo")d.push("PAS < 90 mmHg");
+  if(pu==="fil")d.push("pulso filiforme"); if(pu==="aus")d.push("pulso ausente");
+  if(mu==="gris")d.push("mucosas grisáceas"); if(tl==="l3")d.push("TLLC > 3 s");
+  if(brad&&hipo)d.push("bradicardia ("+fc+" lpm) con hipoperfusión");
+  if(cat&&brad&&!isNaN(t)&&t<37.5&&pas==="bajo")d.push("tríada felina: bradicardia, hipotermia e hipotensión");
+  if(d.length)return {k:"desc",crit:d,falta};
+  const c=[];
+  if(taq)c.push("taquicardia ("+fc+" lpm)"); if(tl==="l")c.push("TLLC 2–3 s"); if(mu==="pali")c.push("mucosas pálidas");
+  if(mu==="roja")c.push("mucosas rojas o congestivas"); if(pu==="deb")c.push("pulso débil");
+  if(c.length)return {k:"comp",crit:c,falta};
+  if(falta.length)return {k:null,crit:[],falta};
+  return {k:"est",crit:["FC "+fc+" lpm","TLLC "+lab(EX_TLLC,tl),"mucosas "+lab(EX_MUC,mu).toLowerCase(),"pulso "+lab(EX_PULSO,pu).toLowerCase()],falta};
+}
+// El valor calculado alimenta todo lo que leía el estado elegido (mismas claves: est, comp, desc, pcr).
+hemoInfo=function(){if(ST.conc==="ssv")return {sel:"pcr",eff:"pcr",cambio:"",motivo:""};const k=hemoCalc().k||"";return {sel:k,eff:k,cambio:"",motivo:""}};
+function hemoBox(){
+  if(HEMO()==="pcr")return '<div class="hemobox r"><b>Sin signos vitales</b> — protocolo RCP</div>';
+  const h=hemoCalc(), C={est:"g",comp:"y",desc:"r"};
+  if(!h.k)return '<div class="hemobox p"><b>Pendiente</b>: falta '+esc(h.falta.join(", "))+'</div>';
+  return '<div class="hemobox '+C[h.k]+'"><b>'+esc(lab(P_HEMO,h.k))+'</b> — '+esc(h.crit.join(", "))+'</div>';
+}
+
 // ═══ v7.9.7 — Oliguria: obstructiva vs renal ═══
 (function(){
 const D=id=>DX.find(x=>x.id===id), R=(id,q,vals,dl,txt)=>{const d=D(id); if(d) d.r.push([q,vals,dl,txt||""])};
@@ -1894,14 +1953,16 @@ const q=QS.find(x=>x.id==="leuco"); if(q) ["disn","taqp","cian"].forEach(x=>{if(
 })();
 
 // ═══ Datos obligatorios y botón de información (v7.9.7) ═══
-const REQ={esp:["Especie","pac"],edad:["Edad","pac"],sexo:["Sexo","pac"],vac:["Vacunación","pac"],fc:["FC","ex"],fr:["FR","ex"],temp:["Temperatura","ex"],muc:["Color de mucosas","ex"],tllc:["TLLC","ex"],dh:["% deshidratación","ex"],card:["Auscultación cardíaca","ex"],pulm:["Auscultación pulmonar","ex"]};
+const REQ={esp:["Especie","pac"],conc:["Estado de conciencia","pac"],peso:["Peso","pac"],edad:["Edad","pac"],sexo:["Sexo","pac"],vac:["Vacunación","pac"],fc:["FC","ex"],fr:["FR","ex"],temp:["Temperatura","ex"],muc:["Color de mucosas","ex"],tllc:["TLLC","ex"],pulso:["Pulso femoral","ex"],dh:["% deshidratación","ex"],card:["Auscultación cardíaca","ex"],pulm:["Auscultación pulmonar","ex"],cc:["Condición corporal","ex"]};
 const RANGO={fc:[20,350,"lpm"],fr:[4,150,"rpm"],temp:[30,44,"°C"]};
 function faltantes(){
-  const e=ST.ex||{}, out=[], pcr=ST.hemo==="pcr";
+  // V2/V4: «Sin signos vitales» no exige nada más (se atiende el paro); «Crítico ER» libera el examen físico (constantes y hallazgos).
+  const e=ST.ex||{}, out=[], ssv=ST.conc==="ssv", crit=ST.conc==="crit";
   for(const k in REQ){
     const [l,g]=REQ[k];
-    if(g==="ex"&&pcr) continue;
-    let v; if(k==="esp")v=ST.esp; else if(k==="edad")v=ST.edad; else if(k==="sexo")v=ST.sexo; else if(k==="vac")v=ST.vac&&ST.vac.size?1:""; else v=e[k];
+    if(ssv) continue;
+    if(g==="ex"&&crit) continue;
+    let v; if(k==="esp")v=ST.esp; else if(k==="conc")v=ST.conc; else if(k==="peso")v=ST.peso; else if(k==="edad")v=ST.edad; else if(k==="sexo")v=ST.sexo; else if(k==="vac")v=ST.vac&&ST.vac.size?1:""; else v=e[k];
     if(v==null||v===""){out.push({k,l,g});continue}
     if(RANGO[k]){const n=parseFloat(v),[a,b,u]=RANGO[k]; if(isNaN(n)||n<a||n>b) out.push({k,l,g,imp:`${v} ${u} (rango posible ${a}–${b})`})}
   }
@@ -1914,11 +1975,12 @@ const INFO={
  edad:"Cambia la probabilidad de los diagnósticos (p. ej., parvovirus en cachorros, neoplasias en geriátricos) y las preguntas que se muestran.",
  sexo:"Habilita diagnósticos propios del sexo y estado reproductivo: piometra, distocia, eclampsia, prostatitis, hiperplasia prostática.",
  vac:"Marque lo que conste en la cartilla. «Esquema al día» = vacunas anuales vigentes. Sin vacunas o vencidas aumenta la sospecha de parvovirus, moquillo, panleucopenia, leptospirosis y rabia.",
- hemo:"Impresión al ingreso. Shock compensado: taquicardia, TLLC ≈ 2 s, mucosas rojas o algo pálidas, pulso presente. Descompensado: pulso débil, mucosas pálidas o grises, hipotermia, depresión. El motor lo contrasta con las constantes.",
+ conc:"Alerta: responde con normalidad. Deprimido u obnubilado: responde a la voz o al entorno. Estupor: solo responde al dolor. Coma: sin respuesta. Crítico ER: priorizar al paciente; el examen físico deja de ser obligatorio hasta que esté estable. Sin signos vitales: iniciar RCP (solo se exige la especie).",
+ hemo:"Lo calcula el motor con FC, TLLC, mucosas, pulso femoral y PAS (si se midió). Impresión al ingreso. Shock compensado: taquicardia, TLLC ≈ 2 s, mucosas rojas o algo pálidas, pulso presente. Descompensado: pulso débil, mucosas pálidas o grises, hipotermia, depresión. El motor lo contrasta con las constantes.",
  hx:"Enfermedades previas o tratamientos recientes que cambian el diagnóstico o el tratamiento. Si no hay, marque «Ningún antecedente».",
  fc:"Latidos por minuto (contar 15 s × 4). Normal: perro 60–140 (razas pequeñas hasta 160, cachorros hasta 200); gato 140–220. En el gato en shock es frecuente la bradicardia.",
  fr:"Respiraciones por minuto en reposo, sin jadeo (contar movimientos del tórax). Normal: perro 10–30; gato 20–40. Más de 40 en reposo indica dificultad respiratoria.",
- temp:"Temperatura rectal. Normal 37.5–39.2 °C. Fiebre > 39.5 °C; hipertermia grave > 41 °C (golpe de calor); hipotermia < 37.5 °C.",
+ temp:"Temperatura rectal. Normal 37.5–39.2 °C. Fiebre > 39.5 °C; hipertermia grave > 41 °C (golpe de calor); hipotermia < 37.5 °C: leve 36.7–37.5, moderada 35.5–36.7, severa 33–35.5, crítica < 33 °C (hipotermia secundaria, Oncken 2001).",
  gluc:"Glucómetro. Normal 70–150 mg/dL. < 60: hipoglucemia (bolo de dextrosa). > 250 con cetonas: cetoacidosis diabética.",
  muc:"Encías o conjuntiva. Rosadas: normal. Pálidas: anemia o vasoconstricción. Rojas: shock temprano, sepsis, golpe de calor. Grises o cianóticas: hipoxemia. Amarillas: ictericia. Marrón: metahemoglobina (paracetamol en gatos).",
  tllc:"Tiempo de llenado capilar: presione la encía hasta blanquearla y cuente cuánto tarda en volver el color. Normal 1–2 s. < 1 s: shock hiperdinámico o fiebre. > 2 s: hipoperfusión.",
@@ -1962,21 +2024,14 @@ genSOAP=function(){
   }
   ST.valTried=false; const _r=_genSOAPorig.apply(this,arguments); const _el=document.getElementById("soap"); if(_el) _el.value=limpiaSOAP(_el.value); return _r;
 };
-// Aviso de condición corporal antes de la nota SOAP (24/11/2026). No bloquea: se puede generar sin ella.
-const _genSOAPcc=genSOAP;
-genSOAP=function(){
-  if(!faltantes().length&&!(ST.ex||{}).cc&&!ST.ccOk&&ST.hemo!=="pcr"){avisoCC();return}
-  return _genSOAPcc.apply(this,arguments);
-};
-function avisoCC(){
-  avisoCerrar();const d=document.createElement("div");
-  d.id="aviso";d.className="av-fondo";d.setAttribute("role","alertdialog");d.setAttribute("aria-modal","true");
-  d.innerHTML=`<div class="av-caja"><h3>Falta la condición corporal</h3><p>La condición corporal (escala 1–5) orienta diagnósticos como lipidosis hepática, pancreatitis, enfermedad renal crónica e hipotiroidismo, y queda en la nota y en el registro. Si puede, regístrela antes de generar la nota.</p>
-   <div class="av-bts"><button onclick="avisoCerrar();ST.ccOk=true;genSOAP()">Generar sin la condición corporal</button><button class="av-pri" onclick="avisoCCIr()">Registrar la condición corporal</button></div></div>`;
-  d.addEventListener("click",ev=>{if(ev.target===d)avisoCerrar()});
-  document.body.appendChild(d);const b=d.querySelector(".av-pri");if(b)b.focus();
-}
-function avisoCCIr(){avisoCerrar();const s=document.querySelector(`#exfis select[onchange*="'cc'"]`);if(s){if(s.scrollIntoView)s.scrollIntoView({behavior:"smooth",block:"center"});setTimeout(()=>s.focus({preventScroll:true}),350)}}
+// V1 (v8.0): la condición corporal es obligatoria (está en REQ). Se eliminó el aviso con «Generar sin la condición corporal» (M3).
+// V2 (v8.0): ninguna vía genera la nota ni registra el caso con obligatorios pendientes, aunque se llame directo
+// a genSOAPbase() o regTrasSOAP() (la única entrada de la interfaz es genSOAP(), que muestra el aviso de faltantes).
+{const _sdx=scoreDx; scoreDx=function(){if(ST.conc==="ssv")return [];return _sdx.apply(this,arguments)};}
+function setConc(v){ST.conc=v;renderAll()}
+{const _gsb=genSOAPbase, _rts=regTrasSOAP;
+ genSOAPbase=function(){if(faltantes().length||!MED)return;return _gsb.apply(this,arguments)};
+ regTrasSOAP=function(){if(faltantes().length||!MED)return;return _rts.apply(this,arguments)};}
 
 // ═══ Piel y tejido subcutáneo: abscesos, erupciones y prurito (v7.9.7) ═══
 (function(){
@@ -2331,6 +2386,22 @@ window.avisoM10Ir=function(){avisoCerrar();const s=document.querySelector(".reg-
   D("politrauma").r.push(["traumt",["mord"],-10,"Mecanismo de pelea en paciente estable: ver heridas por mordedura",["hemo",["est"]]],
                          ["pelea",["si"],-10,"",["hemo",["est"]]]);
 })();
+// ═══ V4 (v8.0) — Estado de conciencia (escala aprobada por la Dirección General, 26/11/2026) ═══
+const P_CONC=[
+ ["alerta","Alerta","Responde con normalidad al entorno","g"],
+ ["dep","Deprimido u obnubilado","Responde a la voz o al entorno","y"],
+ ["estupor","Estupor","Solo responde a estímulo doloroso","r"],
+ ["coma","Coma","Sin respuesta","r"],
+ ["crit","Crítico ER","Priorizar antes de completar el examen físico","r"],
+ ["ssv","Sin signos vitales","Sin respiración efectiva o sin pulso: iniciar RCP","r"]
+];
+// Puntaje acotado: estupor y coma suman, alerta resta, solo a estos diagnósticos. ±10 = peso de un signo de apoyo
+// moderado del motor (los de apoyo pesan 5–15; los signos clave, 20–35), para no desplazar un diagnóstico con evidencia clara.
+// Deprimido, Crítico ER y Sin signos vitales: 0. «Hiponatremia» no existe como diagnóstico en el motor (no se creó).
+const CONC_SUBE=10, CONC_BAJA=10;
+const CONC_DX=["tce","hipoglucemia","enc_hep","anticolin","ivermectina","etilenglicol","golpe_calor","epilepsia"];
+(()=>{CONC_DX.forEach(id=>{const d=DX.find(x=>x.id===id);if(!d)return;
+  d.r.push(["conc",["estupor","coma"],CONC_SUBE,"Estupor o coma"],["conc",["alerta"],-CONC_BAJA,"Paciente alerta"])})})();
 const ST = {hxs:new Set(),motivo2:null,soapSel:new Set(),openSys:new Set(),motivo:null,esp:null,peso:null,edad:null,sexo:null,hemo:null,vac:new Set(),signs:new Set(),ans:{},open:new Set(),
   fl:{tipo:"rl",desh:"0",horas:"24",perd:0,form:"b",ped:false,na:"",iris:{crea:"",sdma:"",upc:"",pas:""}}};
 
@@ -2346,7 +2417,7 @@ function vacStatus(key){
 }
 function answers(){
   const A={};
-  if(ST.esp)A.especie=ST.esp; if(ST.edad)A.edad=ST.edad; if(ST.sexo)A.sexo=ST.sexo; {const _h=HEMO(); if(_h)A.hemo=_h;}
+  if(ST.esp)A.especie=ST.esp; if(ST.edad)A.edad=ST.edad; if(ST.sexo)A.sexo=ST.sexo; {const _h=HEMO(); if(_h)A.hemo=_h;} if(ST.conc)A.conc=ST.conc;
   if(ST.esp==="c"){A.vp=vacStatus("octuple");A.vr=vacStatus("rabia")}
   if(ST.esp==="f"){A.vpl=vacStatus("triple");A.vfl=vacStatus("felv");A.vr=vacStatus("rabia")}
   visibleQs().forEach(q=>{if(ST.ans[q.id]!==undefined)A[q.id]=ST.ans[q.id]});
@@ -2418,8 +2489,8 @@ function optBtns(list,cur,fn,multi){
 
 // ─── EXAMEN FÍSICO (constantes y hallazgos) ───
 const EX_MUC=[["rosa","Rosadas"],["pali","Pálidas"],["icter","Ictéricas"],["cian","Cianóticas"],["marron","Marrón / achocolatadas"],["roja","Rojas / congestivas"],["gris","Grisáceas / blancas"]];
-const EX_TLLC=[["r","< 1 s"],["n","1–2 s"],["l","> 2 s"]];
-const EX_PULSO=[["n","Normal (fuerte y regular)"],["deb","Débil o filiforme"],["salt","Saltón (hiperdinámico)"],["def","Déficit de pulso (irregular)"],["aus","Ausente"]];
+const EX_TLLC=[["r","< 1 s"],["n","1–2 s"],["l","2–3 s"],["l3","> 3 s"]]; // V3: «> 3 s» separado (antes «l» = «> 2 s»)
+const EX_PULSO=[["n","Normal (fuerte y regular)"],["deb","Débil"],["fil","Filiforme"],["salt","Saltón (hiperdinámico)"],["def","Déficit de pulso (irregular)"],["aus","Ausente"]];
 const EX_DH=[["0","< 5%"],["5","5–6%"],["7","6–8%"],["9","8–10%"],["11","10–12%"],["12","> 12% (shock)"]];
 const EX_CARD=[["n","Normal"],["soplo","Soplo"],["galope","Ritmo de galope"],["arrit","Arritmia"],["apag","Ruidos apagados"]];
 const EX_VEJ=[["n","Normal"],["grande","Distendida y firme"],["peq","Pequeña o no palpable"]];
@@ -2518,8 +2589,8 @@ function exDerive(){
   if(e.muc==="pali"||e.muc==="gris") sg.add("pali");
   if(e.muc==="icter") sg.add("icter"); if(e.muc==="cian") sg.add("cian"); if(e.muc==="marron") sg.add("methb");
   const pu=e.pulso;
-  if(e.tllc==="l"||e.muc==="gris"){sg.add("tlc"); a.perf="hipo"}
-  else if(pu==="deb"||pu==="aus") a.perf="hipo";
+  if(["l","l3"].includes(e.tllc)||e.muc==="gris"){sg.add("tlc"); a.perf="hipo"}
+  else if(["deb","fil","aus"].includes(pu)) a.perf="hipo";
   else if((e.tllc==="r"&&e.muc==="roja")||(pu==="salt"&&(e.muc==="roja"||e.tllc==="r"))) a.perf="hiper";
   else if(e.tllc&&(e.muc||pu)) a.perf="n";
   if(pu==="def"){sg.add("arrit"); a.card="si"}
@@ -2544,7 +2615,11 @@ function setEx(k,v){ST.ex=ST.ex||{};ST.ex[k]=v; if(k==="dh"){ST.fl.desh=v||"0"} 
 function tempCls(t){
   if(t==null||t===""||isNaN(parseFloat(t)))return null; t=parseFloat(t);
   const S=ST.signs||new Set(), noFeb=["calor","temb","fasc","conv"].some(x=>S.has(x));
-  if(t<37.5){const g=t<28?"severa":t<32?"moderada":"leve";return {k:"hipo",lbl:`Hipotérmico (hipotermia ${g})`,s:`hipotermia ${g}`,c:t<32?"r":"y"}}
+  // Grado de hipotermia: escala de hipotermia SECUNDARIA (enfermedad, trauma, fármacos), la habitual en urgencias:
+  // leve 36.7–37.7, moderada 35.5–36.7, severa 33–35.5, crítica < 33 °C (Oncken, Kirby y Rudloff 2001; Brodeur et al. 2017).
+  // La escala de hipotermia primaria por exposición (leve 32–37, moderada 28–32, severa < 28) subestima al paciente enfermo.
+  // Solo cambia la etiqueta, el color y el texto de la SOAP: el puntaje sigue usando < 37.5 °C.
+  if(t<37.5){const g=t<33?"crítica":t<35.5?"severa":t<36.7?"moderada":"leve";return {k:"hipo",lbl:`Hipotérmico (hipotermia ${g})`,s:`hipotermia ${g}`,c:t<35.5?"r":"y"}}
   if(t<39.5)return {k:"normo",lbl:"Normotérmico",s:"normotermia",c:"g"};
   if(t<=41)return noFeb?{k:"hiper",lbl:"Hipertérmico (probable origen no febril: calor, temblores, fasciculaciones o convulsiones)",s:"hipertermia, probable origen no febril",c:"y"}:{k:"fiebre",lbl:"Febril",s:"fiebre",c:"y"};
   return {k:"hiper",lbl:"Hipertermia severa (> 41 °C)",s:"hipertermia severa",c:"r"};
@@ -2574,7 +2649,8 @@ function renderS1(){
    <div class="field${missC("edad")}"><span class="flabel">${lb("edad","Edad")}</span><div class="opts">${optBtns(P_EDAD,ST.edad,"setEdad")}</div></div>
    <div class="field${missC("sexo")}"><span class="flabel">${lb("sexo","Sexo y estado reproductivo")}</span><div class="opts">${optBtns(P_SEXO,ST.sexo,"setSexo")}</div></div>
    ${vac}
-   <div class="field${missC("hemo")}"><span class="flabel">${lb("hemo","Estado hemodinámico al ingreso")}</span><div class="opts">${optBtns(P_HEMO,ST.hemo,"setHemo")}</div></div>
+   <div class="field${missC("conc")}"><span class="flabel">${lb("conc","Estado de conciencia")}</span><div class="opts">${optBtns(P_CONC,ST.conc,"setConc")}</div></div>
+   <div class="field"><span class="flabel">${lb("hemo","Estado hemodinámico (calculado)")}</span>${hemoBox()}</div>
    <div class="field${missC("hx")}"><span class="flabel">${lb("hx","Antecedentes clínicos (puede marcar varios)")}</span><div class="opts">${optBtns(HXS.filter(h=>h[0]!=="retro"||ST.esp!=="c"),ST.hxs,"setHx",true)}</div></div>
    ${examHtml()}`;
 }
@@ -2677,6 +2753,9 @@ function answer(q,v){const Q=QS.find(x=>x.id===q);
 // ─── PANEL DERECHO ───
 function renderAlerts(){
   const A=answers(), s=SG(), al=[];
+  if(["estupor","coma","crit"].includes(ST.conc)) al.push(["r","Prioridad 1 (triaje)",ST.conc==="crit"?"Paciente crítico: estabilizar primero (ABC, oxígeno, acceso venoso).":"Conciencia "+lab(P_CONC,ST.conc).toLowerCase()+": estabilizar primero (vía aérea, oxígeno, glucemia, acceso venoso)."]);
+  if(ST.conc==="crit") al.push(["y","Paciente priorizado","Paciente priorizado: complete el examen físico cuando esté estable."]);
+  if(ST.conc==="ssv"&&!ST.peso) al.push(["y","Peso para la RCP","Registre el peso (aunque sea estimado) para las dosis de RCP."]);
   {const fx=faltantes(), imp=fx.filter(x=>x.imp), vac=fx.filter(x=>!x.imp);
    if(imp.length) al.push(["r","Valor imposible en el examen físico",imp.map(x=>x.l+": "+x.imp).join(" · ")+". Corrija el dato: no se usa en el análisis ni permite generar la nota SOAP."]);
    {const e0=ST.ex||{}, fr0=parseFloat(e0.fr), fc0=parseFloat(e0.fc); if(!isNaN(fr0)&&fr0>100&&(e0.fc==null||e0.fc==="")) al.push(["y","Verifique la FR",`FR de ${fr0} rpm sin FC registrada: ¿se escribió la frecuencia cardíaca en el campo de FR?`]);
@@ -2686,16 +2765,16 @@ function renderAlerts(){
   {const hi=hemoInfo(), L=x=>(P_HEMO.find(p=>p[0]===x)||[,"sin marcar"])[1].toLowerCase();
    if(hi.cambio==="baja") al.push(["y","Estado hemodinámico no concuerda con las constantes",`Marcó ${L(hi.sel)}, pero ${hi.motivo} están en rango normal. El motor analiza al paciente como ESTABLE (diagnósticos, fluidos y AINE). Si el shock es real, reevalúe y registre las constantes alteradas.`]);
    if(hi.cambio==="sube") al.push(["r","Constantes compatibles con shock",`Marcó ${hi.sel?L(hi.sel):"sin estado hemodinámico"}, pero hay ${hi.motivo}. El motor analiza al paciente como ${L(hi.eff).toUpperCase()} y activa la reanimación con fluidos. Corrija el triaje si no corresponde.`]);}
-  if(!ST.hemo&&A.perf==="hipo"&&hemoInfo().cambio!=="sube") al.push(["y","Hipoperfusión en el examen físico","TLLC > 2 s, mucosas grisáceas o pulso débil: indique el estado hemodinámico (shock compensado o descompensado) para activar la reanimación con fluidos."]);
+  if(false) al.push(["y","Hipoperfusión en el examen físico","TLLC > 2 s, mucosas grisáceas o pulso débil: indique el estado hemodinámico (shock compensado o descompensado) para activar la reanimación con fluidos."]);
   if(A.hemo==="pcr") al.push(["r","RCP inmediata (RECOVER 2024)","Compresiones 100–120/min, 1/3–1/2 del ancho del tórax, ciclos de 2 min sin interrupciones. Intubar y ventilar 10 rpm. Adrenalina 0.01 mg/kg IV/IO cada 3–5 min. Monitorear capnografía."]);
   if(A.hemo==="desc") al.push(["r","Shock descompensado","Estabilizar antes de diagnosticar: O₂, acceso venoso, bolo de cristaloide y reevaluar (ver Fluidoterapia)."]);
   if(s.has("cian")||(["insp","rapsup","parad"].includes(A.patron)&&A.ausc!=="n")) al.push(["r","Oxígeno inmediato","Mínima manipulación (sobre todo en gatos). Rayos X solo cuando esté estable."]);
   {const e=ST.ex||{},cat=ST.esp==="f",fc=parseFloat(e.fc);
    if(s.has("vom")&&A.expul==="reg") al.push(["y","Verifique: vómito y regurgitación","Marcó vómito pero respondió que expulsa la comida sin esfuerzo (regurgitación). Son cuadros distintos: corrija el que no corresponda."]);
    if(e.pulso==="aus") al.push(["r","Pulso femoral ausente","Confirmar con auscultación y Doppler: si no hay latido efectivo, iniciar RCP. Si es unilateral, sospechar tromboembolismo."]);
-   if(e.muc==="pali"&&e.tllc&&e.tllc!=="l"&&!["deb","aus"].includes(e.pulso)&&!["comp","desc","pcr"].includes(HEMO())) al.push(["b","Palidez con perfusión conservada","Sugiere anemia más que hipoperfusión: medir Hto/PT. En hemorragia aguda la palidez puede preceder a la caída del TLLC y del pulso: reevaluar en 15–30 min."]);
-   if(ST.hemo==="desc"&&["n","pre","alto","salto"].includes(A.pas)) al.push(["y","Verifique el estado hemodinámico","Marcó shock descompensado, pero la PAS es ≥ 90 mmHg: con presión conservada corresponde a shock compensado. Revise la medición o el estado elegido (cambia el volumen de los bolos)."]);
-   if(A.pas==="bajo"&&!["comp","desc","pcr"].includes(ST.hemo)) al.push(["r","Hipotensión (PAS < 90 mmHg)","El paciente está en shock descompensado aunque el estado hemodinámico no lo indique: marque el estado para activar la reanimación."]);
+   if(e.muc==="pali"&&e.tllc&&!["l","l3"].includes(e.tllc)&&!["deb","fil","aus"].includes(e.pulso)&&!["comp","desc","pcr"].includes(HEMO())) al.push(["b","Palidez con perfusión conservada","Sugiere anemia más que hipoperfusión: medir Hto/PT. En hemorragia aguda la palidez puede preceder a la caída del TLLC y del pulso: reevaluar en 15–30 min."]);
+   if(false) al.push(["y","Verifique el estado hemodinámico","Marcó shock descompensado, pero la PAS es ≥ 90 mmHg: con presión conservada corresponde a shock compensado. Revise la medición o el estado elegido (cambia el volumen de los bolos)."]);
+   if(false) al.push(["r","Hipotensión (PAS < 90 mmHg)","El paciente está en shock descompensado aunque el estado hemodinámico no lo indique: marque el estado para activar la reanimación."]);
    if(e.tllc==="n"&&["hipo","hiper"].includes(ST.ans.perf)) al.push(["y","Verifique la perfusión","La respuesta de perfusión contradice el TLLC de 1–2 s registrado en el examen físico."]);
    if(false) al.push(["y","Verifique el estado hemodinámico","Marcó shock, pero FC, TLLC y mucosas registradas están en rango normal; esto cambia la fluidoterapia (bolos)."]);
    if(e.vej==="grande"&&!["estr","olig","hemu","nodef","incont"].some(x=>s.has(x))) al.push(["y","Vejiga distendida sin signos urinarios","Confirme si orina: descartar retención (neurogénica, dolor, sedación) u obstrucción."]);}
@@ -3014,11 +3093,15 @@ function genSOAPbase(){
   L.push(...qLines(q=>Q_S.includes(q.id)));
   L.push("");
   L.push("O — OBJETIVO");
-  {const hi=hemoInfo(); if(ST.hemo||hi.eff) L.push(`Estado hemodinámico al ingreso: ${ST.hemo?lab(P_HEMO,ST.hemo):"sin marcar"}${hi.cambio?` — analizado como ${lab(P_HEMO,hi.eff)} por las constantes (${hi.motivo})`:""}`);}
+  if(ST.conc){const crit=ST.conc==="crit", ssv=ST.conc==="ssv";
+    L.push("Estado de conciencia: "+lab(P_CONC,ST.conc)+(crit?" — examen físico diferido":ssv?" — protocolo RCP":""));
+    if(crit){const e0=ST.ex||{},sin=Object.keys(REQ).filter(k=>REQ[k][1]==="ex"&&(e0[k]==null||e0[k]==="")).map(k=>REQ[k][0]);if(sin.length)L.push("Examen físico sin registrar: "+sin.join(", "))}
+    if(ssv){const r=(ST._al||[]).find(a=>/^RCP/.test(a[1]));L.push("RCP (RECOVER 2024): "+(r?r[2]:"iniciar compresiones y ventilación"))}}
+  {const h=hemoCalc(); if(HEMO()==="pcr") L.push("Estado hemodinámico (calculado): sin signos vitales"); else if(h.k) L.push(`Estado hemodinámico (calculado): ${lab(P_HEMO,h.k)} — ${h.crit.join(", ")}`); else L.push(`Estado hemodinámico (calculado): pendiente (falta ${h.falta.join(", ")})`);}
   {const e=ST.ex||{},p=[];if(e.fc)p.push(`FC ${e.fc} lpm`);if(e.fr)p.push(`FR ${e.fr} rpm`);if(e.temp){const tc=tempCls(e.temp);p.push(`T ${e.temp} °C${tc?" ("+tc.s+")":""}`)}if(e.muc)p.push(`mucosas ${lab(EX_MUC,e.muc).toLowerCase()}`);if(e.tllc)p.push(`TLLC ${lab(EX_TLLC,e.tllc)}`);if(e.pulso)p.push(`pulso femoral ${lab(EX_PULSO,e.pulso).toLowerCase()}`);if(e.dh)p.push(`deshidratación ${lab(EX_DH,e.dh)}`);if(e.gluc)p.push(`glucemia ${e.gluc} mg/dL`);if(e.dolor)p.push(`dolor: ${lab(EX_DOL,e.dolor).split(" (")[0].toLowerCase()}`);if(e.cc)p.push(`CC ${e.cc}/5`);if(e.vej)p.push(`vejiga ${lab(EX_VEJ,e.vej).toLowerCase()}`);if(e.abm==="si")p.push("masa abdominal/esplenomegalia");if(e.mam==="si")p.push("nódulos mamarios");if(e.linf&&e.linf!=="no")p.push(`linfonodos: aumento ${e.linf==="gen"?"generalizado":"localizado"}`);if(e.ecto&&e.ecto!=="no")p.push(`ectoparásitos: ${{garr:"garrapatas",pulg:"pulgas",ambos:"garrapatas y pulgas"}[e.ecto]}`);if(e.card)p.push(`ausc. cardíaca: ${lab(EX_CARD,e.card).toLowerCase()}`);if(e.pulm)p.push(`ausc. pulmonar: ${lab(EX_PULM,e.pulm).toLowerCase()}`);if(p.length)L.push(`Constantes: ${p.join(", ")}`)}
   const ex=qLines(q=>!Q_S.includes(q.id)&&!q.lab); if(ex.length){L.push("Examen físico:");L.push(...ex)}
   const lb=qLines(q=>q.lab);
-  if(!ST.hemo&&!ex.length&&!lb.length&&!Object.values(ST.ex||{}).some(v=>v)) L.push("- (sin hallazgos registrados en el motor)");
+  if(!HEMO()&&!ex.length&&!lb.length&&!Object.values(ST.ex||{}).some(v=>v)) L.push("- (sin hallazgos registrados en el motor)");
   L.push("");
   L.push("A — ANÁLISIS");
   if(lb.length){L.push("Interpretación de exámenes:");L.push(...lb)} else L.push("Interpretación de exámenes: sin resultados registrados en el motor.");
@@ -3049,7 +3132,7 @@ function genSOAPbase(){
   L.push("Hospitalización o alta: ");
   L.push("Se explica al propietario: ");
   L.push("");
-  L.push("Nota generada con el Motor Clínico HVCP v7.9.7 como apoyo; revisada y validada por el médico veterinario tratante.");
+  L.push("Nota generada con el Motor Clínico HVCP v"+MC_VERSION+" como apoyo; revisada y validada por el médico veterinario tratante.");
   document.getElementById("soap").value=L.join("\n");
   document.getElementById("soapmsg").textContent=auto?"Nota generada con el diagnóstico más probable (no hay ninguno marcado en «SOAP»).":`Nota generada con ${alta.length} diagnóstico${alta.length>1?"s":""} seleccionado${alta.length>1?"s":""}.`;
 }
@@ -3064,7 +3147,7 @@ function copySOAP(){
 
 function renderRight(){const all=scoreDx(),l=altaList(all),act=activeList(all);renderAlerts();renderSystems();renderDx(l,all);renderLabs(act);renderFluids(act);renderIRIS();renderBar(l,all);renderNav()}
 function irA(id){const e=document.getElementById(id);if(!e)return;const off=(document.getElementById("stepnav").offsetHeight||0)+6;window.scrollTo({top:e.getBoundingClientRect().top+window.scrollY-off,behavior:"smooth"})}
-function renderNav(){const n=document.getElementById("stepnav");if(!n)return;const e=ST.ex||{},exOk=!faltantes().some(x=>x.g==="ex"),pac=!!ST.hemo&&!faltantes().some(x=>x.g==="pac"),sg=ST.motivo&&ST.signs.size>0,nq=Object.keys(ST.ans).length;
+function renderNav(){const n=document.getElementById("stepnav");if(!n)return;const e=ST.ex||{},exOk=!faltantes().some(x=>x.g==="ex"),pac=!faltantes().some(x=>x.g==="pac"),sg=ST.motivo&&ST.signs.size>0,nq=Object.keys(ST.ans).length;
  const b=(id,num,t,ok)=>`<button class="${ok?"ok":""}" onclick="irA('${id}')"><span class="n">${num}</span>${t}${ok?" ✓":""}</button>`;
  n.innerHTML=b("sec1","1","Paciente",pac)+b("exfis","2","Examen",exOk)+b("sec2","3","Signos",sg)+b("sec3","4",`Preguntas${nq?" ("+nq+")":""}`,nq>0)+b("secDx","5","Resultado",false)+b("secSoap","6","SOAP",!!(document.getElementById("soap")||{}).value)}
 function renderBar(l,all){const el=document.getElementById("bbar");if(!el)return;const al=ST._al||[],nr=al.filter(a=>a[0]==="r").length,ny=al.filter(a=>a[0]==="y").length;
@@ -3075,7 +3158,7 @@ function renderBar(l,all){const el=document.getElementById("bbar");if(!el)return
 function toggleTheme(){const r=document.documentElement,l=r.getAttribute("data-theme")!=="light";if(l)r.setAttribute("data-theme","light");else r.removeAttribute("data-theme");try{localStorage.setItem("hvcp_tema",l?"light":"dark")}catch(e){}const b=document.getElementById("themebtn");if(b)b.textContent=l?"Modo oscuro":"Modo claro"}
 try{if(localStorage.getItem("hvcp_tema")==="light"){document.documentElement.setAttribute("data-theme","light");setTimeout(()=>{const b=document.getElementById("themebtn");if(b)b.textContent="Modo oscuro"},0)}}catch(e){}
 function renderAll(){renderS1();renderS2();renderS3();renderRight()}
-function resetAll(){regReset();ST.openSys.clear();ST.t0=null;ST.sbusca="";ST.m2open=false;ST.ex={};ST.soapSel.clear();ST.hxs.clear();ST.motivo2=null;Object.assign(ST,{avisoMot:false,valTried:false,ccOk:false,motivo:null,esp:null,peso:null,edad:null,sexo:null,hemo:null,ans:{}});ST.vac.clear();ST.signs.clear();ST.open.clear();ST.fl={tipo:"rl",desh:"0",horas:"24",perd:0,form:"b",ped:false,na:"",iris:{crea:"",sdma:"",upc:"",pas:""}};renderAll();document.getElementById("soap").value="";document.getElementById("soapmsg").textContent="";window.scrollTo(0,0)}
+function resetAll(){regReset();ST.openSys.clear();ST.t0=null;ST.sbusca="";ST.m2open=false;ST.ex={};ST.soapSel.clear();ST.hxs.clear();ST.motivo2=null;Object.assign(ST,{avisoMot:false,valTried:false,conc:null,motivo:null,esp:null,peso:null,edad:null,sexo:null,hemo:null,ans:{}});ST.vac.clear();ST.signs.clear();ST.open.clear();ST.fl={tipo:"rl",desh:"0",horas:"24",perd:0,form:"b",ped:false,na:"",iris:{crea:"",sdma:"",upc:"",pas:""}};renderAll();document.getElementById("soap").value="";document.getElementById("soapmsg").textContent="";window.scrollTo(0,0)}
 
 const VCIE=[["GEN-DER-152","Absceso Cutáneo","","14"],["GEN-DER-176","Absceso Perianal","","14"],["GEN-TRA-436","Absceso Subcutáneo","","14"],["GEN-DER-425","Alopecia X","","14"],["GEN-PAR-002","Amebiasis","","01"],["PER-INF-HEM-004","Anaplasmosis Canina","Infección por Anaplasma","01"],["GEN-HEM-354","Anemia Aplásica","","03"],["GEN-HEM-426","Anemia Ferropénica","","03"],["GEN-HEM-066","Anemia Hemolítica Inmunomediada","","03"],["PER-HEM-NUT-051","Anemia Nutricional","Deficiencia de nutrientes","03"],["GEN-HEM-132","Anemia Regenerativa","","03"],["GEN-ALR-004","Angioedema","","04"],["GEN-MUS-400","Anquilosis Temporomandibular","","15"],["GEN-HEM-005","Aplasia Medular","","03"],["GEN-CAR-006","Arritmias Cardíacas","","09"],["GEN-MUS-330","Artritis Séptica","","15"],["GEN-MUS-016","Artrosis","","15"],["GEN-MUS-504","Ruptura de ligamento cruzado craneal","Cojera aguda de miembro posterior","15"],["GEN-SIS-258","Ascitis","","12"],["GEN-RES-017","Asma","","10"],["GEN-RES-200","Asma Felina","","10"],["GEN-MIC-018","Aspergilosis","","01"],["GEN-GAS-019","Atresia Anal","","11"],["GEN-HEM-020","Babesiosis","","03"],["GEN-GEN-022","Balanopostitis","","17"],["GEN-PAR-021","Balantidiosis","","01"],["GEN-HEP-023","Barro Biliar","","11"],["GEN-RES-013","Bordetelosis (Tos de Perreras)","","10"],["GEN-INF-024","Borreliosis","","01"],["GEN-RES-025","Bronconeumonía","","10"],["GEN-RES-384","Bronquitis Crónica","","10"],["GEN-INF-351","Calicivirus Felino","","01"],["GEN-CAR-168","Cardiomiopatía Hipertrófica Felina","","09"],["GEN-OFT-026","Cataratas","","07"],["GEN-URI-027","Cistitis","","13"],["GEN-URI-451","Cistitis Idiopática Felina","","13"],["GEN-INF-028","Clamidiasis","","01"],["GEN-PAR-405","Coccidiosis Intestinal","","01"],["GEN-HEP-328","Colangiohepatitis Bacteriana","","12"],["GEN-HEP-230","Colangiohepatitis Inmunomediada","","12"],["GEN-HEP-086","Colangitis","","12"],["GEN-HEP-393","Colangitis Linfocítica","","12"],["GEN-RES-144","Colapso Traqueal","","10"],["GEN-GAS-248","Colitis Crónica","","11"],["GEN-GAS-314","Colitis Granulomatosa","","11"],["GEN-GAS-418","Colitis Ulcerativa","","11"],["GEN-INF-281","Complejo Respiratorio Felino","","01"],["GEN-OFT-030","Conjuntivitis","","07"],["GEN-OFT-337","Conjuntivitis Alérgica","","07"],["GEN-OFT-231","Conjuntivitis Bacteriana","","07"],["GEN-GAS-031","Coronavírus Canino","","01"],["GEN-NEU-173","Crisis Convulsiva Idiopática","","06"],["GEN-GAS-489","Cuerpo extraño esofágico","Hueso o juguete atorado en esófago","11"],["GEN-GAS-381","Cólico Gástrico","Sarna Demodécica","11"],["PER-INV-DER-005","Demodicosis","Sarna Demodécica","14"],["GEN-DER-034","Dermatitis Alérgica","","14"],["GEN-DER-440","Dermatitis Alérgica por Pulgas","","14"],["GEN-DER-309","Dermatitis Atópica","","04"],["GEN-DER-156","Dermatitis Micótica","","14"],["GEN-DER-219","Dermatitis por Alergia Alimentaria","","04"],["GEN-DER-389","Dermatitis por Contacto","","14"],["GEN-DER-334","Dermatitis por Malassezia","Picazón intensa","14"],["PER-DER-PRU-043","Dermatitis Pruriginosa","Picazón intensa","04"],["GEN-DER-284","Dermatitis Psicógena Felina","","14"],["GEN-DER-428","Dermatitis Seborreica","","14"],["GEN-DER-327","Dermatofitosis Felina","Taponamiento","14"],["GEN-CAR-468","Derrame pericárdico / taponamiento cardíaco","Taponamiento","09"],["GEN-RES-466","Derrame pleural","Efusión pleural","10"],["GEN-END-136","Diabetes Insípida","","05"],["GEN-END-291","Diabetes Mellitus Tipo 1","","05"],["GEN-END-363","Diabetes Mellitus Tipo II","","05"],["GEN-GAS-179","Dilatación Gástrica","","11"],["GEN-GAS-035","Dilatación-Vólvulo Gástrica","","11"],["GEN-PAR-190","Dirofilariasis","","01"],["GEN-MUS-367","Displasia de Cadera","","15"],["GEN-REP-341","Distocia","Taquipnea por dolor","13"],["GEN-REP-505","Muerte fetal","Feto sin latido, gestación detenida","13"],["GEN-REP-506","Maceración fetal","Feto muerto con infección uterina, descarga fétida","13"],["GEN-SIS-467","Dolor agudo no controlado","Taquipnea por dolor","17"],["GEN-REP-111","Eclampsia","","13"],["GEN-DER-271","Ectoparasitosis","","14"],["GEN-OFT-240","Ectropión","Edema pulmonar","07"],["PER-RES-CAR-021","Edema Pulmonar","Edema pulmonar","09"],["GEN-RES-490","Edema pulmonar no cardiogénico","Edema por electrocución, casi ahogamiento u obstrucción de vías altas","10"],["PER-INF-HEM-003","Ehrlichiosis Canina","Fiebre por Garrapatas","01"],["GEN-NEU-126","Encefalitis","","06"],["GEN-NEU-251","Encefalitis Inmunomediada","","04"],["GEN-HEP-307","Encefalopatía Hepática","","12"],["GEN-CAR-424","Endocardiosis Valvular Mitral","","09"],["GEN-CAR-368","Endocarditis Bacteriana","","09"],["GEN-REP-343","Endometritis","","13"],["GEN-GAS-139","Enfermedad Inflamatoria Intestinal (EII)","Acumulación de aire bajo la piel","11"],["GEN-DEN-507","Absceso del cuarto premolar superior (muela carnicera)","Fístula maxilar o infraorbitaria, aumento de volumen bajo el ojo","16"],["GEN-DEN-039","Enfermedades Periodontales","Absceso dental, dientes flojos, sarro","16"],["GEN-DEN-499","Estomatitis urémica","Úlceras o necrosis de lengua por uremia","16"],["GEN-DEN-500","Cuerpo extraño oral o estrangulación lingual","Hilo o liga en la lengua, palo entre los dientes","16"],["GEN-DEN-501","Quemadura oral eléctrica o cáustica","Mordió un cable, cloro, destapacaños","16"],["GEN-DEN-502","Gingivoestomatitis crónica felina","Estomatitis caudal felina","16"],["GEN-NEO-503","Neoplasia oral","Melanoma, carcinoma escamoso, fibrosarcoma, épulis","02"],["PER-DER-TRA-048","Enfisema Subcutáneo","Acumulación de aire bajo la piel","14"],["GEN-GAS-415","Enteritis Linfoplasmocítica","","11"],["GEN-GAS-220","Enteritis Parasitarias","","01"],["GEN-GAS-270","Enteropatía Perdedora de Proteínas","Mordedura de serpiente","11"],["GEN-INF-358","Enterotoxemia","","01"],["GEN-TOX-477","Envenenamiento ofídico (vipéridos)","Mordedura de serpiente","18"],["GEN-NEU-290","Epilepsia Idiopática","","06"],["GEN-NEO-357","Epulis","","02"],["GEN-OFT-182","Epífora Crónica","","07"],["GEN-GAS-318","Esofagitis por Reflujo","","11"],["GEN-HEM-040","Esplenomegalia","","03"],["GEN-MUS-375","Espongilosis","","15"],["GEN-RES-254","Estenosis Traqueal","","10"],["GEN-URI-186","Estenosis Uretral","Obstipación, fecaloma, megacolon felino","13"],["GEN-RES-041","Estornudo Inverso","Tóxico desconocido","10"],["GEN-GAS-483","Estreñimiento, obstipación o megacolon","Obstipación, fecaloma, megacolon felino","11"],["GEN-TOX-478","Exposición tóxica no identificada","Tóxico desconocido","18"],["GEN-NEO-113","Fibrosarcoma","FLUTD","02"],["GEN-NEO-411","Fibrosarcoma Oral","","02"],["FEL-URI-MET-035","FLUTD (Síndrome Urinario Inferior Felino)","FLUTD","13"],["GEN-ORT-043","Fractura de Cadera","Fractura","15"],["GEN-TRA-195","Fractura Mandibular","","15"],["GEN-TRA-480","Fractura o luxación","Fractura","17"],["GEN-GAS-042","Fístula Anal","","11"],["GEN-CIR-429","Fístula Oronasal","","11"],["GEN-DER-370","Fístula Perianal","Indiscreción dietética","11"],["GEN-GAS-445","Gastritis Crónica","Helicobacteriosis gástrica","11"],["GEN-GAS-452","Gastritis Erosiva","Indiscreción dietética","11"],["GEN-GAS-486","Gastritis por Helicobacter","Helicobacteriosis gástrica","11"],["GEN-GAS-462","Gastroenteritis aguda inespecífica","Indiscreción dietética","11"],["GEN-GAS-485","Gastroenteritis bacteriana","Enteritis por Campylobacter, Salmonella o Clostridium","11"],["GEN-GAS-070","Gastroenteritis Parasitarias","","01"],["GEN-PAR-044","Giardiasis","Aumento rápido de presión ocular","01"],["GEN-DEN-222","Gingivitis","","16"],["PER-OFT-GLA-053","Glaucoma Agudo","Aumento rápido de presión ocular","07"],["GEN-SIS-338","Golpe de Calor","","17"],["GEN-NEO-247","Hemangiosarcoma","","02"],["GEN-NEO-272","Hemangiosarcoma Cutáneo","","02"],["GEN-NEO-442","Hemangiosarcoma Esplénico","","02"],["GEN-OTO-122","Hematoma Auricular","","08"],["GEN-HEM-085","Hemoparásitos","Mordedura","01"],["GEN-HEP-261","Hepatitis Crónica","Mordedura","12"],["GEN-INF-387","Hepatitis Infecciosa Canina","","01"],["GEN-HEP-275","Hepatopatía Inducida por Medicamentos","Mordedura","12"],["GEN-PAR-323","Hepatozoonosis","","01"],["GEN-TRA-479","Heridas por mordedura","Mordedura","17"],["GEN-CIR-317","Hernia Diafragmática","","15"],["GEN-CIR-142","Hernia Inguinal","","15"],["GEN-CIR-396","Hernia Perineal","","15"],["GEN-CIR-364","Hernia Umbilical","","15"],["GEN-NEU-279","Herniación de Disco Intervertebral","","06"],["GEN-MUS-386","Higroma","","14"],["GEN-END-352","Hiperadrenocorticismo","","05"],["GEN-END-456","Hipercalcemia Maligna","","02"],["GEN-ORA-398","Hiperplasia Gingival","","16"],["GEN-REP-310","Hiperplasia Prostática Benigna","","13"],["GEN-CAR-413","Hipertensión Arterial Sistémica","","09"],["GEN-SIS-342","Hipertermia Maligna","Hipoglucemia del adulto y juvenil","05"],["FEL-END-135","Hipertiroidismo","Hipoglucemia del adulto y juvenil","05"],["GEN-END-203","Hipoadrenocorticismo","","05"],["GEN-END-390","Hipocalcemia","Hipoglucemia del adulto y juvenil","05"],["GEN-END-253","Hipocalcemia Posparto","","05"],["GEN-END-464","Hipoglucemia","Hipoglucemia del adulto y juvenil","05"],["GEN-END-175","Hipoglucemia Neonatal","SIDA Felino","05"],["GEN-END-333","Hipoparatiroidismo","SIDA Felino","05"],["GEN-END-441","Hipotiroidismo Canino","","05"],["GEN-INF-359","Histoplasmosis","SIDA Felino","01"],["GEN-URI-153","Infección de Vías Urinarias","Enfermedad valvular mitral","13"],["FEL-INF-IMM-031","Inmunodeficiencia Viral Felina (FIV)","SIDA Felino","01"],["GEN-CAR-324","Insuficiencia Cardíaca Congestiva","Enfermedad valvular mitral","09"],["GEN-HEP-114","Insuficiencia Hepática","Fallo renal agudo","12"],["PER-CAR-VAL-020","Insuficiencia Mitral","Enfermedad valvular mitral","09"],["PER-REN-SIS-013","Insuficiencia Renal Aguda","Fallo renal agudo","13"],["GEN-REN-067","Insuficiencia Renal Crónica (IRC)","Acetaminofén","13"],["GEN-TOX-471","Intoxicación por AINE","Ibuprofeno, naproxeno, diclofenaco","18"],["GEN-TOX-234","Intoxicación por Alimentos","Pipeta de perro en gato","18"],["GEN-TOX-470","Intoxicación por carbamatos / organofosforados","\"Tres pasitos\", insecticidas","18"],["GEN-TOX-493","Intoxicación por etilenglicol","Anticongelante","18"],["GEN-TOX-491","Intoxicación por lactonas macrocíclicas (ivermectina, doramectina)","Ivermectina","18"],["GEN-TOX-492","Intoxicación por marihuana (THC)","Cannabis","18"],["GEN-TOX-495","Intoxicación por metaldehído","Cebo para caracoles","18"],["GEN-TOX-325","Intoxicación por Metales Pesados","Rhinella marina","18"],["GEN-TOX-494","Intoxicación por micotoxinas tremorgénicas","Basura, comida con moho","18"],["GEN-TOX-472","Intoxicación por paracetamol","Acetaminofén","18"],["GEN-TOX-473","Intoxicación por permetrina en gatos","Pipeta de perro en gato","18"],["GEN-TOX-196","Intoxicación por Rodenticidas","Linfoma intestinal","18"],["GEN-TOX-476","Intoxicación por sapo","Rhinella marina","18"],["GEN-TOX-475","Intoxicación por uvas o pasas","Ácido tartárico","18"],["GEN-TOX-474","Intoxicación por xilitol","Edulcorante","18"],["GEN-GAS-300","Intususcepción Intestinal","","11"],["GEN-RES-320","Laringitis Infecciosa","Linfoma intestinal","10"],["GEN-INF-329","Leishmaniosis Canina","","01"],["GEN-INF-391","Leptospirosis","Lipidosis hepática","01"],["FEL-INF-065","Leucemia Viral Felina (FeLV)","FeLV","01"],["GEN-GAS-315","Linfangiectasia","","11"],["GEN-NEO-463","Linfoma alimentario","Linfoma intestinal","02"],["GEN-NEO-496","Linfoma mediastínico / neoplasia torácica","Linfoma mediastínico, timoma","02"],["GEN-NEO-157","Linfoma Multicéntrico","Lipidosis hepática","02"],["FEL-HEP-MET-042","Lipidosis Hepática Felina","Lipidosis hepática; esteatosis hepática; hígado graso","05"],["GEN-NEO-446","Lipoma Subcutáneo","","14"],["GEN-MUS-444","Luxación Patelar","","15"],["GEN-REP-373","Mastitis","","13"],["GEN-NEO-187","Mastocitoma Cutáneo","","02"],["GEN-GAS-210","Megaesófago","","11"],["GEN-NEO-382","Melanoma Maligno","","02"],["GEN-NEU-385","Meningitis Aséptica","","06"],["GEN-DER-348","Miasis Cutánea","","14"],["GEN-NEU-331","Miastenia Gravis","","06"],["FEL-INF-340","Micoplasmosis Hemotrópica Felina","","01"],["GEN-INF-432","Micosis Sistémica","Distemper","01"],["GEN-NEU-218","Mielopatía Degenerativa","Distemper","06"],["GEN-CAR-268","Miocardiopatía Dilatada","","09"],["FEL-CAR-434","Miocardiopatía Hipertrófica Felina","Distemper","09"],["GEN-CAR-158","Miocarditis","","09"],["GEN-MUS-103","Miopatía Inflamatoria","Distemper","04"],["GEN-MUS-388","Miopatía por Captura","","15"],["GEN-MUS-128","Miositis Autoinmune","","04"],["GEN-MUS-301","Miositis Inmunomediada","","04"],["GEN-MUS-417","Miositis Masticatoria","","04"],["GEN-MUS-450","Miositis Polimiosítica","Distemper","15"],["PER-INF-RES-002","Moquillo Canino","Distemper","01"],["GEN-NEO-355","Neoplasia Adrenal","","02"],["GEN-NEO-374","Neoplasia de Glándula Salival","","02"],["GEN-NEO-498","Neoplasia de vías urinarias","Carcinoma urotelial, linfoma vesical","02"],["GEN-NEO-212","Neoplasia del Bazo","","02"],["GEN-NEO-202","Neoplasia Hepática","","02"],["GEN-NEO-292","Neoplasia Mamaria","","02"],["GEN-NEO-419","Neoplasia Nasal","","02"],["GEN-NEO-260","Neoplasia Pulmonar","","02"],["GEN-NEO-395","Neoplasia Testicular","","02"],["GEN-NEO-165","Neoplasias Cutáneas","","02"],["GEN-NEO-071","Neoplasias Mamarias","","02"],["GEN-PAR-129","Neosporosis","","01"],["GEN-RES-366","Neumonía Aspirativa","","10"],["GEN-RES-166","Neumonía Bacteriana","","10"],["GEN-RES-263","Neumonía Fúngica","","10"],["GEN-RES-236","Neumotórax Espontáneo","","10"],["GEN-TRA-431","Neumotórax Traumático","","10"],["GEN-NEU-453","Neuropatía Periférica","","06"],["GEN-MET-377","Obesidad","","05"],["GEN-RES-421","Obstrucción de Vías Aéreas Superiores","Infección por tenias","10"],["GEN-GAS-408","Obstrucción Intestinal","Infección por tenias","11"],["GEN-URI-353","Obstrucción Uretral","Infección por lombrices intestinales","13"],["GEN-URI-083","Obstrucción Urinaria","Infección por tenias","13"],["GEN-MUS-273","Osteoartritis","Infección por lombrices intestinales","15"],["GEN-MUS-304","Osteomielitis Bacteriana","Infección por tenias","15"],["GEN-NEO-378","Osteosarcoma","Infección por lombrices intestinales","02"],["GEN-OTO-288","Otitis Externa Crónica","Parvo","08"],["GEN-OTO-296","Otitis Media Crónica","PIF","08"],["GEN-GAS-430","Pancreatitis Aguda","","11"],["FEL-INF-350","Panleucopenia Felina","Infección por tenias","01"],["GEN-MUS-118","Panosteitis","Infección por lombrices intestinales","15"],["PER-PAR-GAS-008","Parasitosis por Cestodos","Infección por tenias","01"],["PER-PAR-GAS-009","Parasitosis por Nematodos","Infección por lombrices intestinales","01"],["PER-INF-GAS-001","Parvovirosis Canina","Parvo","01"],["FEL-INF-SIS-034","Peritonitis Infecciosa Felina","PIF","01"],["GEN-TRA-455","Peritonitis Séptica","","11"],["GEN-DER-403","Pioderma Profundo","","14"],["GEN-DER-155","Pioderma Superficial","Parálisis por garrapata, polirradiculoneuritis","14"],["GEN-REP-245","Piometra","","13"],["GEN-DER-073","Pododermatitis","","14"],["GEN-NEU-422","Poliarteritis Nodosa","Proptosis","03"],["GEN-MUS-252","Poliartritis Reumatoide","Prostatitis","04"],["GEN-MUS-336","Polimiositis","Parálisis por garrapata, polirradiculoneuritis","04"],["GEN-NEU-321","Polineuropatía Idiopática","","06"],["GEN-NEU-488","Polirradiculoneuritis / parálisis flácida aguda","Parálisis por garrapata, polirradiculoneuritis","06"],["GEN-OFT-416","Prolapso de Glándula de Tercer Párpado","Proptosis","07"],["GEN-TRA-460","Prolapso Rectal","Prostatitis","11"],["GEN-OFT-487","Proptosis del globo ocular","Proptosis","07"],["GEN-REP-484","Prostatitis aguda / absceso prostático","Prostatitis","13"],["GEN-SIS-160","Pérdida de Peso Crónica","","05"],["GEN-RES-099","Pólipos Nasales","Otitis parasitaria","10"],["GEN-OFT-399","Queratitis Pigmentaria","Otitis parasitaria","07"],["GEN-OFT-299","Queratitis Superficial Crónica","","07"],["GEN-OFT-322","Queratitis Ulcerativa","","07"],["GEN-OFT-163","Queratoconjuntivitis Seca","Otitis parasitaria","07"],["GEN-DER-345","Quiste Dermatoide","","07"],["GEN-DER-180","Quiste Dermoid","","07"],["GEN-DER-412","Quiste Sebáceo","","14"],["GEN-MUS-137","Rabdomiolisis","Otitis parasitaria","15"],["GEN-INF-406","Rabia","","01"],["GEN-URI-497","Retención urinaria neurogénica","Vejiga neurogénica","13"],["GEN-OFT-379","Retinopatía","","07"],["GEN-OFT-177","Retinopatía Hipertensiva","Temblores de causa no identificada","07"],["FEL-RES-057","Rinotraqueítis Felina","Otitis parasitaria","01"],["GEN-NEO-120","Sarcoma de Tejidos Blandos","","02"],["GEN-DER-420","Sarna Notoédrica","","14"],["PER-INV-DER-007","Sarna Otodéctica","Otitis parasitaria","08"],["GEN-DER-058","Sarna Sarcóptica","","14"],["GEN-INF-402","Sepsis Neonatal","","01"],["GEN-SIS-217","Shock Hipovolémico","","17"],["GEN-SIS-285","Shock Séptico","Temblores de causa no identificada","17"],["GEN-NEU-439","Subluxación Atlantoaxial","","06"],["GEN-RES-443","Síndrome Braquicefálico","","10"],["GEN-NEU-414","Síndrome de Cola Equina","","06"],["GEN-GAS-361","Síndrome de Hemorragia Gastrointestinal Aguda","","11"],["GEN-NEU-433","Síndrome de Horner","Temblores de causa no identificada","06"],["GEN-GAS-193","Síndrome de Mala Absorción","","11"],["GEN-GAS-356","Síndrome de Malabsorción Intestinal","Lesiones físicas","11"],["GEN-NEU-482","Síndrome de temblor generalizado","Temblores de causa no identificada","06"],["GEN-NEU-394","Síndrome de Wobbler","","06"],["GEN-GAS-303","Síndrome del Intestino Irritable","","11"],["GEN-OFT-276","Síndrome del Ojo Seco","Lesiones físicas","07"],["GEN-NEU-346","Síndrome Vestibular Idiopático","","06"],["GEN-TRA-397","Torsión Esplénica","TEA, trombo en silla de montar","09"],["GEN-REP-192","Torsión Testicular","TEA, trombo en silla de montar","13"],["GEN-PAR-319","Toxocariosis","Lesiones físicas","01"],["GEN-PAR-262","Toxoplasmosis","","01"],["GEN-RES-121","Traqueitis","TEA, trombo en silla de montar","10"],["GEN-RES-076","Traqueobronquitis Infecciosa Canina","","01"],["GEN-RES-164","Traqueítis No Infecciosa","Ruptura de vías urinarias","10"],["GEN-TRA-227","Trauma Craneoencefálico","Lesiones físicas","17"],["GEN-NEU-297","Trauma Espinal","TEA, trombo en silla de montar","06"],["GEN-TRA-133","Trauma Torácico","","10"],["PER-TRA-MIS-038","Traumatismo","Lesiones físicas","17"],["GEN-OFT-062","Traumatismo Ocular","","07"],["GEN-TRA-344","Traumatismo Torácico","Sangrado GI alto","10"],["FEL-GAS-437","Tricobezoares en Gatos","TEA, trombo en silla de montar","11"],["GEN-HEM-326","Trombocitopenia Inmunomediada","Ruptura de vías urinarias","03"],["GEN-HEM-302","Trombocitopenia Secundaria","","03"],["FEL-CAR-469","Tromboembolismo arterial felino","TEA, trombo en silla de montar","09"],["GEN-NEO-461","Tumor de Glándula Mamaria","","02"],["GEN-NEO-141","Tumor de Glándulas Anales","","02"],["GEN-NEO-145","Tumor Testicular","Ruptura de vías urinarias","02"],["GEN-NEO-423","Tumor Venéreo Transmisible (TVT)","Sangrado GI alto","02"],["GEN-INF-410","Tétanos","","01"],["GEN-URI-465","Uroabdomen","Ruptura de vías urinarias","13"],["GEN-URI-146","Urolitiasis Uretral","","13"],["GEN-URI-335","Urolitiasis Vesical","","13"],["GEN-OFT-063","Uveítis","Sangrado GI alto","07"],["GEN-OFT-404","Uveítis Anterior","","07"],["GEN-OFT-457","Úlcera Corneal","","07"],["GEN-GAS-481","Úlcera gastroduodenal / sangrado digestivo alto","Sangrado GI alto","11"]];
 const VCAP={"14":"Enfermedades de la Piel y Tejido Subcutáneo","01":"Enfermedades Infecciosas y Parasitarias","03":"Enfermedades de la Sangre y Hematopoyéticas","04":"Enfermedades del Sistema Inmune y Alérgicas","15":"Enfermedades Musculoesqueléticas","09":"Enfermedades del Sistema Cardiovascular","12":"Enfermedades Hepatobiliares","10":"Enfermedades del Aparato Respiratorio","11":"Enfermedades del Aparato Digestivo","17":"Traumatismos, Urgencias y Condiciones Diversas","07":"Enfermedades del Ojo y Anexos","13":"Enfermedades del Aparato Urogenital","06":"Enfermedades del Sistema Nervioso","05":"Enfermedades Endocrinas y Metabólicas","16":"Enfermedades de Cavidad Oral y Dental","18":"Intoxicaciones y Envenenamientos","02":"Enfermedades Neoplásicas","08":"Enfermedades del Oído"};
@@ -3083,11 +3166,16 @@ const VCAP={"14":"Enfermedades de la Piel y Tejido Subcutáneo","01":"Enfermedad
 // ═══════════════════════════════════════════════════════════════
 // REGISTRO DE CASOS — sin datos del propietario
 // ═══════════════════════════════════════════════════════════════
-const MOTOR_VER="7.9.7";
+// V6 (v8.0): única fuente de la versión. Se usa en el título, el encabezado, la nota SOAP, el pie y el registro.
+// version.json (raíz del repositorio) debe tener los mismos valores: «Nuevo paciente» lo compara para actualizar.
+const MC_VERSION="8.0", MC_BUILD="2026-11-27b";
+const MOTOR_VER=MC_VERSION; // nombre anterior (registro, scripts de catálogo, exportación y retroalimentación)
+document.title="HVCP ER Motor Clínico v"+MC_VERSION+" · registro en línea";
+{const h=document.getElementById("htitle");if(h)h.textContent="Motor Clínico de Urgencias v"+MC_VERSION+" · registro en línea";}
 // Compilación (M8, 24/11/2026): identifica la publicación exacta de la página sin cambiar la versión del motor.
 // Se guarda junto a la versión en el registro («7.9.7+2026-11-24b»), así un caso hecho con una página en caché se distingue
 // aunque el número de versión sea el mismo. Actualícela (fecha y letra) en cada publicación.
-const MOTOR_BUILD="2026-11-27a";
+const MOTOR_BUILD=MC_BUILD;
 const VC=new Map(VCIE.map(r=>[r[0],r]));
 // Sinónimos del buscador VetCIE-1 (24/11/2026): solo amplían la búsqueda; no cambian el catálogo ni los códigos.
 const VC_SINON={"GEN-HEP-023":"colecistitis mucocele biliar","GEN-URI-335":"sedimento urinario cristaluria cristales arenilla calculos vesicales","FEL-URI-MET-035":"sedimento urinario cristaluria arenilla tapon uretral"};
@@ -3161,23 +3249,38 @@ function regSnapshot(){
   [["fc","FC"],["fr","FR"],["temp","Temperatura"],["muc","Mucosas"],["tllc","TLLC"],["dh","% deshidratación"],["cc","Condición corporal"]].forEach(([k,n])=>{if(!e[k])faltan.push(n)});
   const vq=visibleQs(),mini=x=>({id:x.d.id,c:x.d.c,n:x.d.n,sys:x.d.sys,sc:Math.round(x.sc)});
   return JSON.parse(JSON.stringify({
-    ent:{esp:ST.esp,peso:ST.peso,edad:ST.edad,sexo:ST.sexo,hemo:ST.hemo,hemoEf:HEMO(),vac:[...ST.vac],hxs:[...ST.hxs],ex:e,motivo:ST.motivo,motivo2:ST.motivo2,signs:[...ST.signs],signsAll:[...SG()],ans:ST.ans},
+    ent:{esp:ST.esp,peso:ST.peso,edad:ST.edad,sexo:ST.sexo,hemo:HEMO()||null,hemoEf:HEMO()||null,hemoCrit:hemoCalc().crit,conc:ST.conc||null,critico:ST.conc==="crit",rcp:ST.conc==="ssv",vac:[...ST.vac],hxs:[...ST.hxs],ex:e,motivo:ST.motivo,motivo2:ST.motivo2,signs:[...ST.signs],signsAll:[...SG()],ans:ST.ans},
     sal:{top:all.slice(0,8).map(mini),alta:alta.map(x=>x.d.c),insuf:!alta.length&&all.length>0,sinDx:!all.length,soap:soap.map(x=>x.d.c),soapAuto:auto,faltan,qVis:vq.length,qPend:vq.filter(q=>ST.ans[q.id]===undefined).map(q=>q.id)}
   }));
 }
 function regTrasSOAP(){
   if(regReeval()) return;
   const prueba=document.getElementById("regno").checked;
-  if(!ST.signs.size&&!ST.motivo){regMsg("Sin motivo ni signos: no se registra.");return}
+  if(!ST.signs.size&&!ST.motivo&&ST.conc!=="ssv"){regMsg("Sin motivo ni signos: no se registra.");return} // V4: el paro se registra (rcp: true)
   if(!REG.cur){const d=new Date();REG.cur={id:nuevoId(),f:d.toISOString()}}
   if(!prueba){const t=document.getElementById("soap");t.value+=`\nRegistro Motor Clínico: ${REG.cur.id}`}
   REG.cola=REG.cola.then(()=>regGuardar(prueba));
+  if(ST.conc==="ssv"){const id=REG.cur.id;REG.cola=REG.cola.then(()=>regCierreRCP(id,prueba))}
+}
+// «Sin signos vitales»: cierre automático sin diagnóstico definitivo. Va en la cola local después del caso,
+// así que también se envía si no hay red en ese momento.
+async function regCierreRCP(id,prueba){
+  const f=new Date().toISOString();
+  const doc={dx:null,sinDx:true,conf:"",conf2:"",con:[],labs:{},tests:{},otros:"",
+    notas:"Cierre automático: paciente sin signos vitales al ingreso (RCP). Sin diagnóstico definitivo.",
+    fc:f,fa:f,por:REG.uid||null,medicoId:MED?MED.id:null,auto:"rcp"};
+  colaPoner({t:"cierre",k:id,p:doc});
+  const r=await colaEnviar();
+  if(r.ok&&REG.cierres instanceof Map)REG.cierres.set(id,doc);
+  if(prueba)return;
+  if(r.ok)regMsg(`Caso ${id} registrado y cerrado sin diagnóstico definitivo (sin signos vitales).`,"ok");
+  else regMsg(`Caso ${id} guardado en este dispositivo con su cierre sin diagnóstico: se enviará en cuanto haya conexión.`,"warn");
 }
 // Arma el caso y lo deja en la cola local; colaEnviar() lo sube en cuanto haya red y sesión.
 async function regGuardar(prueba){
   const c=REG.cur;if(!c)return;
   const min=ST.t0?Math.max(0,Math.round((Date.now()-ST.t0)/60000)):null;
-  const doc={id:c.id,f:c.f,fa:new Date().toISOString(),v:MOTOR_VER+"+"+MOTOR_BUILD,prueba:!!prueba,sesion:REG.sesion,min,
+  const doc={id:c.id,f:c.f,fa:new Date().toISOString(),v:MOTOR_VER+"+"+MOTOR_BUILD,prueba:!!prueba,sesion:REG.sesion,min,medicoId:MED?MED.id:null,medico:MED?MED.nombre:null,
     alertas:(ST._al||[]).map(a=>[a[0],a[1]]),...regSnapshot()};
   colaPoner({t:"caso",k:c.id,p:doc});
   const r=await colaEnviar();
@@ -3187,6 +3290,143 @@ async function regGuardar(prueba){
 }
 function regReset(){if(REG.cur||ST.motivo||ST.esp)regEvento("nuevo_paciente");REG.cur=null;const n=document.getElementById("regno");if(n)n.checked=false;const re1=document.getElementById("regre");if(re1)re1.checked=false;const rc=document.getElementById("regrecod");if(rc){rc.value="";rc.style.display="none"}regMsg("")}
 // ─── Vista del registro ───
+// ═══ V5 (v8.0) — Perfil por médico: nombre + PIN de 4 dígitos, verificado en el servidor (bcrypt) ═══
+// El perfil activo queda en el dispositivo hasta «Cambiar médico». El servidor solo acepta el médico en un caso o
+// un cierre si entró con su PIN en este dispositivo. Identificación práctica: no es una seguridad fuerte.
+const MED_K="hvcp_medico";
+let MED=(()=>{try{return JSON.parse(localStorage.getItem(MED_K)||"null")}catch(e){return null}})();
+const PF={vista:"lista",lista:null,sel:null,msg:"",err:false,ocupado:false};
+function medGuardar(m){MED=m;try{m?localStorage.setItem(MED_K,JSON.stringify(m)):localStorage.removeItem(MED_K)}catch(e){}medPintar()}
+function medPintar(){const b=document.getElementById("medbtn");if(b)b.textContent=MED?"👤 "+MED.nombre+" · Cambiar médico":"Elegir médico";const m=document.getElementById("miscasosbtn");if(m)m.style.display=MED?"":"none"}
+async function medVerificar(){
+  if(!REG.sb){if(!MED)perfilAbrir();return}
+  if(!MED){perfilAbrir();return}
+  try{const {data,error}=await REG.sb.rpc("mis_casos");if(error)throw error;
+    if(data&&data.error==="sin_medico"){medGuardar(null);PF.msg="Vuelva a entrar con su PIN en este dispositivo.";PF.err=false;perfilAbrir()}}catch(e){}
+}
+async function medCambiar(){
+  if(MED&&REG.sb){try{await REG.sb.rpc("salir_medico")}catch(e){}}
+  medGuardar(null);PF.msg="";PF.err=false;PF.vista="lista";perfilAbrir();
+}
+async function perfilAbrir(){
+  const el=document.getElementById("perfil");if(!el)return;el.style.display="flex";PF.sel=null;
+  if(!REG.sb){PF.lista=null;perfilRender();return}
+  PF.ocupado=true;perfilRender();
+  try{await regSesionLista();const {data,error}=await REG.sb.rpc("listar_medicos");if(error)throw error;PF.lista=data||[]}
+  catch(e){PF.lista=null;PF.msg="No se pudo cargar la lista de médicos. Revise la conexión.";PF.err=true}
+  PF.ocupado=false;perfilRender();
+}
+function perfilCerrar(){const el=document.getElementById("perfil");if(el)el.style.display="none"}
+function perfilAvisoOk(){try{localStorage.setItem("hvcp_aviso_pin","1")}catch(e){}perfilRender()}
+function perfilRender(){
+  const el=document.getElementById("perfil");if(!el)return;
+  let aviso=false;try{aviso=!localStorage.getItem("hvcp_aviso_pin")}catch(e){}
+  const msg=PF.msg?'<div class="pf-msg'+(PF.err?" err":"")+'" role="alert">'+esc(PF.msg)+'</div>':"";
+  let cuerpo;
+  if(!REG.sb) cuerpo='<p class="muted">Sin conexión con el registro: no se puede elegir ni crear un perfil. Conéctese a internet y recargue la página.</p>';
+  else if(PF.ocupado) cuerpo='<p class="muted">Cargando…</p>';
+  else if(PF.vista==="crear") cuerpo='<p class="muted">Nombre completo y un PIN de 4 dígitos que solo usted conozca.</p>'+
+    '<input id="pfnom" class="pf-in" autocomplete="off" placeholder="Nombre completo" maxlength="80">'+
+    '<input id="pfpin" class="pf-in pf-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="PIN">'+
+    '<input id="pfpin2" class="pf-in pf-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="Confirme el PIN">'+
+    '<div class="pf-fila"><button class="pf-btn" onclick="PF.vista=\'lista\';PF.msg=\'\';perfilRender()">Volver</button><button class="pf-btn pri" onclick="perfilCrear()">Crear y entrar</button></div>';
+  else if(PF.sel) cuerpo='<p class="muted">'+esc(PF.sel.nombre)+'</p><input id="pfpin" class="pf-in pf-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="PIN" onkeydown="if(event.key===\'Enter\')perfilEntrar()">'+
+    '<div class="pf-fila"><button class="pf-btn" onclick="PF.sel=null;PF.msg=\'\';perfilRender()">Volver</button><button class="pf-btn pri" onclick="perfilEntrar()">Entrar</button></div>';
+  else cuerpo=(PF.lista&&PF.lista.length?'<div class="pf-lista">'+PF.lista.map(m=>'<button onclick="perfilElegir(\''+m.id+'\')">'+esc(m.nombre)+'</button>').join("")+'</div>':'<p class="muted">Todavía no hay perfiles.</p>')+
+    '<div class="pf-fila"><button class="pf-btn" onclick="PF.vista=\'crear\';PF.msg=\'\';perfilRender()">Crear mi perfil</button></div>';
+  el.innerHTML='<div class="pf-caja"><h2>¿Quién atiende?</h2><p class="muted">Elija su perfil para registrar los casos a su nombre.</p>'+
+    (aviso?'<div class="pf-aviso"><b>Identificación práctica, no una seguridad fuerte.</b> El PIN evita confusiones entre colegas; no lo comparta y pulse «Cambiar médico» al terminar su turno. <button class="pf-btn" style="min-height:36px;margin-top:6px" onclick="perfilAvisoOk()">Entendido</button></div>':"")+
+    cuerpo+msg+'</div>';
+  const f=el.querySelector("#pfpin,#pfnom");if(f)setTimeout(()=>f.focus(),50);
+}
+function perfilElegir(id){PF.sel=(PF.lista||[]).find(m=>m.id===id)||null;PF.msg="";perfilRender()}
+function perfilError(d){const E={pin_incorrecto:"PIN incorrecto."+(d.restantes!=null?" Le quedan "+d.restantes+" intento"+(d.restantes===1?"":"s")+".":""),bloqueado:"Demasiados intentos. Espere "+(d.segundos||60)+" s.",no_existe:"Ese perfil ya no existe.",nombre_invalido:"Escriba el nombre completo (3 a 80 caracteres).",pin_invalido:"El PIN debe tener 4 dígitos.",nombre_existe:"Ya existe un perfil con ese nombre.",demasiados_perfiles:"Demasiados perfiles nuevos desde este dispositivo. Intente en una hora."};return E[d.error]||"No se pudo completar. Intente de nuevo."}
+async function perfilEntrar(){
+  const pin=(document.getElementById("pfpin")||{}).value||"";
+  if(!/^[0-9]{4}$/.test(pin)){PF.msg="El PIN debe tener 4 dígitos.";PF.err=true;perfilRender();return}
+  try{const {data,error}=await REG.sb.rpc("entrar_medico",{p_id:PF.sel.id,p_pin:pin});if(error)throw error;
+    if(data.error){PF.msg=perfilError(data);PF.err=true;perfilRender();return}
+    medGuardar({id:data.id,nombre:data.nombre});PF.msg="";perfilCerrar();renderAll()}
+  catch(e){PF.msg="No se pudo verificar el PIN. Revise la conexión.";PF.err=true;perfilRender()}
+}
+async function perfilCrear(){
+  const nom=((document.getElementById("pfnom")||{}).value||"").trim(),p1=(document.getElementById("pfpin")||{}).value||"",p2=(document.getElementById("pfpin2")||{}).value||"";
+  if(nom.length<3){PF.msg="Escriba el nombre completo.";PF.err=true;perfilRender();return}
+  if(!/^[0-9]{4}$/.test(p1)){PF.msg="El PIN debe tener 4 dígitos.";PF.err=true;perfilRender();return}
+  if(p1!==p2){PF.msg="Los dos PIN no coinciden.";PF.err=true;perfilRender();return}
+  try{const {data,error}=await REG.sb.rpc("crear_medico",{p_nombre:nom,p_pin:p1});if(error)throw error;
+    if(data.error){PF.msg=perfilError(data);PF.err=true;perfilRender();return}
+    medGuardar({id:data.id,nombre:data.nombre});PF.msg="";PF.vista="lista";perfilCerrar();renderAll()}
+  catch(e){PF.msg="No se pudo crear el perfil. Revise la conexión.";PF.err=true;perfilRender()}
+}
+// «Mis casos»: pendientes de cerrar y cerrados del médico activo; desde aquí se abre el cierre.
+const MC={casos:null,msg:""};
+async function misCasosAbrir(){
+  const el=document.getElementById("miscasos");if(!el)return;el.style.display="flex";MC.casos=null;MC.msg="Cargando…";misCasosRender();
+  if(!REG.sb||!MED){MC.msg=!MED?"Elija su perfil primero.":"Sin conexión con el registro.";misCasosRender();return}
+  try{await regSesionLista();const {data,error}=await REG.sb.rpc("mis_casos");if(error)throw error;
+    if(data.error==="sin_medico"){MC.msg="Vuelva a entrar con su PIN en este dispositivo.";misCasosRender();return}
+    MC.casos=data.casos||[];MC.msg=""}
+  catch(e){MC.msg="No se pudo cargar la lista. Revise la conexión."}
+  misCasosRender();
+}
+function misCasosCerrar(){const el=document.getElementById("miscasos");if(el)el.style.display="none"}
+function mcDx(c){const top=c.top||[],soap=c.soap||[];const s=top.find(t=>soap.includes(t.c))||top[0];return s?s.n:"Sin diagnóstico presuntivo"}
+function misCasosRender(){
+  const el=document.getElementById("miscasos");if(!el)return;
+  const item=c=>'<div class="mc-item"><div class="mc-t"><b>'+esc(c.codigo)+'</b><span>'+esc(fCorta(c.f))+' · '+esc(c.cerrado?(c.sinDx?"Sin diagnóstico definitivo":"Definitivo: "+(c.dx||"")):"SOAP: "+mcDx(c))+'</span></div><button class="pf-btn" style="min-height:40px" onclick="misCasosIr(\''+c.codigo+'\')">'+(c.cerrado?"Ver cierre":"Cerrar")+'</button></div>';
+  const vc=c=>!c.cerrado&&vencido(c.f,null),pend=(MC.casos||[]).filter(c=>!c.cerrado&&!vc(c)),cerr=(MC.casos||[]).filter(c=>c.cerrado),venc=(MC.casos||[]).filter(vc);
+  el.innerHTML='<div class="pf-caja"><h2>Mis casos</h2><p class="muted">'+esc(MED?MED.nombre:"")+'</p>'+(MC.msg?'<p class="muted">'+esc(MC.msg)+'</p>':"")+
+    (MC.casos?'<h3 style="font-size:15px;margin:10px 0 4px">Pendientes de cerrar, últimas '+VENCE_H+' h ('+pend.length+')</h3>'+(pend.map(item).join("")||'<p class="muted">Ninguno.</p>')+
+      '<h3 style="font-size:15px;margin:14px 0 4px">Cerrados ('+cerr.length+')</h3>'+(cerr.map(item).join("")||'<p class="muted">Ninguno.</p>')+
+      (venc.length?'<h3 style="font-size:15px;margin:14px 0 4px">Cerrados por tiempo ('+venc.length+')</h3><p class="muted">Más de '+VENCE_H+' h sin cierre. Si tiene el diagnóstico definitivo, todavía puede registrarlo.</p>'+venc.map(item).join(""):""):"")+
+    '<div class="pf-fila"><button class="pf-btn" onclick="misCasosCerrar()">Volver al motor</button></div></div>';
+}
+function misCasosIr(cod){misCasosCerrar();regToggle(true);REG.sel=null;REG.accCod=cod;regRender();regAbrirCodigo()}
+// Sin perfil activo, «Generar nota SOAP» (y la barra inferior y «Copiar») abre la pantalla de perfil.
+{const _g=genSOAP; genSOAP=function(){if(!MED){perfilAbrir();return}const r=_g.apply(this,arguments);if(soapHecha())borBorrar();return r}}
+setTimeout(medPintar,0);
+
+// ═══ V6 (v8.0) — Actualización al dar «Nuevo paciente» ═══
+async function nuevoPaciente(){
+  if(REG.abierto)regToggle(false);
+  try{const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),4000);
+    const r=await fetch("version.json",{cache:"no-store",signal:ctl.signal});clearTimeout(t);
+    if(r.ok){const j=await r.json();
+      if(j&&j.build&&(j.build!==MC_BUILD||(j.version&&j.version!==MC_VERSION))){borGuardar();window.__recargaVersion=true;location.replace(location.pathname+"?v="+encodeURIComponent(j.build));return}}}
+  catch(e){} // sin red o sin version.json: se sigue sin bloquear
+  borBorrar();borBarra(false);resetAll();
+}
+
+// ═══ V7 (v8.0) — Protección contra recarga accidental ═══
+// Borrador del paciente en curso en este dispositivo (clave por perfil de médico), ~2 s después de cada cambio.
+// Se borra al generar la nota SOAP o con «Nuevo paciente»; sobrevive a la recarga por versión nueva (V6).
+const BOR_PRE="hvcp_borrador_";
+function borKey(){return BOR_PRE+(MED?MED.id:"sin_medico")}
+function pacienteEnCurso(){return !!(ST.esp||ST.motivo||ST.signs.size||Object.keys(ST.ex||{}).length||ST.conc)}
+function soapHecha(){const t=document.getElementById("soap");return !!(t&&t.value.trim())}
+let borT=null, borPausa=false;
+function borEstado(){return {t:Date.now(),esp:ST.esp,peso:ST.peso,edad:ST.edad,sexo:ST.sexo,conc:ST.conc,vac:[...ST.vac],hxs:[...ST.hxs],ex:ST.ex||{},
+  motivo:ST.motivo,motivo2:ST.motivo2,signs:[...ST.signs],ans:ST.ans||{},soapSel:[...ST.soapSel],fl:ST.fl,t0:ST.t0?new Date(ST.t0).toISOString():null}}
+function borGuardar(){clearTimeout(borT);try{if(!pacienteEnCurso()||soapHecha())return;localStorage.setItem(borKey(),JSON.stringify(borEstado()))}catch(e){}}
+function borGuardarPronto(){if(borPausa)return;clearTimeout(borT);borT=setTimeout(borGuardar,2000)}
+function borBorrar(){clearTimeout(borT);try{localStorage.removeItem(borKey())}catch(e){}}
+function borLeer(){try{return JSON.parse(localStorage.getItem(borKey())||"null")}catch(e){return null}}
+function borBarra(on){const el=document.getElementById("borrador");if(!el)return;if(!on){el.style.display="none";el.innerHTML="";return}
+  const b=borLeer();if(!b){el.style.display="none";return}
+  const hh=new Date(b.t).toLocaleTimeString("es-SV",{hour:"2-digit",minute:"2-digit"});
+  el.innerHTML='<span>Recuperar paciente en curso ('+esc(hh)+')</span><button class="opt on" onclick="borRecuperar()">Recuperar</button><button class="opt" onclick="borDescartar()">Descartar</button>';el.style.display="flex"}
+function borRevisar(){if(!pacienteEnCurso()&&borLeer())borBarra(true);else borBarra(false)}
+function borRecuperar(){const b=borLeer();if(!b)return;borPausa=true;
+  Object.assign(ST,{esp:b.esp,peso:b.peso,edad:b.edad,sexo:b.sexo,conc:b.conc||null,ex:b.ex||{},motivo:b.motivo,motivo2:b.motivo2,ans:b.ans||{},fl:b.fl||ST.fl,t0:b.t0?new Date(b.t0):null});
+  ["vac","hxs","signs","soapSel"].forEach(k=>{ST[k].clear();(b[k]||[]).forEach(x=>ST[k].add(x))});
+  borPausa=false;borBarra(false);renderAll()}
+function borDescartar(){borBorrar();borBarra(false)}
+{const _rr=renderRight; renderRight=function(){const r=_rr.apply(this,arguments);borGuardarPronto();return r}}
+{const _mg=medGuardar; medGuardar=function(m){_mg.apply(this,arguments);setTimeout(borRevisar,0)}}
+window.addEventListener("beforeunload",ev=>{if(window.__recargaVersion)return;if(pacienteEnCurso()&&!soapHecha()){borGuardar();ev.preventDefault();ev.returnValue=""}});
+setTimeout(borRevisar,0);
+
 function regToggle(on){
   const app=document.querySelector(".app"),rv=document.getElementById("regview"),b=document.getElementById("regbtn");
   REG.abierto=on;app.style.display=on?"none":"";rv.style.display=on?"block":"none";b.textContent=on?"Volver al motor":"Registro de casos";
@@ -3217,6 +3457,11 @@ function regConf(v){const E=REG.ed;if(!E)return;
   if(E.conf===v){E.conf=E.conf2||"";E.conf2=""}else if(E.conf2===v){E.conf2=""}else if(!E.conf){E.conf=v}else{E.conf2=v}
   regRender()}
 function cerrado(k){return !!(k&&(k.sinDx||(k.dx&&k.conf)))}
+// «Cerrado por tiempo»: caso sin cierre del médico con más de 30 h desde la nota SOAP. Es un estado calculado
+// (no se escribe nada en el servidor): sale de «Pendientes» y el médico todavía puede cerrarlo con su diagnóstico.
+const VENCE_H=30;
+function vencido(f,k){return !cerrado(k)&&!!f&&(Date.now()-new Date(f).getTime())>VENCE_H*36e5}
+function estadoCaso(f,k){return cerrado(k)?"cerr":vencido(f,k)?"venc":"pend"}
 
 function regRender(){
   const el=document.getElementById("regbody");if(!el||!REG.abierto)return;
@@ -3233,17 +3478,18 @@ function regRender(){
 }
 
 function regLista(){
-  const rows=REG.casos.filter(x=>{const k=REG.cierres.get(x.id);return REG.filtro==="todos"?true:REG.filtro==="cerr"?cerrado(k):!cerrado(k)});
+  const est=x=>estadoCaso(x.f,REG.cierres.get(x.id));
+  const rows=REG.casos.filter(x=>REG.filtro==="todos"||est(x)===REG.filtro);
   const q=REG.busca.trim().toUpperCase();
   const vis=q?rows.filter(x=>x.id.includes(q)):rows;
-  const nP=REG.casos.filter(x=>!cerrado(REG.cierres.get(x.id))).length;
-  return `<div class="reg-tools"><div class="opts">${[["pend",`Pendientes (${nP})`],["cerr",`Cerrados (${REG.casos.length-nP})`],["todos",`Todos (${REG.casos.length})`]].map(([v,n])=>`<button class="opt ${REG.filtro===v?"on":""}" onclick="regSet('filtro','${v}')">${n}</button>`).join("")}</div>
+  const nE={pend:0,venc:0,cerr:0};REG.casos.forEach(x=>nE[est(x)]++);
+  return `<div class="reg-tools"><div class="opts">${[["pend",`Pendientes (${nE.pend})`],["cerr",`Cerrados (${nE.cerr})`],["venc",`Cerrados por tiempo (${nE.venc})`],["todos",`Todos (${REG.casos.length})`]].map(([v,n])=>`<button class="opt ${REG.filtro===v?"on":""}" onclick="regSet('filtro','${v}')">${n}</button>`).join("")}</div>
    <div class="wt" style="flex-wrap:wrap"><input id="regbusca" value="${esc(REG.busca)}" placeholder="Código MC (ej. MC-7K3PQ2)" style="width:240px;font-family:var(--sans)" onkeydown="if(event.key==='Enter')regBuscar()"><button class="opt" onclick="regBuscar()">Buscar</button>${q?`<button class="opt" onclick="REG.busca='';regRender()">Limpiar</button>`:""}</div></div>
    ${vis.length?`<div class="reg-list">${vis.map(x=>{const k=REG.cierres.get(x.id),t=x.sal.top[0],e=x.ent;
      return `<button class="reg-row" onclick="regAbrir('${x.id}')"><span class="code">${esc(x.id)}</span><span class="reg-rf">${esc(fCorta(x.f))}</span>
      <span class="reg-rm"><b>${cerrado(k)?(k.sinDx?"Sin diagnóstico definitivo":esc(k.dx.n||"")):(t?esc(t.n):"Sin presuntivo")}</b><span class="muted">${esc(lab(P_ESP,e.esp)||"—")}${e.edad?" · "+esc(lab(P_EDAD,e.edad)):""} · ${esc(nombreMotivo(e.motivo))}${x.vet?" · "+esc(x.vet):""}</span></span>
-     <span class="reg-rb">${x.migrado?`<span class="lk t">Migrado</span>`:""}${x.sal.insuf?`<span class="lk m">Datos insuficientes</span>`:""}${cerrado(k)?`<span class="lk s">Cerrado</span>`:k?`<span class="lk b">En curso</span>`:`<span class="lk b">Pendiente</span>`}</span></button>`}).join("")}</div>`
-     :`<div class="empty">${REG.casos.length?"Ningún caso con este filtro.":"Aún no hay casos registrados en este período. Cada nota SOAP generada en el motor crea un caso."}</div>`}`;
+     <span class="reg-rb">${x.migrado?`<span class="lk t">Migrado</span>`:""}${x.sal.insuf?`<span class="lk m">Datos insuficientes</span>`:""}${cerrado(k)?`<span class="lk s">Cerrado</span>`:vencido(x.f,k)?`<span class="lk m" title="Más de ${VENCE_H} h sin cierre del médico">Cerrado por tiempo</span>`:k?`<span class="lk b">En curso</span>`:`<span class="lk b">Pendiente</span>`}</span></button>`}).join("")}</div>`
+     :`<div class="empty">${REG.casos.length?(REG.filtro==="pend"?`Ningún caso pendiente de las últimas ${VENCE_H} h.`:"Ningún caso con este filtro."):"Aún no hay casos registrados en este período. Cada nota SOAP generada en el motor crea un caso."}</div>`}`;
 }
 function regBuscar(){REG.busca=(document.getElementById("regbusca").value||"").trim();regRender()}
 
@@ -3264,6 +3510,7 @@ function regFicha(){
    <p><b>Motivo:</b> ${esc(nombreMotivo(e.motivo))}${e.motivo2?` · secundario: ${esc(nombreMotivo(e.motivo2))}`:""}</p>
    ${cons.length?`<p><b>Constantes:</b> ${esc(cons.join(", "))}</p>`:""}
    ${sig.length?`<p><b>Signos:</b> ${esc(sig.join(", "))}</p>`:""}
+   ${vencido(x.f,k)?`<div class="alert y" style="margin:4px 0 8px"><b>Cerrado por tiempo</b>Pasaron más de ${VENCE_H} h sin que el médico registrara el cierre. Si tiene el diagnóstico definitivo, todavía puede registrarlo.</div>`:""}
    <h4>Salida del motor</h4>
    ${s.insuf?`<div class="alert y" style="margin:4px 0 8px"><b>Datos insuficientes</b>Faltaban: ${esc(s.faltan.join(", ")||"—")}; ${s.qPend.length} de ${s.qVis} preguntas sin responder.</div>`:""}
    <table class="kcl"><tr><th>#</th><th>Diagnóstico</th><th>Puntaje</th><th></th></tr>${s.top.slice(0,6).map((t,i)=>`<tr><td>${i+1}</td><td>${esc(t.n)} <span class="code">${esc(t.c)}</span></td><td class="code">${t.sc}</td><td>${s.alta.includes(t.c)?`<span class="lk a">Alta</span>`:""} ${s.soap.includes(t.c)?`<span class="lk s">SOAP</span>`:""}</td></tr>`).join("")}</table>
@@ -3334,7 +3581,7 @@ async function regGuardarCierre(){
   if(fh.length){REG.edMsg="Indique el hallazgo principal de: "+fh.map(id=>(LABT.find(x=>x[0]===id)||[,id])[1]).join(", ")+" (o «No determinado»).";regRender();return}
   if(!E.dx&&!E.sinDx&&!conDatos){REG.edMsg="Registre el diagnóstico definitivo (o «Sin diagnóstico definitivo») antes de guardar.";regRender();return}
   if(!E.dx&&!E.sinDx&&!confirm("No registró el diagnóstico definitivo. Se guardarán los resultados y el caso seguirá pendiente. ¿Continuar?"))return;
-  const doc=JSON.parse(JSON.stringify({...E,fc:new Date().toISOString(),por:REG.uid||null}));
+  const doc=JSON.parse(JSON.stringify({...E,fc:new Date().toISOString(),por:REG.uid||null,medicoId:MED?MED.id:null}));
   REG.edMsg="Guardando…";regRender();
   if(!REG.sb){REG.edMsg="Sin conexión con el registro. Intente de nuevo cuando haya red.";regRender();return}
   try{const {data,error}=await REG.sb.rpc("guardar_cierre",{p_codigo:x.id,p:doc});if(error)throw error;
@@ -3350,16 +3597,30 @@ function pct(k,n){return n?Math.round(k/n*100)+"%":"—"}
 function regEval(){
   return REG.casos.map(c=>{const k=REG.cierres.get(c.id);if(!k||!k.dx||!k.conf)return null;
     const EQ=x=>DX_EQUIV[x]||x, d=EQ(k.dx.c),top=c.sal.top.map(t=>EQ(t.c)),soap=c.sal.soap.map(EQ),alta=c.sal.alta.map(EQ);
-    const r={c,k,d,h1:!!d&&top[0]===d,h3:!!d&&top.slice(0,3).includes(d),hs:!!d&&soap.includes(d),hA:!!d&&alta.includes(d),inM:!!d&&MOTOR_C.has(d),obj:CONF_OBJ.has(k.conf)||CONF_OBJ.has(k.conf2),cap:k.dx.cap||"",insuf:c.sal.insuf};
+    const r={c,k,d,h1:!!d&&top[0]===d,h3:!!d&&top.slice(0,3).includes(d),hs:!!d&&soap.includes(d),hA:!!d&&alta.includes(d),inM:!!d&&MOTOR_C.has(d),obj:CONF_OBJ.has(k.conf)||CONF_OBJ.has(k.conf2),cap:k.dx.cap||"",insuf:c.sal.insuf,rcp:esRCP(c),crit:!!c.ent.critico};
     // Posición con los datos completos: el caso reproducido en el motor actual con los resultados del cierre que no se ingresaron.
     const ck=k.fc||"";if(!c._dc||c._dc.k!==ck){const ex=regDatosCierre(k,c.ent),l=Object.keys(ex).length?motorConDatos(c.ent,ex):null;c._dc={k:ck,n:Object.keys(ex).length,top:l?l.map(EQ):null}}
     r.dc=c._dc.n>0&&!!c._dc.top;const t2=r.dc?c._dc.top:top;r.hc1=!!d&&t2[0]===d;r.hc3=!!d&&t2.slice(0,3).includes(d);
     return r;
   }).filter(Boolean);
 }
+// Casos de paro (sin signos vitales): no cuentan para el acierto del motor (no calcula presuntivos); se reportan aparte.
+function esRCP(c){return !!(c.ent&&(c.ent.rcp||c.ent.conc==="ssv"))}
 function regStats(){
-  const ev=regEval(),N=REG.casos.length,st={N,ev,nEv:ev.length};
+  const evTodos=regEval(),ev=evTodos.filter(r=>!r.rcp),N=REG.casos.length,st={N,ev,nEv:ev.length};
   const g=(arr,f)=>({n:arr.length,k:arr.filter(f).length});
+  const est=c=>estadoCaso(c.f,REG.cierres.get(c.id)),evm=new Map(ev.map(r=>[r.c.id,r]));
+  // Resumen de un grupo de casos: cuántos, cuántos con diagnóstico definitivo evaluable y su acierto.
+  const grupo=(l,C)=>{const E=C.map(c=>evm.get(c.id)).filter(Boolean);return {l,n:C.length,nEv:E.length,h1:E.filter(r=>r.h1).length,h3:E.filter(r=>r.h3).length}};
+  const rcpC=REG.casos.filter(esRCP),noRcp=REG.casos.filter(c=>!esRCP(c));
+  st.rcp={n:rcpC.length,cerr:rcpC.filter(c=>est(c)==="cerr").length,sinDx:rcpC.filter(c=>(REG.cierres.get(c.id)||{}).sinDx).length,nEv:evTodos.filter(r=>r.rcp).length};
+  const critC=noRcp.filter(c=>c.ent.critico);
+  st.crit={...grupo("Crítico ER",critC),completo:critC.filter(c=>c.ent.conc&&c.ent.conc!=="crit").length};
+  st.porConc=[...P_CONC.filter(p=>p[0]!=="ssv").map(p=>grupo(p[1],noRcp.filter(c=>c.ent.conc===p[0]))),grupo("Sin marcar (casos anteriores a la v8.0)",noRcp.filter(c=>!c.ent.conc))];
+  st.porHemo=[...P_HEMO.filter(p=>p[0]!=="pcr").map(p=>grupo(p[1],noRcp.filter(c=>c.ent.hemo===p[0]))),grupo("Sin marcar",noRcp.filter(c=>!c.ent.hemo||c.ent.hemo==="pcr"))];
+  const pm=new Map();REG.casos.forEach(c=>{const m=c.medico||"Sin perfil (anterior a la v8.0)";if(!pm.has(m))pm.set(m,[]);pm.get(m).push(c)});
+  st.porMed=[...pm.entries()].map(([m,C])=>({...grupo(m,C.filter(c=>!esRCP(c))),gen:C.length,pend:C.filter(c=>est(c)==="pend").length,cerr:C.filter(c=>est(c)==="cerr").length,venc:C.filter(c=>est(c)==="venc").length}))
+    .sort((a,b)=>(a.l.startsWith("Sin perfil")-b.l.startsWith("Sin perfil"))||b.gen-a.gen||a.l.localeCompare(b.l,"es"));
   const sets={todos:ev,obj:ev.filter(r=>r.obj),motor:ev.filter(r=>r.inM)};
   st.acc={};for(const[s,a]of Object.entries(sets))st.acc[s]={h1:g(a,r=>r.h1),h3:g(a,r=>r.h3),hs:g(a,r=>r.hs),hc3:g(a,r=>r.hc3)};
   st.nDc=ev.filter(r=>r.dc).length;
@@ -3380,11 +3641,13 @@ function regStats(){
 function accCell(o){if(!o.n)return `<td class="code">—</td>`;const ci=wilson(o.k,o.n);return `<td><b>${pct(o.k,o.n)}</b> <span class="code">${o.k}/${o.n}</span><div class="code">IC95 ${Math.round(ci[0]*100)}–${Math.round(ci[1]*100)}%</div></td>`}
 // ─── Tablero de uso (solo admin): casos por día y turno, quién usa el motor, tiempos y sesiones ───
 // Se calcula con los casos ya cargados (mismo período y filtro de veterinario que la lista e indicadores);
-// las sesiones vienen de la vista v_uso_sesiones. Hora de El Salvador, turnos iguales a turno_de() en la base.
+// las sesiones vienen de la vista v_uso_sesiones. Hora de El Salvador, turnos del hospital iguales a turno_de() en la base:
+// diurno 6:00 a. m.–6:00 p. m. y nocturno 6:00 p. m.–6:00 a. m.
 const SV_TZ="America/El_Salvador",DIAS_SEM=["lun","mar","mié","jue","vie","sáb","dom"];
 function diaSV(d){return new Intl.DateTimeFormat("en-CA",{timeZone:SV_TZ}).format(new Date(d))}
 function horaSV(d){return parseInt(new Intl.DateTimeFormat("en-US",{timeZone:SV_TZ,hour:"numeric",hourCycle:"h23"}).format(new Date(d)))%24}
-function turnoSV(d){const h=horaSV(d);return h>=7&&h<=14?"Mañana (7–15 h)":h>=15&&h<=22?"Tarde (15–23 h)":"Noche (23–7 h)"}
+const TURNOS=["Diurno (6:00 a. m.–6:00 p. m.)","Nocturno (6:00 p. m.–6:00 a. m.)"];
+function turnoSV(d){const h=horaSV(d);return h>=6&&h<18?TURNOS[0]:TURNOS[1]}
 function mediana(a){const v=a.filter(x=>x!=null&&!isNaN(x)).map(Number).sort((x,y)=>x-y);if(!v.length)return null;const m=v.length>>1;return v.length%2?v[m]:(v[m-1]+v[m])/2}
 function fDur(min){if(min==null)return "—";if(min<60)return `${Math.round(min)} min`;if(min<48*60)return `${(min/60).toFixed(1)} h`;return `${(min/1440).toFixed(1)} días`}
 function usoBarrasH(pares,unidad){
@@ -3394,7 +3657,7 @@ function regUso(){
   const C=REG.casos;
   if(!C.length)return `<div class="empty">Sin casos en el período elegido.</div>`;
   const desde=regDesde(),hoy=new Date(),nDias=Math.max(1,Math.round((hoy-desde)/864e5));
-  const cerr=C.filter(c=>cerrado(REG.cierres.get(c.id)));
+  const cerr=C.filter(c=>cerrado(REG.cierres.get(c.id))),nVenc=C.filter(c=>vencido(c.f,REG.cierres.get(c.id))).length;
   const minSoap=mediana(C.map(c=>c.min));
   const minCierre=mediana(cerr.map(c=>{const k=REG.cierres.get(c.id);return k&&k.fc?(new Date(k.fc)-new Date(c.f))/6e4:null}).filter(x=>x!=null&&x>=0));
   const ses=(REG.ses||[]).filter(s=>!REG.vet||s.usuario===REG.vet);
@@ -3425,7 +3688,8 @@ function regUso(){
   const card=(t,b,nota)=>`<div class="card"><div class="card-h">${t}</div><div class="card-b">${b}${nota?`<p class="muted" style="margin-top:8px">${nota}</p>`:""}</div></div>`;
   return `<div class="reg-kpis">
     <div><span class="reg-k">${C.length}</span><span class="muted">casos · ${C.length/nDias>=1?(C.length/nDias).toFixed(1)+" por día":(C.length/nDias*7).toFixed(1)+" por semana"}</span></div>
-    <div><span class="reg-k">${pct(cerr.length,C.length)}</span><span class="muted">cerrados (${cerr.length} de ${C.length})</span></div>
+    <div><span class="reg-k">${pct(cerr.length,C.length)}</span><span class="muted">cerrados por el médico (${cerr.length} de ${C.length})</span></div>
+    <div><span class="reg-k">${pct(nVenc,C.length)}</span><span class="muted">cerrados por tiempo, más de ${VENCE_H} h sin cierre (${nVenc} de ${C.length})</span></div>
     <div><span class="reg-k">${fDur(minSoap)}</span><span class="muted">mediana hasta la nota SOAP</span></div>
     <div><span class="reg-k">${fDur(minCierre)}</span><span class="muted">mediana desde la nota hasta el cierre</span></div>
     <div><span class="reg-k">${new Set(C.map(c=>c.por)).size}</span><span class="muted">dispositivos o usuarios que registraron</span></div>
@@ -3433,7 +3697,7 @@ function regUso(){
   <div class="uso-grid">
     ${card(semanal?"Casos por semana":"Casos por día",`<div class="uso-cols" role="img" aria-label="Casos ${semanal?"por semana":"por día"}: máximo ${maxC}"><em class="uso-max">${maxC}</em>${barras}</div>
       <div class="uso-ejex"><span>${fLbl(cols[0].k)}</span><span>${fLbl(cols[cols.length-1].k)}</span></div>`,"Pase el cursor sobre una barra para ver la fecha y el número de casos.")}
-    ${card("Por turno",usoBarrasH(["Mañana (7–15 h)","Tarde (15–23 h)","Noche (23–7 h)"].map(t=>[t,turnos[t]||0]),"casos"),"Hora de El Salvador, según la hora en que se generó la nota SOAP.")}
+    ${card("Por turno",usoBarrasH(TURNOS.map(t=>[t,turnos[t]||0]),"casos"),"Hora de El Salvador, según la hora en que se generó la nota SOAP.")}
     ${card("Por día de la semana",usoBarrasH(DIAS_SEM.map(x=>[x,sem[x]||0]),"casos"))}
     ${card("Especie",usoBarrasH(Object.entries(esp).sort((a,b)=>b[1]-a[1]),"casos"))}
     ${card("Motivos de consulta más frecuentes",usoBarrasH(mot.slice(0,8),"casos"),mot.length>8?`Y ${mot.length-8} motivos más.`:"")}
@@ -3482,8 +3746,9 @@ function cargarXLSX(){return window.XLSX?Promise.resolve():new Promise((res,rej)
 function regLibro(etq){
     const st=regStats(),evm=new Map(st.ev.map(r=>[r.c.id,r])),wb=XLSX.utils.book_new();
     const filas=REG.casos.map(c=>{const e=c.ent,s=c.sal,x=e.ex||{},k=REG.cierres.get(c.id)||{},r=evm.get(c.id),o={
-      "Código":c.id,"Fecha":fIso(c.f),"Versión motor":String(c.v||"").split("+")[0],"Compilación":String(c.v||"").split("+")[1]||"","Veterinario":c.vet||"",
-      "Especie":lab(P_ESP,e.esp),"Peso (kg)":e.peso,"Edad":lab(P_EDAD,e.edad),"Sexo":lab(P_SEXO,e.sexo),"Estado hemodinámico":lab(P_HEMO,e.hemo),"Estado hemodinámico analizado":e.hemoEf?lab(P_HEMO,e.hemoEf):"",
+      "Código":c.id,"Fecha":fIso(c.f),"Versión motor":String(c.v||"").split("+")[0],"Compilación":String(c.v||"").split("+")[1]||"","Veterinario":c.vet||"","Médico":c.medico||"","Estado del caso":{pend:"Pendiente",cerr:"Cerrado",venc:"Cerrado por tiempo"}[estadoCaso(c.f,REG.cierres.get(c.id))],"Cerrado por":k.cerradoPor||"",
+      "Especie":lab(P_ESP,e.esp),"Peso (kg)":e.peso,"Edad":lab(P_EDAD,e.edad),"Sexo":lab(P_SEXO,e.sexo),"Estado hemodinámico":lab(P_HEMO,e.hemo),"Estado hemodinámico analizado":e.hemoEf?lab(P_HEMO,e.hemoEf):"","Estado de conciencia":e.conc?lab(P_CONC,e.conc):"",
+      "Crítico ER":e.critico==null?"":e.critico?"Sí":"No","Completó el examen después":e.critico?(e.conc&&e.conc!=="crit"?"Sí":"No"):"","RCP":e.rcp==null?"":e.rcp?"Sí":"No",
       "FC":numX(x.fc),"FR":numX(x.fr),"Temperatura":numX(x.temp),"Mucosas":lab(EX_MUC,x.muc),"TLLC":lab(EX_TLLC,x.tllc),"Pulso":lab(EX_PULSO,x.pulso),"Deshidratación":lab(EX_DH,x.dh),"CC (1-5)":numX(x.cc),
       "Ausc. cardíaca":lab(EX_CARD,x.card),"Ausc. pulmonar":lab(EX_PULM,x.pulm),"Vejiga":lab(EX_VEJ,x.vej),
       "Motivo":nombreMotivo(e.motivo),"Motivo secundario":e.motivo2?nombreMotivo(e.motivo2):"",
@@ -3499,25 +3764,41 @@ function regLibro(etq){
       Object.assign(o,{"Otros resultados":k.otros||"","Notas":k.notas||""});
       return o});
     XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(filas),"Casos");
-    const A=st.acc,f=o=>o.n?`${pct(o.k,o.n)} (${o.k}/${o.n})`:"—";
+    const A=st.acc,f=o=>o.n?`${pct(o.k,o.n)} (${o.k}/${o.n})`:"—",fG=(r,h)=>r.nEv?`${pct(r[h],r.nEv)} (${r[h]}/${r.nEv})`:"—";
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Indicadores del Motor Clínico HVCP"],["Período",etq],["Generado",fCorta(new Date().toISOString())],[],
       ["Casos registrados",st.N],["Con diagnóstico definitivo",st.nEv],["Datos insuficientes",st.insuf],[],
       ["Acierto","Todos","Confirmación objetiva","Dx en el motor"],["Top-1",f(A.todos.h1),f(A.obj.h1),f(A.motor.h1)],["Top-3",f(A.todos.h3),f(A.obj.h3),f(A.motor.h3)],["SOAP",f(A.todos.hs),f(A.obj.hs),f(A.motor.hs)],[],
+      ["El acierto excluye los casos sin signos vitales (RCP): el motor no calcula presuntivos en el paro."],
+      ["Casos sin signos vitales (RCP)",st.rcp.n],["  cerrados",st.rcp.cerr],["  sin diagnóstico definitivo",st.rcp.sinDx],["  con diagnóstico definitivo (fuera del acierto)",st.rcp.nEv],[],
+      ["Pacientes «Crítico ER»",st.crit.n],["  completaron el examen físico después",st.crit.completo],["  con diagnóstico definitivo",st.crit.nEv],["  acierto top-1",fG(st.crit,"h1")],["  acierto top-3",fG(st.crit,"h3")],[],
+      ["Estado de conciencia","Casos","Con dx definitivo","Top-1","Top-3"],...st.porConc.map(r=>[r.l,r.n,r.nEv,fG(r,"h1"),fG(r,"h3")]),[],
+      ["Estado hemodinámico","Casos","Con dx definitivo","Top-1","Top-3"],...st.porHemo.map(r=>[r.l,r.n,r.nEv,fG(r,"h1"),fG(r,"h3")]),[],
       ["Médico cambió el dx del motor",st.medVsMotor.n],["Acertó el médico",st.medVsMotor.med],["Acertó el motor",st.medVsMotor.mot],["Ninguno",st.medVsMotor.ning],[],
       ["Capítulo","n","Top-1","Top-3"],...st.cap.map(r=>[VCAP[r.c]||"Sin código",r.n,pct(r.h1,r.n),pct(r.h3,r.n)])]),"Indicadores");
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Médico","Casos generados","Pendientes (menos de "+VENCE_H+" h)","Cerrados","Cerrados por tiempo","% cerrados por el médico","Con dx definitivo","Top-1","Top-3"],
+      ...st.porMed.map(r=>[r.l,r.gen,r.pend,r.cerr,r.venc,pct(r.cerr,r.gen),r.nEv,fG(r,"h1"),fG(r,"h3")]),[],
+      ["Los casos anteriores a la v8.0 no tienen médico: se agrupan como «Sin perfil». El acierto excluye los casos sin signos vitales (RCP)."]]),"Por médico");
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Diagnóstico","Código","En el motor","n","Top-1","Top-3"],...st.dx.map(r=>[r.n,r.c,r.inM?"Sí":"No",r.cnt,r.h1,r.h3])]),"Por diagnóstico");
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Diagnóstico","Código VetCIE-1","Casos","Como principal"],...st.fuera.map(r=>[r.n,r.c||"No está en VetCIE-1",r.cnt,r.prin])]),"Fuera del motor");
     const sk=Object.keys(SIGNS),qk=QS.map(q=>q.id);
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["codigo","especie","edad","sexo","peso","hemo","fc","fr","temp","mucosas","tllc","pulso","dh","cc","motivo",...sk.map(z=>"s_"+z),...qk.map(q=>"q_"+q),"dx_def","conf","conf2"],
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["codigo","especie","edad","sexo","peso","hemo","fc","fr","temp","mucosas","tllc","pulso","dh","cc","motivo","conciencia","critico","rcp","medico","estado",...sk.map(z=>"s_"+z),...qk.map(q=>"q_"+q),"dx_def","conf","conf2"],
       ...REG.casos.map(c=>{const e=c.ent,x=e.ex||{},k=REG.cierres.get(c.id)||{},S=new Set(e.signsAll||[]);
-        return [c.id,e.esp||"",e.edad||"",e.sexo||"",e.peso??"",e.hemo||"",numX(x.fc),numX(x.fr),numX(x.temp),x.muc||"",x.tllc||"",x.pulso||"",x.dh||"",numX(x.cc),e.motivo||"",...sk.map(z=>S.has(z)?1:0),...qk.map(q=>(e.ans||{})[q]??""),k.dx?k.dx.c||"NUEVO":"",k.conf||"",k.conf2||""]})]),"Matriz ML");
+        return [c.id,e.esp||"",e.edad||"",e.sexo||"",e.peso??"",e.hemo||"",numX(x.fc),numX(x.fr),numX(x.temp),x.muc||"",x.tllc||"",x.pulso||"",x.dh||"",numX(x.cc),e.motivo||"",e.conc||"",e.critico==null?"":e.critico?1:0,e.rcp==null?"":e.rcp?1:0,c.medico||"",estadoCaso(c.f,REG.cierres.get(c.id)),...sk.map(z=>S.has(z)?1:0),...qk.map(q=>(e.ans||{})[q]??""),k.dx?k.dx.c||"NUEVO":"",k.conf||"",k.conf2||""]})]),"Matriz ML");
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Columna","Significado"],...sk.map(z=>["s_"+z,SIGNS[z][0]]),...QS.map(q=>["q_"+q.id,q.t+" — "+q.o.map(o=>o[0]+"="+o[1]).join("; ")]),
       ["Confirmación 2","Hoja Casos: segunda base de la confirmación del diagnóstico definitivo (opcional; vacía en los cierres que solo tienen una). Mismos valores que «Confirmación»: "+CONF.map(c=>c[1]).join("; ")+"."],
       ["Confirmación objetiva","Hoja Casos: «Sí» si «Confirmación» o «Confirmación 2» es histopatología o necropsia, prueba de laboratorio específica, imagen diagnóstica o hallazgo quirúrgico; «No» en otro caso; vacía si el caso no tiene confirmación."],
       ...LABT.filter(t=>["rxa","rxcab","rxcad"].includes(t[0])).map(t=>[t[1],"Hoja Casos: resultado de la "+t[1].toLowerCase()+" registrado en el cierre: «Anormal» o «Normal»; vacía si no se registró."]),
       ["Compilación","Hoja Casos: publicación exacta de la página con que se registró el caso (fecha y letra, p. ej. 2026-11-24b). Vacía en los casos anteriores al 24/11/2026. Si un caso nuevo trae una compilación vieja, esa tableta usa una página en caché."],
       ["Hallazgos específicos","Hoja Casos: hallazgo principal de cada examen anormal o 4Dx positivo. Obligatorio desde el 24/11/2026 (M9); «No determinado» cuando no se pudo precisar."],
-      ["conf2","Hoja Matriz ML: segunda base de la confirmación (código; vacía si no hay)."]]),"Diccionario");
+      ["conf2","Hoja Matriz ML: segunda base de la confirmación (código; vacía si no hay)."],
+      ["Médico / medico","Perfil del médico que generó la nota SOAP (v8.0). Vacío en los casos anteriores a la v8.0."],
+      ["Estado del caso / estado","Pendiente (pend): sin cierre y menos de "+VENCE_H+" h desde la nota SOAP. Cerrado (cerr): el médico registró el diagnóstico definitivo o «sin diagnóstico definitivo». Cerrado por tiempo (venc): más de "+VENCE_H+" h sin cierre."],
+      ["Cerrado por","Perfil del médico que registró el cierre (v8.0)."],
+      ["Estado de conciencia / conciencia","Marcado en el motor (v8.0): "+P_CONC.map(p=>p[0]+" = "+p[1]).join("; ")+". Vacío en los casos anteriores a la v8.0."],
+      ["Crítico ER / critico","Sí (1) si el paciente se marcó como «Crítico ER» en algún momento (examen físico diferido). Vacío en los casos anteriores a la v8.0."],
+      ["Completó el examen después","Solo en pacientes «Crítico ER»: «Sí» si después se registró el estado de conciencia y el examen físico completo."],
+      ["RCP / rcp","Sí (1) si el paciente llegó sin signos vitales. Estos casos no cuentan para el acierto del motor. Vacío en los casos anteriores a la v8.0."],
+      ["hemo","Hoja Matriz ML: estado hemodinámico (est = estable, comp = shock compensado, desc = shock descompensado, pcr = paro). Desde la v8.0 lo calcula el motor."]]),"Diccionario");
     return wb;
 }
 async function regExportar(){
@@ -3596,7 +3877,7 @@ const COLA_KEY="mc_cola_registro";
 function colaLeer(){try{return JSON.parse(localStorage.getItem(COLA_KEY)||"[]")}catch(e){return []}}
 function colaEscribir(c){try{localStorage.setItem(COLA_KEY,JSON.stringify(c))}catch(e){}netPintar()}
 function colaPoner(it){const c=colaLeer().filter(x=>!(x.t===it.t&&x.k===it.k));it.n=0;c.push(it);colaEscribir(c)}
-function colaTiene(k){return colaLeer().some(x=>x.k===k)}
+function colaTiene(k){return colaLeer().some(x=>x.k===k&&x.t!=="cierre")}
 let colaCorriendo=null;
 function colaEnviar(){if(!colaCorriendo)colaCorriendo=colaEnviar_().finally(()=>{colaCorriendo=null});return colaCorriendo}
 async function colaEnviar_(){
@@ -3604,8 +3885,8 @@ async function colaEnviar_(){
   if(!navigator.onLine||!(await regSesionLista()))return {ok:false};
   await regSesionUso();
   for(const it of ini){
-    if(!it.p.sesion&&REG.sesion)it.p.sesion=REG.sesion;
-    const {error}=await REG.sb.rpc("registrar_caso",{p:it.p});
+    if(it.t!=="cierre"&&!it.p.sesion&&REG.sesion)it.p.sesion=REG.sesion;
+    const {error}=it.t==="cierre"?await REG.sb.rpc("guardar_cierre",{p_codigo:it.k,p:it.p}):await REG.sb.rpc("registrar_caso",{p:it.p});
     let c=colaLeer();
     if(!error){c=c.filter(x=>!(x.t===it.t&&x.k===it.k&&x.p.fa===it.p.fa));colaEscribir(c);continue}
     const msg=String(error.message||"");
@@ -3617,7 +3898,7 @@ async function colaEnviar_(){
   }
   return {ok:!colaLeer().length};
 }
-function netPintar(){const el=document.getElementById("netst");if(!el)return;const n=colaLeer().filter(x=>!x.p.prueba).length;
+function netPintar(){const el=document.getElementById("netst");if(!el)return;const n=colaLeer().filter(x=>!x.p.prueba&&x.t!=="cierre").length;
   if(!REG.listo){el.textContent="";return}
   if(n){el.textContent=`${n} caso${n>1?"s":""} pendiente${n>1?"s":""}`;el.className="netst warn";el.title="Se enviarán al registro en cuanto haya conexión"}
   else if(!REG.sb||!navigator.onLine){el.textContent="Sin conexión";el.className="netst err";el.title="El motor funciona; los casos se guardan en este dispositivo"}
@@ -3638,7 +3919,7 @@ function regSesionLista(){
   if(!REG.listaP)REG.listaP=(async()=>{
     try{let {data:{session}}=await REG.sb.auth.getSession();
       if(!session){const r=await REG.sb.auth.signInAnonymously();if(r.error)return false;session=r.data.session}
-      if(REG.uid&&REG.uid!==session.user.id)REG.sesion=null; // otro usuario: la sesión de uso anterior no le pertenece
+      if(REG.uid&&REG.uid!==session.user.id){REG.sesion=null;setTimeout(medVerificar,0)} // otro usuario: la sesión de uso y el perfil se revisan
       REG.uid=session.user.id;return true}catch(e){return false}
   })().finally(()=>{REG.listaP=null});
   return REG.listaP;
@@ -3664,14 +3945,15 @@ function regEvento(tipo){if(!REG.sb||!REG.uid||!navigator.onLine)return;REG.sb.r
   // Enlace de recuperación de contraseña: pedir la nueva al abrir la página.
   REG.sb.auth.onAuthStateChange(async(ev)=>{if(ev==="PASSWORD_RECOVERY"){const n=prompt("Escriba su nueva contraseña (mínimo 10 caracteres):");
     if(n&&n.length>=10){const {error}=await REG.sb.auth.updateUser({password:n});alert(error?"No se pudo cambiar la contraseña.":"Contraseña actualizada.")}}});
-  if(await regSesionLista()){await regPerfil();await regSesionUso()}
+  if(await regSesionLista()){await regPerfil();await regSesionUso();await medVerificar()}
+  else if(!MED)perfilAbrir();
   netPintar();colaEnviar();
   if(REG.abierto){if(REG.admin&&!REG.cargado)regCargar();regRender()}
   window.addEventListener("online",()=>{netPintar();colaEnviar()});window.addEventListener("offline",netPintar);
   setInterval(()=>{if(document.visibilityState==="visible"&&REG.sesion&&navigator.onLine)REG.sb.rpc("latido",{p_sesion:REG.sesion}).then(()=>{},()=>{});colaEnviar()},60000);
 })();
 
-document.getElementById("foot").innerHTML = `HVCP ER Motor Clínico v7.9.7 · registro en línea (reglas y registro de casos) · ${DX.length} diagnósticos presuntivos en ${Object.keys(SYS).length} sistemas · Herramienta de apoyo a la decisión: no sustituye el examen clínico ni el criterio del médico veterinario. Las dosis deben verificarse contra la presentación disponible y el estado del paciente.<br>
+document.getElementById("foot").innerHTML = `HVCP ER Motor Clínico v${MC_VERSION} · registro en línea (reglas y registro de casos) · ${DX.length} diagnósticos presuntivos en ${Object.keys(SYS).length} sistemas · Herramienta de apoyo a la decisión: no sustituye el examen clínico ni el criterio del médico veterinario. Las dosis deben verificarse contra la presentación disponible y el estado del paciente.<br>
 Bibliografía base: Plumb's Veterinary Drug Handbook 10ª ed. (2023); Silverstein & Hopper, Small Animal Critical Care Medicine 3ª ed. (2022); Ettinger, Textbook of Veterinary Internal Medicine 9ª ed. (2024); Sykes, Greene's Infectious Diseases of the Dog and Cat 5ª ed. (2021); AAHA Fluid Therapy Guidelines for Dogs and Cats (2024); IRIS Staging of CKD (modificado 2026); RECOVER CPR Guidelines (2024); WSAVA Vaccination Guidelines (2024); consensos ACVIM, ISCAID e IRIS citados en cada diagnóstico.`;
 renderAll();
 </script>

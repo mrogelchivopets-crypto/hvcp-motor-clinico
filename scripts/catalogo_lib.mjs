@@ -30,8 +30,8 @@ export function leerConstantes(html) {
     out[n] = JSON.parse(m[1]);
     if (ser(out[n]) !== m[1]) throw new Error(`La línea de ${n} no tiene el formato esperado; no se puede reescribir con seguridad.`);
   }
-  const v = html.match(/const MOTOR_VER="([^"]+)"/);
-  if (!v) throw new Error("No se encontró MOTOR_VER en index.html");
+  const v = html.match(/const MC_VERSION="([^"]+)"/);
+  if (!v) throw new Error("No se encontró MC_VERSION en index.html");
   out.version = v[1];
   return out;
 }
@@ -43,14 +43,18 @@ export function escribirConstantes(html, datos) {
   return html;
 }
 
-// Cambia el número de versión visible (título, encabezado, nota SOAP, pie y MOTOR_VER).
+// Cambia la versión (v8.0: una sola constante, MC_VERSION; los textos visibles la leen de ahí).
+// Al publicar, actualice también MC_BUILD y version.json (actualizarVersionJson).
 export function cambiarVersion(html, anterior, nueva) {
-  const esc = anterior.replace(/\./g, "\\.");
-  let n = 0;
-  html = html.replace(new RegExp(`(Motor Clínico(?: de Urgencias| HVCP)? v)${esc}(?![0-9])`, "g"), (_, a) => { n++; return a + nueva; });
-  html = html.replace(`const MOTOR_VER="${anterior}"`, () => { n++; return `const MOTOR_VER="${nueva}"`; });
-  if (n < 5) throw new Error(`Solo se encontraron ${n} lugares con la versión ${anterior} (se esperaban 5).`);
-  return html;
+  const a = `const MC_VERSION="${anterior}"`;
+  if (!html.includes(a)) throw new Error(`No se encontró MC_VERSION="${anterior}" en index.html`);
+  return html.replace(a, `const MC_VERSION="${nueva}"`);
+}
+export function leerBuild(html) { const m = html.match(/MC_BUILD="([^"]+)"/); return m ? m[1] : null; }
+export async function actualizarVersionJson(html) {
+  const { writeFile } = await import("node:fs/promises");
+  const v = html.match(/const MC_VERSION="([^"]+)"/)[1];
+  await writeFile(join(RAIZ, "version.json"), JSON.stringify({ version: v, build: leerBuild(html) }, null, 2) + "\n");
 }
 
 export function siguienteVersion(v) {

@@ -13,7 +13,7 @@ import XLSX from "xlsx";
 import { readFile, writeFile, copyFile, mkdir } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
-import { INDEX, RAIZ, leerConstantes, escribirConstantes, cambiarVersion, siguienteVersion, cargarMotor, usos } from "./catalogo_lib.mjs";
+import { INDEX, RAIZ, leerConstantes, escribirConstantes, cambiarVersion, actualizarVersionJson, siguienteVersion, cargarMotor, usos } from "./catalogo_lib.mjs";
 import { HOJAS, COL, ETQ_INV, TIPO_IMG, TIPO_LAB, libroCatalogo } from "./catalogo_exportar.mjs";
 
 const args = process.argv.slice(2);
@@ -247,6 +247,7 @@ async function main() {
   await mkdir(join(RAIZ, "tests", "fixtures"), { recursive: true });
   await copyFile(INDEX, join(RAIZ, "tests", "fixtures", "anterior.html"));
   await writeFile(INDEX, html2);
+  await actualizarVersionJson(html2);
   console.log(`\n✔ Motor actualizado a v${version} (la versión anterior quedó en tests/fixtures/anterior.html).`);
 
   let pruebas = "no se corrieron (--sin-pruebas)";

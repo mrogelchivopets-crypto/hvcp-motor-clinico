@@ -19,13 +19,15 @@ for m in re.finditer(r'\{id:"([^"]+)",([^\n]{0,500})', html):
 SISTEMAS = {'dig': 'Digestivo', 'uro': 'Urogenital', 'res': 'Respiratorio', 'cv': 'Cardiovascular / hemoparásitos',
             'tra': 'Traumatismo', 'neu': 'Neurológico', 'hep': 'Hepatobiliar', 'tox': 'Toxicología',
             'end': 'Endocrino', 'der': 'Dermatología', 'oft': 'Oftalmología', 'rep': 'Reproductivo'}
-HEMO = {'est': 'Estable', 'comp': 'Compensado', 'desc': 'Descompensado', None: 'Sin marcar'}
+HEMO = {'est': 'Estable', 'comp': 'Compensado', 'desc': 'Descompensado', 'pcr': 'Paro', None: 'Sin marcar'}
+CONC = {'alerta': 'Alerta', 'dep': 'Deprimido u obnubilado', 'estupor': 'Estupor', 'coma': 'Coma', 'crit': 'Crítico ER', 'ssv': 'Sin signos vitales'}
+VENCE_H = 30  # igual que en el motor: sin cierre del médico con más de 30 h = «cerrado por tiempo»
 TZ = D.timezone(D.timedelta(hours=-6))  # El Salvador
 corte = D.datetime.fromisoformat(d['generado'].replace('Z', '+00:00')).astimezone(TZ)
 ayer = (corte - D.timedelta(days=1)).date()
 
-def turno(h):
-    return 'Mañana' if 7 <= h <= 14 else ('Tarde' if 15 <= h <= 22 else 'Noche')
+def turno(h):  # turnos del hospital: diurno 6:00 a. m.–6:00 p. m.; nocturno 6:00 p. m.–6:00 a. m.
+    return 'Diurno' if 6 <= h < 18 else 'Nocturno'
 
 filas = []
 for c in d['casos']:
@@ -35,7 +37,11 @@ for c in d['casos']:
     e, s = c['ent'], c['sal']
     k = d['cierres'].get(c['id'])
     horas = (corte - f).total_seconds() / 3600
-    codigo = (k or {}).get('dx') and k['dx'].get('c') or None
+    # Casos de paro (sin signos vitales): el motor no calcula presuntivos; no cuentan para el acierto.
+    rcp = bool(e.get('rcp') or e.get('conc') == 'ssv')
+    cerrado = bool(k and (k.get('sinDx') or (k.get('dx') and k.get('conf'))))
+    codigo_cierre = (k or {}).get('dx') and k['dx'].get('c') or None
+    codigo = None if rcp else codigo_cierre
     rango = None
     if codigo:
         tops = [set(x.strip() for x in t['c'].split(' / ')) for t in s.get('top', [])]
@@ -55,8 +61,16 @@ for c in d['casos']:
         'ayer': f.date() == ayer,
         'ult7': horas <= 7 * 24,
         'ult30': horas <= 30 * 24,
-        'cerrado': k is not None,
-        'abierto_48h': k is None and horas > 48,
+        'medico': c.get('medico') or None,
+        'cerrado': cerrado,
+        'cerrado_por_tiempo': not cerrado and horas > VENCE_H,
+        'estado': 'Cerrado' if cerrado else ('Cerrado por tiempo' if horas > VENCE_H else 'Pendiente'),
+        'abierto_48h': not cerrado and horas > 48,
+        'conciencia': CONC.get(e.get('conc'), e.get('conc')) if e.get('conc') else None,
+        'critico': e.get('critico'),
+        'critico_completo': (e.get('conc') not in (None, 'crit')) if e.get('critico') else None,
+        'rcp': rcp,
+        'rcp_dx_codigo': codigo_cierre if rcp else None,
         'horas': round(horas),
         'confirmacion': conf,
         'confirmacion2': conf2,
