@@ -3641,11 +3641,13 @@ function regStats(){
 function accCell(o){if(!o.n)return `<td class="code">—</td>`;const ci=wilson(o.k,o.n);return `<td><b>${pct(o.k,o.n)}</b> <span class="code">${o.k}/${o.n}</span><div class="code">IC95 ${Math.round(ci[0]*100)}–${Math.round(ci[1]*100)}%</div></td>`}
 // ─── Tablero de uso (solo admin): casos por día y turno, quién usa el motor, tiempos y sesiones ───
 // Se calcula con los casos ya cargados (mismo período y filtro de veterinario que la lista e indicadores);
-// las sesiones vienen de la vista v_uso_sesiones. Hora de El Salvador, turnos iguales a turno_de() en la base.
+// las sesiones vienen de la vista v_uso_sesiones. Hora de El Salvador, turnos del hospital iguales a turno_de() en la base:
+// diurno 6:00 a. m.–6:00 p. m. y nocturno 6:00 p. m.–6:00 a. m.
 const SV_TZ="America/El_Salvador",DIAS_SEM=["lun","mar","mié","jue","vie","sáb","dom"];
 function diaSV(d){return new Intl.DateTimeFormat("en-CA",{timeZone:SV_TZ}).format(new Date(d))}
 function horaSV(d){return parseInt(new Intl.DateTimeFormat("en-US",{timeZone:SV_TZ,hour:"numeric",hourCycle:"h23"}).format(new Date(d)))%24}
-function turnoSV(d){const h=horaSV(d);return h>=7&&h<=14?"Mañana (7–15 h)":h>=15&&h<=22?"Tarde (15–23 h)":"Noche (23–7 h)"}
+const TURNOS=["Diurno (6:00 a. m.–6:00 p. m.)","Nocturno (6:00 p. m.–6:00 a. m.)"];
+function turnoSV(d){const h=horaSV(d);return h>=6&&h<18?TURNOS[0]:TURNOS[1]}
 function mediana(a){const v=a.filter(x=>x!=null&&!isNaN(x)).map(Number).sort((x,y)=>x-y);if(!v.length)return null;const m=v.length>>1;return v.length%2?v[m]:(v[m-1]+v[m])/2}
 function fDur(min){if(min==null)return "—";if(min<60)return `${Math.round(min)} min`;if(min<48*60)return `${(min/60).toFixed(1)} h`;return `${(min/1440).toFixed(1)} días`}
 function usoBarrasH(pares,unidad){
@@ -3695,7 +3697,7 @@ function regUso(){
   <div class="uso-grid">
     ${card(semanal?"Casos por semana":"Casos por día",`<div class="uso-cols" role="img" aria-label="Casos ${semanal?"por semana":"por día"}: máximo ${maxC}"><em class="uso-max">${maxC}</em>${barras}</div>
       <div class="uso-ejex"><span>${fLbl(cols[0].k)}</span><span>${fLbl(cols[cols.length-1].k)}</span></div>`,"Pase el cursor sobre una barra para ver la fecha y el número de casos.")}
-    ${card("Por turno",usoBarrasH(["Mañana (7–15 h)","Tarde (15–23 h)","Noche (23–7 h)"].map(t=>[t,turnos[t]||0]),"casos"),"Hora de El Salvador, según la hora en que se generó la nota SOAP.")}
+    ${card("Por turno",usoBarrasH(TURNOS.map(t=>[t,turnos[t]||0]),"casos"),"Hora de El Salvador, según la hora en que se generó la nota SOAP.")}
     ${card("Por día de la semana",usoBarrasH(DIAS_SEM.map(x=>[x,sem[x]||0]),"casos"))}
     ${card("Especie",usoBarrasH(Object.entries(esp).sort((a,b)=>b[1]-a[1]),"casos"))}
     ${card("Motivos de consulta más frecuentes",usoBarrasH(mot.slice(0,8),"casos"),mot.length>8?`Y ${mot.length-8} motivos más.`:"")}

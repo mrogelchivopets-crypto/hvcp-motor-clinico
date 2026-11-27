@@ -90,6 +90,7 @@ Rama `v8.0`, un commit por cambio; PR a `main` sin fusionar (lo aprueba la Direc
 #### Migración 09 (`20261127000900_v8_lector_y_marcas.sql`)
 - **Corrige un error de la 08:** la 08 volvía a limitar `admin_casos` a administradores y la cuenta lectora de la exportación automática dejaba de leer el registro. La 09 vuelve a `puede_leer()` y conserva el nombre del médico.
 - **`critico` y `rcp` ya no se pierden:** un disparador conserva `true` aunque el médico complete el examen y vuelva a generar la nota; así se sabe cuántos críticos completaron el examen después. `conciencia` guarda el último valor.
+- **Turnos del hospital:** `turno_de()` pasa a diurno (6:00 a. m.–6:00 p. m.) y nocturno (6:00 p. m.–6:00 a. m.); igual en el motor (`turnoSV`, tablero de uso), el tablero y el análisis diario. Con los datos del 27/11: 157 diurnos y 79 nocturnos.
 - **Proyecto de prueba:** aplicadas la 06 (no estaba) y la 09. **Producción:** aplicar 08 y 09 juntas antes de fusionar.
 
 #### Tablero y análisis diario

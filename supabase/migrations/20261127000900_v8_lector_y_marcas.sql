@@ -32,3 +32,10 @@ end $$;
 drop trigger if exists casos_marcas_fijas on public.casos;
 create trigger casos_marcas_fijas before update on public.casos
   for each row execute function public._casos_marcas_fijas();
+
+-- Turnos del hospital (Dirección General, 27/11/2026): diurno 6:00 a. m.–6:00 p. m. y nocturno 6:00 p. m.–6:00 a. m.
+-- (antes: mañana 7–15, tarde 15–23, noche 23–7). Lo usan las vistas v_casos_validos y v_casos_por_dia.
+create or replace function public.turno_de(t timestamptz)
+returns text language sql immutable as $$
+  select case when extract(hour from t at time zone 'America/El_Salvador') between 6 and 17 then 'diurno' else 'nocturno' end;
+$$;

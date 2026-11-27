@@ -26,8 +26,8 @@ TZ = D.timezone(D.timedelta(hours=-6))  # El Salvador
 corte = D.datetime.fromisoformat(d['generado'].replace('Z', '+00:00')).astimezone(TZ)
 ayer = (corte - D.timedelta(days=1)).date()
 
-def turno(h):
-    return 'Mañana' if 7 <= h <= 14 else ('Tarde' if 15 <= h <= 22 else 'Noche')
+def turno(h):  # turnos del hospital: diurno 6:00 a. m.–6:00 p. m.; nocturno 6:00 p. m.–6:00 a. m.
+    return 'Diurno' if 6 <= h < 18 else 'Nocturno'
 
 filas = []
 for c in d['casos']:

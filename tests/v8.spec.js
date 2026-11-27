@@ -395,3 +395,11 @@ test("Excel: columnas nuevas, RCP fuera del acierto, crítico, conciencia, estad
   expect(errores).toEqual([]);
   await ctx.close();
 });
+
+test("Turnos del hospital: diurno 6:00–18:00 y nocturno 18:00–6:00 (hora de El Salvador)", async ({ browser }) => {
+  const { ctx, page, errores } = await abrir(browser);
+  const r = await page.evaluate(() => ["05:59", "06:00", "17:59", "18:00", "23:30"].map((h) => turnoSV(`2026-11-27T${h}:00-06:00`).split(" ")[0]));
+  expect(r).toEqual(["Nocturno", "Diurno", "Diurno", "Nocturno", "Nocturno"]);
+  expect(errores).toEqual([]);
+  await ctx.close();
+});

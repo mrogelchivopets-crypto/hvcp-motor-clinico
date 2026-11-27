@@ -75,7 +75,7 @@ for c in ev:
 por_dia = OrderedDict()
 for c in sorted(casos, key=lambda c: c['dia']):
     r = por_dia.setdefault(c['dia'], [0, 0]); r[0 if c['cerrado'] else 1] += 1
-turnos = [(t, sum(1 for c in casos if c['turno'] == t)) for t in ('Mañana', 'Tarde', 'Noche')]
+turnos = [(t, sum(1 for c in casos if c['turno'] == t)) for t in ('Diurno', 'Nocturno')]
 faltan = Counter(f for c in casos for f in (c['faltan'] or '').split('; ') if f).most_common()
 def agrupar(s, clave):
     g = OrderedDict()
@@ -262,7 +262,7 @@ tr.tot td{{font-weight:700;border-top:2px solid var(--line)}} .frase{{margin:10p
 <div class="tiles">{tiles_html}</div>
 <section><h2>Casos por día</h2><div class="legend"><span><i style="background:var(--c1)"></i>Cerrados</span><span><i style="background:var(--c2)"></i>Abiertos</span></div>{chart_dia()}</section>
 <div class="g2">
-<section><h2>Casos por turno</h2><p class="note">Mañana 7–14 h · tarde 15–22 h · noche 23–6 h.</p>{hbar([(t, v, f"{t}: {v} casos ({pct(p(v, n))})") for t, v in turnos], str)}</section>
+<section><h2>Casos por turno</h2><p class="note">Turno diurno 6:00 a. m.–6:00 p. m. · turno nocturno 6:00 p. m.–6:00 a. m. (hora de la nota SOAP).</p>{hbar([(t, v, f"{t}: {v} casos ({pct(p(v, n))})") for t, v in turnos], str)}</section>
 <section><h2>Campos que faltaron</h2><p class="note">Porcentaje de casos en que el motor señaló el campo como faltante. Datos insuficientes en el {pct(kpi['insuf'])} de los casos.</p>{hbar([(f, p(k, n), f"{f}: faltó en {k} casos") for f, k in faltan], pct, C2)}</section>
 </div>
 <section><h2>¿Dónde quedó el diagnóstico del médico?</h2><p class="note">Casos cerrados con diagnóstico definitivo codificado: en qué lugar de la lista del motor quedó ese diagnóstico.</p>

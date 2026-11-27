@@ -44,7 +44,7 @@ Eres el analista del Motor Clínico de Urgencias del Hospital Veterinario Chivo 
    - Causas frecuentes: falta LECTOR_PASSWORD en .env.exportacion; la contraseña cambió; el equipo estaba apagado, hibernando o con batería; la carpeta del motor tiene cambios locales o no está en main.
    - Si no hay datos que leer, el reporte solo explica eso. En ese caso no corras la retroalimentación ni actualices el tablero.
 2. Calcula los indicadores, con la hora de El Salvador:
-   - casos de ayer (en la tarde, también los de hoy) y de los últimos 7 y 30 días; por turno (mañana 7–14 h, tarde 15–22 h, noche 23–6 h); por versión y compilación del motor;
+   - casos de ayer (en la tarde, también los de hoy) y de los últimos 7 y 30 días; por turno del hospital (diurno 6:00–17:59 h, nocturno 18:00–5:59 h); por versión y compilación del motor;
    - estado de cada caso, igual que en el motor: **cerrado** si el cierre tiene sinDx o dx con conf; **cerrado por tiempo** si no está cerrado y pasaron más de 30 h desde f hasta «generado»; **pendiente** en otro caso. % de cerrados por el médico y número de cerrados por tiempo (lista de códigos MC solo de los nuevos desde el reporte anterior);
    - **resumen por médico** (campo medico; los casos sin médico, anteriores a la v8.0, se agrupan como «Sin perfil» por dispositivo): casos generados, pendientes, cerrados, cerrados por tiempo y % cerrado. Solo conteos: sin juicios sobre la persona;
    - **casos sin signos vitales (ent.rcp = true o ent.conc = ssv): se EXCLUYEN de todos los indicadores de acierto** (el motor no calcula presuntivos en el paro). Repórtalos aparte: cuántos, cuántos cerrados, cuántos con diagnóstico definitivo;
