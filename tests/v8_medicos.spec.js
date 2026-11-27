@@ -3,7 +3,7 @@
 import { test, expect } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
 import { cfg, configurado } from "./entorno.mjs";
-import { COMPLETO, llenar } from "./v8.spec.js";
+import { COMPLETO, llenar } from "./v8_util.mjs";
 
 test.describe.configure({ mode: "serial" });
 test.skip(!configurado, "Falta .env con el proyecto de prueba");
@@ -48,7 +48,7 @@ test("V5: perfiles, PIN, bloqueo, «Mis casos» y cierre desde el panel (celular
   // Dispositivo 1 (celular): sin perfil no hay nota; crea el perfil A y genera un caso
   const d1 = await dispositivo(browser, CEL);
   await expect(d1.page.locator("#perfil")).toBeVisible({ timeout: 20000 });
-  await d1.page.screenshot({ path: "test-results/capturas/v5-perfil-celular.png" });
+  await d1.page.screenshot({ path: "docs/v8/capturas/v5-perfil-celular.png" });
   await d1.page.evaluate(() => { perfilCerrar(); });
   await llenar(d1.page, { ...COMPLETO, conc: "alerta" });
   expect(await d1.page.evaluate(() => { genSOAP(); return document.getElementById("soap").value; })).toBe("");
@@ -60,7 +60,7 @@ test("V5: perfiles, PIN, bloqueo, «Mis casos» y cierre desde el panel (celular
   // Dispositivo 2 (tablet): crea el perfil B y genera un caso
   const d2 = await dispositivo(browser, TAB);
   await d2.page.evaluate(() => { perfilAvisoOk(); });
-  await d2.page.screenshot({ path: "test-results/capturas/v5-perfil-tablet.png" });
+  await d2.page.screenshot({ path: "docs/v8/capturas/v5-perfil-tablet.png" });
   await crearPerfil(d2.page, B);
   const casoB = await casoNuevo(d2.page);
 
@@ -81,7 +81,7 @@ test("V5: perfiles, PIN, bloqueo, «Mis casos» y cierre desde el panel (celular
   await expect(d1.page.locator("#miscasos")).toContainText(casoA, { timeout: 20000 });
   await expect(d1.page.locator("#miscasos")).not.toContainText(casoB);
   await expect(d1.page.locator("#miscasos")).toContainText("Pendientes de cerrar (1)");
-  await d1.page.screenshot({ path: "test-results/capturas/v5-mis-casos-celular.png" });
+  await d1.page.screenshot({ path: "docs/v8/capturas/v5-mis-casos-celular.png" });
 
   // Cerrar el caso desde el panel
   await d1.page.locator("#miscasos .mc-item", { hasText: casoA }).getByRole("button", { name: "Cerrar" }).click();
@@ -107,7 +107,7 @@ test("V5: perfiles, PIN, bloqueo, «Mis casos» y cierre desde el panel (celular
   await d2.page.locator("#miscasosbtn").click();
   await expect(d2.page.locator("#miscasos")).toContainText(casoB, { timeout: 20000 });
   await expect(d2.page.locator("#miscasos")).not.toContainText(casoA);
-  await d2.page.screenshot({ path: "test-results/capturas/v5-mis-casos-tablet.png" });
+  await d2.page.screenshot({ path: "docs/v8/capturas/v5-mis-casos-tablet.png" });
 
   expect(d1.errores).toEqual([]); expect(d2.errores).toEqual([]);
   await d1.ctx.close(); await d2.ctx.close();
