@@ -117,6 +117,17 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .tx-calc{font-family:var(--mono);font-size:11.5px;color:#86EFAC}
 .inv{font-size:10.5px;padding:1px 6px;border-radius:3px;margin-left:6px;vertical-align:1px}
 .inv.p{background:#3F2A08;color:#FCD28A}.inv.s{background:#0F3520;color:#86EFAC}
+.pf-fondo{position:fixed;inset:0;z-index:1000;background:rgba(8,10,16,.82);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 16px}
+.pf-caja{background:var(--surface);border:1px solid var(--border2);border-radius:12px;max-width:520px;width:100%;padding:20px;color:var(--text)}
+.pf-caja h2{font-size:20px;margin:0 0 6px}.pf-caja .muted{margin-bottom:10px}
+.pf-lista{display:flex;flex-direction:column;gap:8px;margin:12px 0}.pf-lista button,.pf-btn{min-height:48px;font-size:16px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);padding:10px 14px;text-align:left;cursor:pointer}
+.pf-btn.pri{background:var(--accent);border-color:var(--accent);color:#fff;text-align:center}.pf-fila{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.pf-fila .pf-btn{flex:1;text-align:center}
+.pf-in{width:100%;min-height:48px;font-size:18px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);padding:8px 12px;margin:6px 0}
+.pf-pin{letter-spacing:.5em;text-align:center;font-family:var(--mono)}
+.pf-msg{margin-top:8px;font-size:14px}.pf-msg.err{color:#FCA5A5}.pf-aviso{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:10px 12px;font-size:13.5px;margin:10px 0}
+.mc-item{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid var(--border);padding:10px 0}.mc-item:last-child{border-bottom:0}
+.mc-item .mc-t{display:flex;flex-direction:column;min-width:0}.mc-item .mc-t b{font-family:var(--mono)}.mc-item .mc-t span{font-size:13px;color:var(--sub)}
+:root[data-theme="light"] .pf-msg.err{color:#B42318}
 .hemobox{border:1px solid;border-radius:8px;padding:8px 12px;font-size:13.5px;line-height:1.4}
 .hemobox.g{background:#0F3520;border-color:#22C55E;color:#BBF7D0}.hemobox.y{background:#3A2A05;border-color:#F59E0B;color:#FFECC4}
 .hemobox.r{background:#4A0F0F;border-color:#EF4444;color:#FFE1E1}.hemobox.p{background:#1E222E;border-color:#5B6178;color:#B9BFD3}
@@ -383,10 +394,14 @@ details[open]>summary .sg-ocu{display:inline}
   <div><div class="htitle">Motor Clínico de Urgencias v7.9.7 · registro en línea</div><div class="hsub">Signos → sistemas implicados → diagnósticos presuntivos · Codificación VetCIE-1</div><div class="hclock" id="hclock" aria-label="Fecha y hora"></div></div>
   <span class="hspace"></span>
   <span class="netst" id="netst" role="status" aria-live="polite"></span>
+  <button class="reset" id="medbtn" onclick="medCambiar()" title="Médico activo">Elegir médico</button>
+  <button class="reset" id="miscasosbtn" onclick="misCasosAbrir()">Mis casos</button>
   <button class="reset" id="themebtn" onclick="toggleTheme()" title="Cambiar a modo claro u oscuro">Modo claro</button>
   <button class="reset" id="regbtn" onclick="regToggle(!REG.abierto)">Registro de casos</button>
   <button class="reset" onclick="if(REG.abierto)regToggle(false);resetAll()">Nuevo paciente</button>
 </header>
+<div id="perfil" class="pf-fondo" style="display:none" role="dialog" aria-modal="true" aria-label="Perfil del médico"></div>
+<div id="miscasos" class="pf-fondo" style="display:none" role="dialog" aria-modal="true" aria-label="Mis casos"></div>
 <div id="jswarn"><b>El motor no se está ejecutando.</b><br>En iPhone, la vista previa de WhatsApp o de la app Archivos no ejecuta la página. Ábrala con el enlace en <b>Safari</b> (o Chrome), o use «Compartir → Abrir en Safari».</div>
 <noscript><div style="background:#4A1616;color:#FFC9C9;padding:14px;margin:16px;border-radius:8px">Esta herramienta necesita JavaScript. Ábrala en Safari o Chrome.</div></noscript>
 <nav class="stepnav" id="stepnav"></nav>
@@ -2011,8 +2026,8 @@ genSOAP=function(){
 {const _sdx=scoreDx; scoreDx=function(){if(ST.conc==="ssv")return [];return _sdx.apply(this,arguments)};}
 function setConc(v){ST.conc=v;renderAll()}
 {const _gsb=genSOAPbase, _rts=regTrasSOAP;
- genSOAPbase=function(){if(faltantes().length)return;return _gsb.apply(this,arguments)};
- regTrasSOAP=function(){if(faltantes().length)return;return _rts.apply(this,arguments)};}
+ genSOAPbase=function(){if(faltantes().length||!MED)return;return _gsb.apply(this,arguments)};
+ regTrasSOAP=function(){if(faltantes().length||!MED)return;return _rts.apply(this,arguments)};}
 
 // ═══ Piel y tejido subcutáneo: abscesos, erupciones y prurito (v7.9.7) ═══
 (function(){
@@ -3237,7 +3252,7 @@ function regTrasSOAP(){
 async function regGuardar(prueba){
   const c=REG.cur;if(!c)return;
   const min=ST.t0?Math.max(0,Math.round((Date.now()-ST.t0)/60000)):null;
-  const doc={id:c.id,f:c.f,fa:new Date().toISOString(),v:MOTOR_VER+"+"+MOTOR_BUILD,prueba:!!prueba,sesion:REG.sesion,min,
+  const doc={id:c.id,f:c.f,fa:new Date().toISOString(),v:MOTOR_VER+"+"+MOTOR_BUILD,prueba:!!prueba,sesion:REG.sesion,min,medicoId:MED?MED.id:null,medico:MED?MED.nombre:null,
     alertas:(ST._al||[]).map(a=>[a[0],a[1]]),...regSnapshot()};
   colaPoner({t:"caso",k:c.id,p:doc});
   const r=await colaEnviar();
@@ -3247,6 +3262,102 @@ async function regGuardar(prueba){
 }
 function regReset(){if(REG.cur||ST.motivo||ST.esp)regEvento("nuevo_paciente");REG.cur=null;const n=document.getElementById("regno");if(n)n.checked=false;const re1=document.getElementById("regre");if(re1)re1.checked=false;const rc=document.getElementById("regrecod");if(rc){rc.value="";rc.style.display="none"}regMsg("")}
 // ─── Vista del registro ───
+// ═══ V5 (v8.0) — Perfil por médico: nombre + PIN de 4 dígitos, verificado en el servidor (bcrypt) ═══
+// El perfil activo queda en el dispositivo hasta «Cambiar médico». El servidor solo acepta el médico en un caso o
+// un cierre si entró con su PIN en este dispositivo. Identificación práctica: no es una seguridad fuerte.
+const MED_K="hvcp_medico";
+let MED=(()=>{try{return JSON.parse(localStorage.getItem(MED_K)||"null")}catch(e){return null}})();
+const PF={vista:"lista",lista:null,sel:null,msg:"",err:false,ocupado:false};
+function medGuardar(m){MED=m;try{m?localStorage.setItem(MED_K,JSON.stringify(m)):localStorage.removeItem(MED_K)}catch(e){}medPintar()}
+function medPintar(){const b=document.getElementById("medbtn");if(b)b.textContent=MED?"👤 "+MED.nombre+" · Cambiar médico":"Elegir médico";const m=document.getElementById("miscasosbtn");if(m)m.style.display=MED?"":"none"}
+async function medVerificar(){
+  if(!REG.sb){if(!MED)perfilAbrir();return}
+  if(!MED){perfilAbrir();return}
+  try{const {data,error}=await REG.sb.rpc("mis_casos");if(error)throw error;
+    if(data&&data.error==="sin_medico"){medGuardar(null);PF.msg="Vuelva a entrar con su PIN en este dispositivo.";PF.err=false;perfilAbrir()}}catch(e){}
+}
+async function medCambiar(){
+  if(MED&&REG.sb){try{await REG.sb.rpc("salir_medico")}catch(e){}}
+  medGuardar(null);PF.msg="";PF.err=false;PF.vista="lista";perfilAbrir();
+}
+async function perfilAbrir(){
+  const el=document.getElementById("perfil");if(!el)return;el.style.display="flex";PF.sel=null;
+  if(!REG.sb){PF.lista=null;perfilRender();return}
+  PF.ocupado=true;perfilRender();
+  try{await regSesionLista();const {data,error}=await REG.sb.rpc("listar_medicos");if(error)throw error;PF.lista=data||[]}
+  catch(e){PF.lista=null;PF.msg="No se pudo cargar la lista de médicos. Revise la conexión.";PF.err=true}
+  PF.ocupado=false;perfilRender();
+}
+function perfilCerrar(){const el=document.getElementById("perfil");if(el)el.style.display="none"}
+function perfilAvisoOk(){try{localStorage.setItem("hvcp_aviso_pin","1")}catch(e){}perfilRender()}
+function perfilRender(){
+  const el=document.getElementById("perfil");if(!el)return;
+  let aviso=false;try{aviso=!localStorage.getItem("hvcp_aviso_pin")}catch(e){}
+  const msg=PF.msg?'<div class="pf-msg'+(PF.err?" err":"")+'" role="alert">'+esc(PF.msg)+'</div>':"";
+  let cuerpo;
+  if(!REG.sb) cuerpo='<p class="muted">Sin conexión con el registro: no se puede elegir ni crear un perfil. Conéctese a internet y recargue la página.</p>';
+  else if(PF.ocupado) cuerpo='<p class="muted">Cargando…</p>';
+  else if(PF.vista==="crear") cuerpo='<p class="muted">Nombre completo y un PIN de 4 dígitos que solo usted conozca.</p>'+
+    '<input id="pfnom" class="pf-in" autocomplete="off" placeholder="Nombre completo" maxlength="80">'+
+    '<input id="pfpin" class="pf-in pf-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="PIN">'+
+    '<input id="pfpin2" class="pf-in pf-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="Confirme el PIN">'+
+    '<div class="pf-fila"><button class="pf-btn" onclick="PF.vista=\'lista\';PF.msg=\'\';perfilRender()">Volver</button><button class="pf-btn pri" onclick="perfilCrear()">Crear y entrar</button></div>';
+  else if(PF.sel) cuerpo='<p class="muted">'+esc(PF.sel.nombre)+'</p><input id="pfpin" class="pf-in pf-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="PIN" onkeydown="if(event.key===\'Enter\')perfilEntrar()">'+
+    '<div class="pf-fila"><button class="pf-btn" onclick="PF.sel=null;PF.msg=\'\';perfilRender()">Volver</button><button class="pf-btn pri" onclick="perfilEntrar()">Entrar</button></div>';
+  else cuerpo=(PF.lista&&PF.lista.length?'<div class="pf-lista">'+PF.lista.map(m=>'<button onclick="perfilElegir(\''+m.id+'\')">'+esc(m.nombre)+'</button>').join("")+'</div>':'<p class="muted">Todavía no hay perfiles.</p>')+
+    '<div class="pf-fila"><button class="pf-btn" onclick="PF.vista=\'crear\';PF.msg=\'\';perfilRender()">Crear mi perfil</button></div>';
+  el.innerHTML='<div class="pf-caja"><h2>¿Quién atiende?</h2><p class="muted">Elija su perfil para registrar los casos a su nombre.</p>'+
+    (aviso?'<div class="pf-aviso"><b>Identificación práctica, no una seguridad fuerte.</b> El PIN evita confusiones entre colegas; no lo comparta y pulse «Cambiar médico» al terminar su turno. <button class="pf-btn" style="min-height:36px;margin-top:6px" onclick="perfilAvisoOk()">Entendido</button></div>':"")+
+    cuerpo+msg+'</div>';
+  const f=el.querySelector("#pfpin,#pfnom");if(f)setTimeout(()=>f.focus(),50);
+}
+function perfilElegir(id){PF.sel=(PF.lista||[]).find(m=>m.id===id)||null;PF.msg="";perfilRender()}
+function perfilError(d){const E={pin_incorrecto:"PIN incorrecto."+(d.restantes!=null?" Le quedan "+d.restantes+" intento"+(d.restantes===1?"":"s")+".":""),bloqueado:"Demasiados intentos. Espere "+(d.segundos||60)+" s.",no_existe:"Ese perfil ya no existe.",nombre_invalido:"Escriba el nombre completo (3 a 80 caracteres).",pin_invalido:"El PIN debe tener 4 dígitos.",nombre_existe:"Ya existe un perfil con ese nombre.",demasiados_perfiles:"Demasiados perfiles nuevos desde este dispositivo. Intente en una hora."};return E[d.error]||"No se pudo completar. Intente de nuevo."}
+async function perfilEntrar(){
+  const pin=(document.getElementById("pfpin")||{}).value||"";
+  if(!/^[0-9]{4}$/.test(pin)){PF.msg="El PIN debe tener 4 dígitos.";PF.err=true;perfilRender();return}
+  try{const {data,error}=await REG.sb.rpc("entrar_medico",{p_id:PF.sel.id,p_pin:pin});if(error)throw error;
+    if(data.error){PF.msg=perfilError(data);PF.err=true;perfilRender();return}
+    medGuardar({id:data.id,nombre:data.nombre});PF.msg="";perfilCerrar();renderAll()}
+  catch(e){PF.msg="No se pudo verificar el PIN. Revise la conexión.";PF.err=true;perfilRender()}
+}
+async function perfilCrear(){
+  const nom=((document.getElementById("pfnom")||{}).value||"").trim(),p1=(document.getElementById("pfpin")||{}).value||"",p2=(document.getElementById("pfpin2")||{}).value||"";
+  if(nom.length<3){PF.msg="Escriba el nombre completo.";PF.err=true;perfilRender();return}
+  if(!/^[0-9]{4}$/.test(p1)){PF.msg="El PIN debe tener 4 dígitos.";PF.err=true;perfilRender();return}
+  if(p1!==p2){PF.msg="Los dos PIN no coinciden.";PF.err=true;perfilRender();return}
+  try{const {data,error}=await REG.sb.rpc("crear_medico",{p_nombre:nom,p_pin:p1});if(error)throw error;
+    if(data.error){PF.msg=perfilError(data);PF.err=true;perfilRender();return}
+    medGuardar({id:data.id,nombre:data.nombre});PF.msg="";PF.vista="lista";perfilCerrar();renderAll()}
+  catch(e){PF.msg="No se pudo crear el perfil. Revise la conexión.";PF.err=true;perfilRender()}
+}
+// «Mis casos»: pendientes de cerrar y cerrados del médico activo; desde aquí se abre el cierre.
+const MC={casos:null,msg:""};
+async function misCasosAbrir(){
+  const el=document.getElementById("miscasos");if(!el)return;el.style.display="flex";MC.casos=null;MC.msg="Cargando…";misCasosRender();
+  if(!REG.sb||!MED){MC.msg=!MED?"Elija su perfil primero.":"Sin conexión con el registro.";misCasosRender();return}
+  try{await regSesionLista();const {data,error}=await REG.sb.rpc("mis_casos");if(error)throw error;
+    if(data.error==="sin_medico"){MC.msg="Vuelva a entrar con su PIN en este dispositivo.";misCasosRender();return}
+    MC.casos=data.casos||[];MC.msg=""}
+  catch(e){MC.msg="No se pudo cargar la lista. Revise la conexión."}
+  misCasosRender();
+}
+function misCasosCerrar(){const el=document.getElementById("miscasos");if(el)el.style.display="none"}
+function mcDx(c){const top=c.top||[],soap=c.soap||[];const s=top.find(t=>soap.includes(t.c))||top[0];return s?s.n:"Sin diagnóstico presuntivo"}
+function misCasosRender(){
+  const el=document.getElementById("miscasos");if(!el)return;
+  const item=c=>'<div class="mc-item"><div class="mc-t"><b>'+esc(c.codigo)+'</b><span>'+esc(fCorta(c.f))+' · '+esc(c.cerrado?(c.sinDx?"Sin diagnóstico definitivo":"Definitivo: "+(c.dx||"")):"SOAP: "+mcDx(c))+'</span></div><button class="pf-btn" style="min-height:40px" onclick="misCasosIr(\''+c.codigo+'\')">'+(c.cerrado?"Ver cierre":"Cerrar")+'</button></div>';
+  const pend=(MC.casos||[]).filter(c=>!c.cerrado),cerr=(MC.casos||[]).filter(c=>c.cerrado);
+  el.innerHTML='<div class="pf-caja"><h2>Mis casos</h2><p class="muted">'+esc(MED?MED.nombre:"")+'</p>'+(MC.msg?'<p class="muted">'+esc(MC.msg)+'</p>':"")+
+    (MC.casos?'<h3 style="font-size:15px;margin:10px 0 4px">Pendientes de cerrar ('+pend.length+')</h3>'+(pend.map(item).join("")||'<p class="muted">Ninguno.</p>')+
+      '<h3 style="font-size:15px;margin:14px 0 4px">Cerrados ('+cerr.length+')</h3>'+(cerr.map(item).join("")||'<p class="muted">Ninguno.</p>'):"")+
+    '<div class="pf-fila"><button class="pf-btn" onclick="misCasosCerrar()">Volver al motor</button></div></div>';
+}
+function misCasosIr(cod){misCasosCerrar();regToggle(true);REG.sel=null;REG.accCod=cod;regRender();regAbrirCodigo()}
+// Sin perfil activo, «Generar nota SOAP» (y la barra inferior y «Copiar») abre la pantalla de perfil.
+{const _g=genSOAP; genSOAP=function(){if(!MED){perfilAbrir();return}return _g.apply(this,arguments)}}
+setTimeout(medPintar,0);
+
 function regToggle(on){
   const app=document.querySelector(".app"),rv=document.getElementById("regview"),b=document.getElementById("regbtn");
   REG.abierto=on;app.style.display=on?"none":"";rv.style.display=on?"block":"none";b.textContent=on?"Volver al motor":"Registro de casos";
@@ -3394,7 +3505,7 @@ async function regGuardarCierre(){
   if(fh.length){REG.edMsg="Indique el hallazgo principal de: "+fh.map(id=>(LABT.find(x=>x[0]===id)||[,id])[1]).join(", ")+" (o «No determinado»).";regRender();return}
   if(!E.dx&&!E.sinDx&&!conDatos){REG.edMsg="Registre el diagnóstico definitivo (o «Sin diagnóstico definitivo») antes de guardar.";regRender();return}
   if(!E.dx&&!E.sinDx&&!confirm("No registró el diagnóstico definitivo. Se guardarán los resultados y el caso seguirá pendiente. ¿Continuar?"))return;
-  const doc=JSON.parse(JSON.stringify({...E,fc:new Date().toISOString(),por:REG.uid||null}));
+  const doc=JSON.parse(JSON.stringify({...E,fc:new Date().toISOString(),por:REG.uid||null,medicoId:MED?MED.id:null}));
   REG.edMsg="Guardando…";regRender();
   if(!REG.sb){REG.edMsg="Sin conexión con el registro. Intente de nuevo cuando haya red.";regRender();return}
   try{const {data,error}=await REG.sb.rpc("guardar_cierre",{p_codigo:x.id,p:doc});if(error)throw error;
@@ -3698,7 +3809,7 @@ function regSesionLista(){
   if(!REG.listaP)REG.listaP=(async()=>{
     try{let {data:{session}}=await REG.sb.auth.getSession();
       if(!session){const r=await REG.sb.auth.signInAnonymously();if(r.error)return false;session=r.data.session}
-      if(REG.uid&&REG.uid!==session.user.id)REG.sesion=null; // otro usuario: la sesión de uso anterior no le pertenece
+      if(REG.uid&&REG.uid!==session.user.id){REG.sesion=null;setTimeout(medVerificar,0)} // otro usuario: la sesión de uso y el perfil se revisan
       REG.uid=session.user.id;return true}catch(e){return false}
   })().finally(()=>{REG.listaP=null});
   return REG.listaP;
@@ -3724,7 +3835,8 @@ function regEvento(tipo){if(!REG.sb||!REG.uid||!navigator.onLine)return;REG.sb.r
   // Enlace de recuperación de contraseña: pedir la nueva al abrir la página.
   REG.sb.auth.onAuthStateChange(async(ev)=>{if(ev==="PASSWORD_RECOVERY"){const n=prompt("Escriba su nueva contraseña (mínimo 10 caracteres):");
     if(n&&n.length>=10){const {error}=await REG.sb.auth.updateUser({password:n});alert(error?"No se pudo cambiar la contraseña.":"Contraseña actualizada.")}}});
-  if(await regSesionLista()){await regPerfil();await regSesionUso()}
+  if(await regSesionLista()){await regPerfil();await regSesionUso();await medVerificar()}
+  else if(!MED)perfilAbrir();
   netPintar();colaEnviar();
   if(REG.abierto){if(REG.admin&&!REG.cargado)regCargar();regRender()}
   window.addEventListener("online",()=>{netPintar();colaEnviar()});window.addEventListener("offline",netPintar);

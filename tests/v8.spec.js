@@ -3,9 +3,11 @@
 import { test, expect } from "@playwright/test";
 
 const SIN_CONFIG = 'window.HVCP_CONFIG={supabaseUrl:"https://TU-PROYECTO.supabase.co",supabaseAnonKey:"PEGUE-AQUI-LA-ANON-KEY"};';
-export async function abrir(browser, opts = {}) {
+export async function abrir(browser, opts = {}, { medico = true } = {}) {
   const ctx = await browser.newContext(opts);
   await ctx.route("**/config.js", (r) => r.fulfill({ contentType: "text/javascript", body: SIN_CONFIG }));
+  // Perfil activo simulado (sin servidor no se verifica el PIN); medico: false = dispositivo sin perfil.
+  if (medico) await ctx.addInitScript(() => { try { localStorage.setItem("hvcp_medico", JSON.stringify({ id: "00000000-0000-4000-8000-000000000001", nombre: "Médico de prueba" })); localStorage.setItem("hvcp_aviso_pin", "1"); } catch (e) {} });
   const page = await ctx.newPage();
   const errores = [];
   page.on("pageerror", (e) => errores.push(String(e)));
