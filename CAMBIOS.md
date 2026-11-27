@@ -35,7 +35,7 @@ Rama `v8.0`, un commit por cambio; PR a `main` sin fusionar (lo aprueba la Direc
 ### V4 · Estado de conciencia (6 estados) — `e7171e9`
 - **Qué cambió:** escala Alerta / Deprimido / Estupor / Coma, más «Crítico ER» y «Sin signos vitales». Alertas: «Prioridad 1 (triaje)» en estupor, coma y Crítico ER; recordatorio de completar el examen en Crítico ER; recordatorio de peso para RCP. SOAP: línea de conciencia, «examen físico diferido» con los campos faltantes, texto de RCP.
 - **Magnitud del puntaje:** ±10 (`CONC_SUBE` / `CONC_BAJA`) solo en los diagnósticos que alteran la conciencia: TCE, hipoglucemia, encefalopatía hepática, anticolinesterásicos, ivermectina, etilenglicol, golpe de calor, epilepsia. Justificación: es el mismo peso que un signo de apoyo; ordena entre candidatos sin crear un diagnóstico por sí solo. La hiponatremia no es diagnóstico del motor; no se creó.
-- **«Sin signos vitales»:** no calcula diagnósticos (`scoreDx` devuelve vacío); el caso se registra como RCP sin motivo de consulta.
+- **«Sin signos vitales»:** no calcula diagnósticos (`scoreDx` devuelve vacío); el caso se registra como RCP sin motivo de consulta. Ajustado después en V4b.
 - **Zonas:** `P_CONC`, `answers` (`A.conc`), `scoreDx` (envoltura), `setConc`, alertas, SOAP, `regTrasSOAP`.
 - **Verificación:** `v8.spec.js`. **Resultado:** OK.
 
@@ -54,6 +54,22 @@ Rama `v8.0`, un commit por cambio; PR a `main` sin fusionar (lo aprueba la Direc
 - **Qué cambió:** sin recarga por arrastre (`overscroll-behavior-y: contain`); borrador automático del paciente en curso cada ~2 s por médico (`hvcp_borrador_<medicoId>`); barra «Recuperar paciente en curso» con Recuperar / Descartar; aviso del navegador al salir con paciente sin nota SOAP. El borrador se borra al generar la SOAP o con «Nuevo paciente» y sobrevive a la recarga por versión nueva.
 - **Zonas:** CSS, `#borrador`, `bor*`, `renderRight` (envoltura), `beforeunload`.
 - **Verificación:** `v8.spec.js` (recargar → recuperar idéntico; descartar; SOAP borra). **Resultado:** OK.
+
+### Ajustes pedidos por Melvyn el 27/11/2026 (después de abrir el PR)
+
+#### V4b · «Sin signos vitales»: SOAP directa y caso cerrado sin diagnóstico — `51d1167`
+- **Qué cambió:** con «Sin signos vitales» ya no se exige ningún otro dato (antes pedía la especie). Se genera la nota SOAP y el caso queda **cerrado** con «Sin diagnóstico definitivo» y la nota «Cierre automático: paciente sin signos vitales al ingreso (RCP)».
+- **Cómo:** el cierre va en la cola local inmediatamente después del caso; la cola ahora envía casos (`registrar_caso`) y cierres (`guardar_cierre`), en orden. Sin red, ambos se envían al reconectar. No requiere cambios en el servidor (la migración 08 ya acepta `sinDx` y especie vacía).
+- **Zonas:** `faltantes()`, `regTrasSOAP`, `regCierreRCP` (nueva), `colaEnviar_`, `netPintar`, `colaTiene`.
+- **Verificación:** `v8.spec.js` (sin especie: SOAP, caso con `rcp: true` y cierre `sinDx` en la cola) y `v8_medicos.spec.js` contra el proyecto de prueba (el servidor guarda el cierre con `sin_dx = true`, sin diagnóstico y `rcp = true`). **Resultado:** OK.
+
+#### Hipotermia graduada con la escala de hipotermia secundaria — `2f4dfdc`
+- **Motivo:** un gato con 34.6 °C salía como «hipotermia leve». El motor usaba la escala de hipotermia **primaria** por exposición (leve 32–37, moderada 28–32, severa < 28 °C; Wong 1983, de medicina humana).
+- **Literatura:** en el paciente enfermo o traumatizado (hipotermia **secundaria**, la habitual en urgencias) los efectos adversos aparecen a temperaturas más altas; por eso Oncken, Kirby y Rudloff (Compend Contin Educ Pract Vet 2001;23:506–521) propusieron leve 36.7–37.7, moderada 35.5–36.7, severa 33–35.5 y crítica < 33 °C, escala aceptada en veterinaria y usada en la revisión de Brodeur et al. (J Vet Emerg Crit Care 2017) y en estudios felinos recientes (con cortes de ±0.1 °C).
+- **Qué cambió:** leve 36.7–37.5 (amarillo), moderada 35.5–36.7 (amarillo), severa 33–35.5 (rojo), crítica < 33 °C (rojo). 34.6 °C = **hipotermia severa**. Se aplica a todos los pacientes: el motor no distingue la causa, y la escala secundaria es la más prudente.
+- **Lo que no cambia:** el umbral de hipotermia (< 37.5 °C) y el puntaje de los diagnósticos; solo la etiqueta, el color y el texto de la SOAP. El top-5 de la regresión no puede cambiar por esto.
+- **Zonas:** `tempCls()`, ayuda de «Temperatura».
+- **Verificación:** prueba con 10 temperaturas en los límites de cada grado (`v8.spec.js`). **Resultado:** OK.
 
 ### Regresión (`tests/regresion_v8.mjs`, resultado en `docs/v8/regresion_v8.json`)
 - Identidad clínica: **600 de 600** combinaciones con top-5 y puntajes idénticos (v7.9.7 con el mismo estado hemodinámico que calcula la v8.0; conciencia = Deprimido).
