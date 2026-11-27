@@ -51,3 +51,30 @@ test("V1: sin condición corporal no se genera la nota ni se registra el caso, y
   expect(errores).toEqual([]);
   await ctx.close();
 });
+
+test("V2: cada obligatorio vacío, uno a la vez, bloquea la nota y el registro; las funciones internas tampoco lo saltan", async ({ browser }) => {
+  const { ctx, page, errores } = await abrir(browser);
+  const bloquean = [];
+  for (const k of Object.keys(COMPLETO)) {
+    await page.evaluate(() => resetAll());
+    const { [k]: _, ...datos } = COMPLETO;
+    await llenar(page, { ...datos, conc: "alerta" });
+    const r = await generar(page);
+    await page.evaluate(() => avisoCerrar());
+    if (r.soap === "" && r.cola === 0) bloquean.push(k);
+  }
+  expect(bloquean).toEqual(Object.keys(COMPLETO));
+  // Llamadas directas a las funciones internas, con un obligatorio vacío
+  await page.evaluate(() => resetAll());
+  const { peso, ...sinPeso } = COMPLETO;
+  await llenar(page, { ...sinPeso, conc: "alerta" });
+  const d = await page.evaluate(async () => { genSOAPbase(); regTrasSOAP(); await REG.cola; await new Promise((r) => setTimeout(r, 300));
+    return { soap: document.getElementById("soap").value, cola: JSON.parse(localStorage.getItem("mc_cola_registro") || "[]").length }; });
+  expect(d).toEqual({ soap: "", cola: 0 });
+  // Completo: sí genera y registra
+  await page.evaluate(() => setPeso("18"));
+  const ok = await generar(page);
+  expect(ok.soap).not.toBe(""); expect(ok.cola).toBe(1);
+  expect(errores).toEqual([]);
+  await ctx.close();
+});
