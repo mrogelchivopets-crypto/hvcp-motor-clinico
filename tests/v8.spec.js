@@ -423,3 +423,42 @@ test("Cerrar sesión: pide confirmación, borra el perfil del dispositivo y vuel
   expect(errores).toEqual([]);
   await ctx.close();
 });
+
+test("Administrador: pestaña «Usuarios» con perfiles de médico y sus estadísticas", async ({ browser }) => {
+  const { ctx, page, errores } = await abrir(browser);
+  const r = await page.evaluate(() => {
+    const h = (n) => new Date(Date.now() - n * 36e5).toISOString();
+    const U = "00000000-0000-4000-8000-0000000000a1", D = "00000000-0000-4000-8000-0000000000a2", T = "00000000-0000-4000-8000-0000000000a3";
+    REG.meds = [
+      { id: U, nombre: "Dra. Uno", activo: true, bloqueado_hasta: null, creado: h(100) },
+      { id: D, nombre: "Dr. Dos", activo: true, bloqueado_hasta: new Date(Date.now() + 6e4).toISOString(), creado: h(90) },
+      { id: T, nombre: "Dr. Tres", activo: false, bloqueado_hasta: null, creado: h(80) }];
+    REG.medDisp = [{ usuario: "d1", medico_id: U, activo: true }, { usuario: "d2", medico_id: U, activo: true }, { usuario: "d3", medico_id: D, activo: false }];
+    const top = [{ c: "GEN-DIG-001", n: "Gastritis", sc: 40 }];
+    const caso = (id, n, medicoId, medico, ent = {}) => ({ id, f: h(n), v: "8.0", medicoId, medico, min: 5, ent: { esp: "c", ex: {}, signsAll: [], ...ent },
+      sal: { top, alta: [], soap: ["GEN-DIG-001"], soapAuto: true, insuf: false, faltan: [], qPend: [], qVis: 0 } });
+    REG.casos = [caso("MC-U1", 2, U, "Dra. Uno"), caso("MC-U2", 10, U, "Dra. Uno"), caso("MC-U3", 40, U, "Dra. Uno"),
+      caso("MC-D1", 5, D, "Dr. Dos", { rcp: true, conc: "ssv" }), caso("MC-X1", 60, null, undefined)];
+    REG.cierres = new Map([["MC-U2", { dx: { c: "GEN-DIG-001", n: "Gastritis" }, conf: "lab", fc: h(1), cerradoPor: "Dr. Dos" }],
+      ["MC-D1", { sinDx: true, fc: h(1), cerradoPor: "Dr. Dos" }]]);
+    REG.vet = "";
+    const d = document.createElement("div"); d.innerHTML = regMedicos();
+    const filas = [...d.querySelectorAll("#medtabla tr")].slice(1).map((tr) => [...tr.querySelectorAll("td")].map((td) => td.innerText.trim()));
+    const btn = !!document.querySelector('#regtabs .opt[data-v="med"]');
+    return { btn, filas, kpis: d.querySelector(".reg-kpis").innerText };
+  });
+  expect(r.btn).toBe(true);
+  const fila = (n) => r.filas.find((f) => f[0].startsWith(n));
+  // Columnas: médico, casos, pendientes, cerrados, por tiempo, % cerrados, cierres hechos, con dx, top-1, top-3, mediana, último, dispositivos
+  expect(fila("Dra. Uno").slice(1, 8)).toEqual(["3", "1", "1", "1", "33%", "0", "1"]);
+  expect(fila("Dra. Uno")[8]).toContain("100%");
+  expect(fila("Dra. Uno")[12]).toBe("2");
+  expect(fila("Dr. Dos")[0]).toContain("Bloqueado");
+  expect(fila("Dr. Dos").slice(1, 8)).toEqual(["1", "0", "1", "0", "100%", "2", "0"]);
+  expect(fila("Dr. Tres")[0]).toContain("Inactivo");
+  expect(fila("Dr. Tres")[1]).toBe("0");
+  expect(r.filas[r.filas.length - 1][0]).toContain("Sin perfil");
+  expect(r.kpis).toContain("perfiles de médico");
+  expect(errores).toEqual([]);
+  await ctx.close();
+});

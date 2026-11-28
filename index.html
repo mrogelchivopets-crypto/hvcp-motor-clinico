@@ -432,7 +432,7 @@ details[open]>summary .sg-ocu{display:inline}
 </div>
 <section id="regview" style="display:none"><div class="reg-wrap">
  <div class="reg-head"><div class="step-t">Registro de casos</div><div class="muted">Sin datos del propietario. Cada nota SOAP generada crea un caso; aquí se agrega el diagnóstico definitivo y los exámenes clave.</div></div>
- <div class="reg-bar" id="regbar" style="display:none"><div class="opts" id="regtabs"><button class="opt" data-v="casos" onclick="REG.sel=null;regSet('vista','casos')">Casos</button><button class="opt" data-v="ind" onclick="REG.sel=null;regSet('vista','ind')">Indicadores</button><button class="opt" data-v="uso" onclick="REG.sel=null;regSet('vista','uso')">Uso</button></div>
+ <div class="reg-bar" id="regbar" style="display:none"><div class="opts" id="regtabs"><button class="opt" data-v="casos" onclick="REG.sel=null;regSet('vista','casos')">Casos</button><button class="opt" data-v="ind" onclick="REG.sel=null;regSet('vista','ind')">Indicadores</button><button class="opt" data-v="uso" onclick="REG.sel=null;regSet('vista','uso')">Uso</button><button class="opt" data-v="med" onclick="REG.sel=null;regSet('vista','med')">Usuarios</button></div>
   <select id="regrango" class="reg-sel" onchange="regSet('rango',this.value)"><option value="7">Últimos 7 días</option><option value="30">Últimos 30 días</option><option value="90">Últimos 90 días</option><option value="365">Últimos 12 meses</option><option value="todo">Todo el registro</option></select>
   <select id="regvet" class="reg-sel" onchange="regSet('vet',this.value)" aria-label="Filtrar por veterinario o dispositivo"><option value="">Todo el hospital</option></select>
   <button class="opt" onclick="regCargar()">Actualizar</button><button class="opt" id="regexport" onclick="regExportar()">Exportar a Excel</button><button class="mot2b" onclick="regSalirAdmin()">Cerrar sesión de administrador</button></div>
@@ -3170,7 +3170,7 @@ const VCAP={"14":"Enfermedades de la Piel y Tejido Subcutáneo","01":"Enfermedad
 // ═══════════════════════════════════════════════════════════════
 // V6 (v8.0): única fuente de la versión. Se usa en el título, el encabezado, la nota SOAP, el pie y el registro.
 // version.json (raíz del repositorio) debe tener los mismos valores: «Nuevo paciente» lo compara para actualizar.
-const MC_VERSION="8.0", MC_BUILD="2026-11-27d";
+const MC_VERSION="8.0", MC_BUILD="2026-11-28a";
 const MOTOR_VER=MC_VERSION; // nombre anterior (registro, scripts de catálogo, exportación y retroalimentación)
 document.title="HVCP ER Motor Clínico v"+MC_VERSION+" · registro en línea";
 {const h=document.getElementById("htitle");if(h)h.textContent="Motor Clínico de Urgencias v"+MC_VERSION+" · registro en línea";}
@@ -3457,6 +3457,7 @@ async function regCargar(){
     REG.todos=casos;REG.cierresTodos=cier;regFiltrarVet();
     // Sesiones de uso del período (tablero «Uso»); si falla, el resto del panel sigue funcionando.
     REG.ses=null;try{const r=await REG.sb.from("v_uso_sesiones").select("dia,usuario,veterinario,sesiones,minutos_de_uso").gte("dia",diaSV(regDesde()));if(!r.error)REG.ses=r.data||[]}catch(e){}
+    await regMedCargar();
     REG.cargado=true}
   catch(e){REG.err=e&&e.code==="42501"?"Esta cuenta no tiene rol de administrador.":"No se pudo leer el registro. Revise la conexión e intente de nuevo."}
   REG.cargando=false;regRender();
@@ -3491,7 +3492,7 @@ function regRender(){
   if(!REG.admin){el.innerHTML=regAcceso();return}
   if(REG.err){el.innerHTML=`<div class="alert r"><b>Error</b>${esc(REG.err)}</div>`;return}
   if(REG.cargando&&!REG.cargado){el.innerHTML=`<div class="empty">Cargando casos…</div>`;return}
-  el.innerHTML=`<p class="muted" style="margin-bottom:10px">Sesión de administrador: ${esc(REG.nombre)}</p>`+(REG.vista==="casos"?regLista():REG.vista==="uso"?regUso():regIndicadores());
+  el.innerHTML=`<p class="muted" style="margin-bottom:10px">Sesión de administrador: ${esc(REG.nombre)}</p>`+(REG.vista==="casos"?regLista():REG.vista==="uso"?regUso():REG.vista==="med"?regMedicos():regIndicadores());
 }
 
 function regLista(){
@@ -3725,6 +3726,51 @@ function regUso(){
     ${sinCasos.length?`<tr><td class="muted">Abrieron el motor sin registrar casos: ${sinCasos.length} dispositivo${sinCasos.length===1?"":"s"}</td><td class="n">0</td><td class="n">—</td><td class="n">—</td><td class="n">${REG.ses?sinCasos.reduce((a,r)=>a+r.ses,0):"—"}</td><td class="n">${REG.ses?fDur(sinCasos.reduce((a,r)=>a+r.uso,0)):"—"}</td></tr>`:""}</table></div>`,
     "Los médicos usan el motor sin cuenta: cada teléfono o computadora aparece como «Anónimo · disp.» con un código propio. Las sesiones incluyen el uso sin registrar casos.")}`;
 }
+// ─── Usuarios (solo admin): perfiles de médico con sus estadísticas del período ───
+// Perfiles y dispositivos se leen de las tablas medicos y medico_dispositivo (la política RLS solo deja leerlas al admin;
+// el hash del PIN no se concede). Las estadísticas usan los casos ya cargados: mismo período y filtro que las otras pestañas.
+async function regMedCargar(){
+  REG.meds=null;REG.medDisp=null;if(!REG.sb||!REG.admin)return;
+  try{const [m,d]=await Promise.all([REG.sb.from("medicos").select("id,nombre,activo,bloqueado_hasta,creado"),REG.sb.from("medico_dispositivo").select("usuario,medico_id,desde,activo")]);
+    if(!m.error)REG.meds=m.data||[];if(!d.error)REG.medDisp=d.data||[]}catch(e){}
+}
+function regMedFilas(){
+  const C=REG.casos,st=regStats(),evm=new Map(st.ev.map(r=>[r.c.id,r])),filas=new Map(),porNom=new Map();
+  const nueva=(id,n,m)=>{const r={id,n,m,casos:[],cierres:0};filas.set(id,r);porNom.set(String(n).trim().toLowerCase(),r);return r};
+  (REG.meds||[]).forEach(m=>nueva(m.id,m.nombre,m));
+  C.forEach(c=>{const id=c.medicoId||(c.medico?"nom:"+c.medico:"_sin");
+    (filas.get(id)||porNom.get(String(c.medico||"").trim().toLowerCase())||nueva(id,c.medico||"Sin perfil (anterior a la v8.0)",null)).casos.push(c)});
+  C.forEach(c=>{const k=REG.cierres.get(c.id),r=k&&k.cerradoPor&&porNom.get(String(k.cerradoPor).trim().toLowerCase());if(r)r.cierres++});
+  const ahora=Date.now(),disp=REG.medDisp||[];
+  return [...filas.values()].map(r=>{
+    const est=c=>estadoCaso(c.f,REG.cierres.get(c.id)),E=r.casos.map(c=>evm.get(c.id)).filter(Boolean);
+    const m=r.m,bloq=m&&m.bloqueado_hasta&&new Date(m.bloqueado_hasta).getTime()>ahora;
+    return {...r,gen:r.casos.length,pend:r.casos.filter(c=>est(c)==="pend").length,cerr:r.casos.filter(c=>est(c)==="cerr").length,venc:r.casos.filter(c=>est(c)==="venc").length,
+      nEv:E.length,h1:E.filter(x=>x.h1).length,h3:E.filter(x=>x.h3).length,min:mediana(r.casos.map(c=>c.min)),
+      ult:r.casos.reduce((a,c)=>!a||c.f>a?c.f:a,null),disp:m?disp.filter(d=>d.medico_id===m.id&&d.activo).length:null,
+      estado:!m?(r.id==="_sin"?"":"—"):!m.activo?"Inactivo":bloq?"Bloqueado":"Activo"}})
+   .sort((a,b)=>((a.id==="_sin")-(b.id==="_sin"))||b.gen-a.gen||a.n.localeCompare(b.n,"es"));
+}
+function regMedicos(){
+  if(REG.cargando&&!REG.cargado)return `<div class="empty">Cargando…</div>`;
+  const F=regMedFilas(),perf=F.filter(r=>r.m),conCasos=perf.filter(r=>r.gen),sinCasos=perf.filter(r=>!r.gen);
+  if(!F.length)return `<div class="empty">Aún no hay perfiles de médico ni casos en este período.</div>`;
+  const P=(k,n)=>n?`${pct(k,n)} <span class="muted">(${k}/${n})</span>`:"—";
+  const lk={Activo:"s",Inactivo:"m",Bloqueado:"m"};
+  const fila=r=>`<tr><td><b>${esc(r.n)}</b>${r.estado&&r.estado!=="—"?` <span class="lk ${lk[r.estado]}">${r.estado}</span>`:""}${r.m?`<div class="muted">Perfil desde ${esc(fCorta(r.m.creado))}</div>`:""}</td>
+    <td class="n">${r.gen}</td><td class="n">${r.pend}</td><td class="n">${r.cerr}</td><td class="n">${r.venc}</td><td class="n">${r.gen?pct(r.cerr,r.gen):"—"}</td>
+    <td class="n">${r.m?r.cierres:"—"}</td><td class="n">${r.nEv}</td><td class="n">${P(r.h1,r.nEv)}</td><td class="n">${P(r.h3,r.nEv)}</td>
+    <td class="n">${fDur(r.min)}</td><td class="n">${r.ult?esc(fCorta(r.ult)):"—"}</td><td class="n">${r.disp==null?"—":r.disp}</td></tr>`;
+  return `<div class="reg-kpis">
+    <div><span class="reg-k">${REG.meds?perf.length:"—"}</span><span class="muted">perfiles de médico${REG.meds?` · ${perf.filter(r=>r.estado==="Activo").length} activos`:" (no se pudieron leer)"}</span></div>
+    <div><span class="reg-k">${conCasos.length}</span><span class="muted">médicos con casos en el período</span></div>
+    <div><span class="reg-k">${sinCasos.length}</span><span class="muted">perfiles sin casos en el período</span></div></div>
+  ${REG.vet?`<div class="alert y"><b>Filtro activo</b>Las estadísticas solo cuentan los casos del dispositivo elegido arriba. Elija «Todo el hospital» para ver a todos.</div>`:""}
+  <div class="card"><div class="card-h">Usuarios del motor y sus estadísticas</div><div class="card-b"><div class="uso-tabla"><table class="kcl" id="medtabla">
+   <tr><th style="min-width:160px">Médico</th><th class="n">Casos</th><th class="n">Pendientes</th><th class="n">Cerrados</th><th class="n">Cerrados por tiempo</th><th class="n">% cerrados</th><th class="n">Cierres hechos</th><th class="n">Con dx definitivo</th><th class="n">Top-1</th><th class="n">Top-3</th><th class="n">Mediana hasta SOAP</th><th class="n">Último caso</th><th class="n">Dispositivos</th></tr>
+   ${F.map(fila).join("")}</table></div>
+   <p class="muted" style="margin-top:8px">Período elegido arriba. <b>Casos</b>: notas SOAP generadas con ese perfil. <b>Pendientes</b>: sin cierre y menos de ${VENCE_H} h. <b>Cierres hechos</b>: casos del período que ese médico cerró (suyos o de otros). <b>Top-1 / Top-3</b>: acierto del motor en sus casos con diagnóstico definitivo, sin contar los casos sin signos vitales (RCP). <b>Dispositivos</b>: teléfonos o computadoras donde el perfil tiene la sesión abierta. «Bloqueado»: 5 PIN incorrectos, espera de 60 s.</p></div></div>`;
+}
 function regPodio(s){const A=s.acc,f=o=>({n:o.h1.n,p1:o.h1.k,p23:o.h3.k-o.h1.k,fu:o.h1.n-o.h3.k});
   const T=f(A.todos),O=f(A.obj),P=(k,n)=>n?Math.round(k/n*100)+" %":"—",cel=(k,n)=>`<td class="code" style="text-align:right"><b>${k}</b></td><td class="code" style="text-align:right">${P(k,n)}</td>`;
   const barra=o=>o.n?`<div class="podio-bar" role="img" aria-label="1.er lugar ${o.p1}, 2.º o 3.er lugar ${o.p23}, fuera ${o.fu}"><i class="p1" style="width:${o.p1/o.n*100}%"></i><i class="p23" style="width:${o.p23/o.n*100}%"></i><i class="pf" style="width:${o.fu/o.n*100}%"></i></div>`:"";
@@ -3877,7 +3923,7 @@ async function regRecuperar(){
 }
 async function regSalirAdmin(){
   if(REG.sb)await REG.sb.auth.signOut();
-  Object.assign(REG,{admin:false,nombre:"",casos:[],todos:[],cierres:new Map(),cierresTodos:new Map(),cargado:false,sel:null,ed:null,vet:"",admMsg:"Sesión de administrador cerrada."});
+  Object.assign(REG,{admin:false,nombre:"",meds:null,medDisp:null,casos:[],todos:[],cierres:new Map(),cierresTodos:new Map(),cargado:false,sel:null,ed:null,vet:"",admMsg:"Sesión de administrador cerrada."});
   await regSesionLista();await regNuevaSesion();regRender();
 }
 async function regPerfil(){

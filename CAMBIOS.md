@@ -1,5 +1,12 @@
 # Historial de cambios del Motor Clínico
 
+## v8.0 — compilación 2026-11-28a · 28/11/2026 · pestaña «Usuarios» en el panel de administrador (pedido por Melvyn)
+
+- **Qué cambió:** pestaña nueva **«Usuarios»** junto a Casos · Indicadores · Uso. Lista todos los perfiles de médico (también los que no tienen casos en el período) con: estado (Activo, Inactivo o Bloqueado por PIN), fecha de creación del perfil, casos generados, pendientes (< 30 h), cerrados, cerrados por tiempo, % cerrados, cierres hechos por ese médico, casos con diagnóstico definitivo, acierto top-1 y top-3 del motor (sin RCP), mediana hasta la nota SOAP, último caso y dispositivos con la sesión abierta. Los casos anteriores a la v8.0 van en «Sin perfil».
+- **Datos:** las estadísticas usan los casos ya cargados (mismo período y filtro que las otras pestañas). Perfiles y dispositivos se leen de `medicos` y `medico_dispositivo`, que la migración 08 ya deja leer solo al admin (sin el hash del PIN). **Sin migración nueva.** Se borran de la memoria al cerrar la sesión de administrador.
+- **Lógica clínica:** sin cambios (solo `regMedCargar`, `regMedFilas`, `regMedicos`, el botón de la pestaña y la llamada en `regCargar`).
+- **Verificación:** `node --check` del script, OK. `tests/v8.spec.js`: prueba nueva «Administrador: pestaña Usuarios» (conteos, estados, cierres hechos, dispositivos, «Sin perfil»); 21/21 OK. `tests/equivalencia.spec.js` falla igual en `main` sin este cambio (compara con la v7.9.6, anterior al estado hemodinámico calculado de la v8.0); no lo causa este cambio. Captura: `docs/v8/capturas/admin-usuarios-celular.png`.
+
 ## v8.0 — compilación 2026-11-27b · publicada el 27/11/2026 a las 17:58 (base: v7.9.7 compilación 2026-11-27a)
 
 Rama `v8.0`, un commit por cambio; PR a `main` sin fusionar (lo aprueba la Dirección General).
