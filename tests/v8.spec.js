@@ -403,3 +403,23 @@ test("Turnos del hospital: diurno 6:00–18:00 y nocturno 18:00–6:00 (hora de 
   expect(errores).toEqual([]);
   await ctx.close();
 });
+
+test("Cerrar sesión: pide confirmación, borra el perfil del dispositivo y vuelve a la pantalla de inicio", async ({ browser }) => {
+  const { ctx, page, errores } = await abrir(browser);
+  await expect(page.locator("#medbtn")).toHaveText("👤 Médico de prueba");
+  await expect(page.locator("#salirbtn")).toBeVisible();
+  // Si cancela, la sesión sigue
+  await page.evaluate(() => { window.confirm = () => false; });
+  await page.locator("#salirbtn").click();
+  expect(await page.evaluate(() => MED && MED.nombre)).toBe("Médico de prueba");
+  // Si confirma, se cierra
+  await page.evaluate(() => { window.confirm = () => true; });
+  await page.locator("#salirbtn").click();
+  await expect(page.locator("#perfil")).toBeVisible();
+  expect(await page.evaluate(() => [MED, localStorage.getItem("hvcp_medico")])).toEqual([null, null]);
+  await expect(page.locator("#salirbtn")).toBeHidden();
+  await expect(page.locator("#miscasosbtn")).toBeHidden();
+  await expect(page.locator("#medbtn")).toHaveText("Iniciar sesión");
+  expect(errores).toEqual([]);
+  await ctx.close();
+});

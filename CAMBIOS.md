@@ -126,6 +126,10 @@ Rama `v8.0`, un commit por cambio; PR a `main` sin fusionar (lo aprueba la Direc
 - **Corrección:** lo escrito en la pantalla de perfil ya no se borra si la pantalla se vuelve a dibujar mientras carga.
 - **Pruebas:** `v8_medicos.spec.js` (sin lista de nombres, usuario inexistente, usuario en mayúsculas y con espacios, bloqueo, otro dispositivo) y `flujo.spec.js` (el primer dispositivo crea el perfil y los demás entran con usuario y PIN). Captura: `docs/v8/capturas/v5-inicio-usuario-pin.png`.
 
+### «Cerrar sesión» — compilación 2026-11-27d (pedido por Melvyn el 27/11/2026)
+- **Qué cambió:** botón **«Cerrar sesión»** en la barra superior, visible con un médico activo. Pide confirmación, avisa al servidor (`salir_medico`: deja de aceptar casos a nombre de ese médico en el dispositivo), borra el perfil del dispositivo y vuelve a la pantalla de usuario y PIN. El botón con el nombre del médico sigue sirviendo para cambiar de médico; sin sesión dice «Iniciar sesión». El paciente en curso no se borra.
+- **Verificación:** `v8.spec.js` (cancelar mantiene la sesión; confirmar la cierra, oculta «Mis casos» y «Cerrar sesión» y muestra el inicio). Capturas: `docs/v8/capturas/v5-cerrar-sesion-celular.png` y `-tablet.png`. 26 pruebas sin red OK.
+
 ### Límites conocidos
 - Seguridad del PIN: 4 dígitos con bcrypt y bloqueo por intentos; protege contra errores y uso casual, no contra alguien con acceso a la cuenta del dispositivo.
 - Borrador por dispositivo (localStorage): no pasa de un dispositivo a otro.

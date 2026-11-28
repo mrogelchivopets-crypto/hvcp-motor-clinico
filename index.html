@@ -398,8 +398,9 @@ details[open]>summary .sg-ocu{display:inline}
   <div><div class="htitle" id="htitle">Motor Clínico de Urgencias · registro en línea</div><div class="hsub">Signos → sistemas implicados → diagnósticos presuntivos · Codificación VetCIE-1</div><div class="hclock" id="hclock" aria-label="Fecha y hora"></div></div>
   <span class="hspace"></span>
   <span class="netst" id="netst" role="status" aria-live="polite"></span>
-  <button class="reset" id="medbtn" onclick="medCambiar()" title="Médico activo">Elegir médico</button>
+  <button class="reset" id="medbtn" onclick="medCambiar()" title="Médico activo">Iniciar sesión</button>
   <button class="reset" id="miscasosbtn" onclick="misCasosAbrir()">Mis casos</button>
+  <button class="reset" id="salirbtn" onclick="medSalir()" title="Cerrar la sesión del médico en este dispositivo" style="display:none">Cerrar sesión</button>
   <button class="reset" id="themebtn" onclick="toggleTheme()" title="Cambiar a modo claro u oscuro">Modo claro</button>
   <button class="reset" id="regbtn" onclick="regToggle(!REG.abierto)">Registro de casos</button>
   <button class="reset" onclick="nuevoPaciente()">Nuevo paciente</button>
@@ -3169,7 +3170,7 @@ const VCAP={"14":"Enfermedades de la Piel y Tejido Subcutáneo","01":"Enfermedad
 // ═══════════════════════════════════════════════════════════════
 // V6 (v8.0): única fuente de la versión. Se usa en el título, el encabezado, la nota SOAP, el pie y el registro.
 // version.json (raíz del repositorio) debe tener los mismos valores: «Nuevo paciente» lo compara para actualizar.
-const MC_VERSION="8.0", MC_BUILD="2026-11-27c";
+const MC_VERSION="8.0", MC_BUILD="2026-11-27d";
 const MOTOR_VER=MC_VERSION; // nombre anterior (registro, scripts de catálogo, exportación y retroalimentación)
 document.title="HVCP ER Motor Clínico v"+MC_VERSION+" · registro en línea";
 {const h=document.getElementById("htitle");if(h)h.textContent="Motor Clínico de Urgencias v"+MC_VERSION+" · registro en línea";}
@@ -3292,7 +3293,7 @@ async function regGuardar(prueba){
 function regReset(){if(REG.cur||ST.motivo||ST.esp)regEvento("nuevo_paciente");REG.cur=null;const n=document.getElementById("regno");if(n)n.checked=false;const re1=document.getElementById("regre");if(re1)re1.checked=false;const rc=document.getElementById("regrecod");if(rc){rc.value="";rc.style.display="none"}regMsg("")}
 // ─── Vista del registro ───
 // ═══ V5 (v8.0) — Perfil por médico: nombre + PIN de 4 dígitos, verificado en el servidor (bcrypt) ═══
-// Se entra con usuario (el nombre) y PIN en cualquier dispositivo. El perfil activo queda en el dispositivo hasta «Cambiar médico». El servidor solo acepta el médico en un caso o
+// Se entra con usuario (el nombre) y PIN en cualquier dispositivo. El perfil activo queda en el dispositivo hasta «Cerrar sesión» (o pulsar el nombre para cambiar de médico). El servidor solo acepta el médico en un caso o
 // un cierre si entró con su PIN en este dispositivo. Identificación práctica: no es una seguridad fuerte.
 const MED_K="hvcp_medico";
 let MED=(()=>{try{return JSON.parse(localStorage.getItem(MED_K)||"null")}catch(e){return null}})();
@@ -3303,7 +3304,10 @@ function normUsr(t){return String(t||"").normalize("NFD").replace(/[\u0300-\u036
 function perfilBuscar(usr){const L=PF.lista||[],n=normUsr(usr),ex=L.filter(m=>m.nombre.trim().toLowerCase()===usr.trim().toLowerCase());
   if(ex.length===1)return ex[0];const c=L.filter(m=>normUsr(m.nombre)===n);return c.length===1?c[0]:null}
 function medGuardar(m){MED=m;try{m?localStorage.setItem(MED_K,JSON.stringify(m)):localStorage.removeItem(MED_K)}catch(e){}medPintar()}
-function medPintar(){const b=document.getElementById("medbtn");if(b)b.textContent=MED?"👤 "+MED.nombre+" · Cambiar médico":"Elegir médico";const m=document.getElementById("miscasosbtn");if(m)m.style.display=MED?"":"none"}
+function medPintar(){const b=document.getElementById("medbtn");if(b){b.textContent=MED?"👤 "+MED.nombre:"Iniciar sesión";b.title=MED?"Médico activo: pulse para cambiar de médico":"Entrar con usuario y PIN"}
+  const m=document.getElementById("miscasosbtn");if(m)m.style.display=MED?"":"none";const x=document.getElementById("salirbtn");if(x)x.style.display=MED?"":"none"}
+// Cerrar sesión: el servidor deja de aceptar casos a nombre de este médico en este dispositivo y vuelve la pantalla de inicio.
+async function medSalir(){if(!MED)return;if(!confirm("¿Cerrar la sesión de "+MED.nombre+" en este dispositivo?"))return;await medCambiar();toastMsg("Sesión cerrada")}
 async function medVerificar(){
   if(!REG.sb){if(!MED)perfilAbrir();return}
   if(!MED){perfilAbrir();return}
@@ -3344,7 +3348,7 @@ function perfilRender(){
     '<div class="pf-fila"><button class="pf-btn pri" onclick="perfilEntrar()">Entrar</button></div>'+
     '<p class="muted" style="margin-top:14px">¿Primera vez en el motor?</p><div class="pf-fila" style="margin-top:4px"><button class="pf-btn" onclick="PF.vista=\'crear\';PF.msg=\'\';perfilRender()">Crear mi perfil</button></div>';
   el.innerHTML='<div class="pf-caja"><h2>¿Quién atiende?</h2><p class="muted">'+(PF.vista==="crear"?"Cree su perfil una sola vez: después entra con su usuario y PIN en cualquier dispositivo.":"Entre con su usuario y PIN. Funcionan en cualquier dispositivo del hospital.")+'</p>'+
-    (aviso?'<div class="pf-aviso"><b>Identificación práctica, no una seguridad fuerte.</b> El PIN evita confusiones entre colegas; no lo comparta y pulse «Cambiar médico» al terminar su turno. <button class="pf-btn" style="min-height:36px;margin-top:6px" onclick="perfilAvisoOk()">Entendido</button></div>':"")+
+    (aviso?'<div class="pf-aviso"><b>Identificación práctica, no una seguridad fuerte.</b> El PIN evita confusiones entre colegas; no lo comparta y pulse «Cerrar sesión» al terminar su turno. <button class="pf-btn" style="min-height:36px;margin-top:6px" onclick="perfilAvisoOk()">Entendido</button></div>':"")+
     cuerpo+msg+'</div>';
   el.querySelectorAll("input").forEach(i=>{if(i.id&&PF.campos[i.id]!=null)i.value=PF.campos[i.id]});
   const f=PF.vista==="crear"?el.querySelector("#pfnom"):el.querySelector(PF.usr?"#pfpin":"#pfusr");if(f)setTimeout(()=>f.focus(),50);
