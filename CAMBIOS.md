@@ -1,6 +1,6 @@
 # Historial de cambios del Motor Clínico
 
-## v8.0 — compilación 2026-11-27a (base: v7.9.7 compilación 2026-11-27a)
+## v8.0 — compilación 2026-11-27b · publicada el 27/11/2026 a las 17:58 (base: v7.9.7 compilación 2026-11-27a)
 
 Rama `v8.0`, un commit por cambio; PR a `main` sin fusionar (lo aprueba la Dirección General).
 
@@ -114,12 +114,21 @@ Rama `v8.0`, un commit por cambio; PR a `main` sin fusionar (lo aprueba la Direc
 ### Campos nuevos del registro
 `conciencia`, `hemo` (calculado), `hemoCriterios`, `medicoId`, `medico`, `rcp`, `critico`, `version` (8.0). En el servidor: `casos.conciencia`, `critico`, `rcp`, `hemo_criterios`, `medico_id`; `cierres.cerrado_por_medico`.
 
-### Pendientes / límites conocidos
-- **Antes de fusionar:** aplicar las migraciones 08 y 09 en producción (`bjvdjznnktgfweipeshn`), en ese orden. Sin la 08, la v8.0 no puede crear ni usar perfiles; sin la 09, la exportación automática deja de leer el registro.
+### Publicación (27/11/2026, autorizada por la Dirección General)
+- **Producción (`bjvdjznnktgfweipeshn`):** migraciones **06, 08 y 09** aplicadas, en ese orden. La 06 (rol «lector») nunca se había aplicado en producción y la 09 la necesita; la exportación automática entra con la cuenta de administrador, que la 06 no cambia. Verificado: la exportación con el Excel nuevo leyó los 237 casos.
+- **Compilación 2026-11-27b** (la 27a era la v7.9.7). PR n.º 1 fusionado en `main` (`42819de`); GitHub Pages publica la v8.0.
+- **Análisis diario:** instrucciones y scripts del tablero nuevos activos en la tarea «hvcp-analisis-diario-motor» desde la corrida del 28/11 a las 10:10.
+- `tests/flujo.spec.js` (pruebas de la v7) actualizado: perfil de médico simulado, peso, pulso, condición corporal y conciencia.
+
+### Inicio con usuario y PIN — compilación 2026-11-27c (pedido por Melvyn el 27/11/2026)
+- **Qué cambió:** la pantalla «¿Quién atiende?» ya no muestra la lista de nombres. Pide **usuario** (el nombre con que se creó el perfil) y **PIN**, y funciona en cualquier dispositivo: el PIN se verifica en el servidor y el dispositivo queda registrado para ese médico. El usuario no distingue mayúsculas, acentos ni espacios de más. «Crear mi perfil» sigue disponible para la primera vez.
+- **Sin cambios en el servidor:** usa `listar_medicos` y `entrar_medico` de la 08 (mismo bloqueo de 60 s tras 5 PIN incorrectos).
+- **Corrección:** lo escrito en la pantalla de perfil ya no se borra si la pantalla se vuelve a dibujar mientras carga.
+- **Pruebas:** `v8_medicos.spec.js` (sin lista de nombres, usuario inexistente, usuario en mayúsculas y con espacios, bloqueo, otro dispositivo) y `flujo.spec.js` (el primer dispositivo crea el perfil y los demás entran con usuario y PIN). Captura: `docs/v8/capturas/v5-inicio-usuario-pin.png`.
+
+### Límites conocidos
 - Seguridad del PIN: 4 dígitos con bcrypt y bloqueo por intentos; protege contra errores y uso casual, no contra alguien con acceso a la cuenta del dispositivo.
-- Si se aplica después la 06 (rol lector), su `admin_casos` debe conservar el nombre del médico de la 08.
 - Borrador por dispositivo (localStorage): no pasa de un dispositivo a otro.
-- Segunda parte: columnas nuevas en la exportación y cambios en el análisis.
 
 ## v7.9.7 · 27/11/2026 10:45 · heridas por mordedura frente a politrauma (M14)
 

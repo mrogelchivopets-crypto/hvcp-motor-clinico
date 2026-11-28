@@ -67,8 +67,14 @@ test("V5: perfiles, PIN, bloqueo, «Mis casos» y cierre desde el panel (celular
   // En la tablet, «Cambiar médico» → perfil A con PIN incorrecto 5 veces: bloqueo de 60 s
   await d2.page.locator("#medbtn").click();
   await expect(d2.page.locator("#perfil")).toBeVisible({ timeout: 20000 });
-  await expect(d2.page.locator("#perfil .pf-lista button", { hasText: A.nombre })).toBeVisible({ timeout: 20000 });
-  await d2.page.locator("#perfil .pf-lista button", { hasText: A.nombre }).click();
+  // Inicio con usuario y PIN: no se muestra la lista de nombres
+  await expect(d2.page.locator("#pfusr")).toBeVisible({ timeout: 20000 });
+  await expect(d2.page.locator("#perfil .pf-lista")).toHaveCount(0);
+  await expect(d2.page.locator("#perfil")).not.toContainText(A.nombre);
+  // Usuario inexistente: mensaje claro
+  await d2.page.locator("#pfusr").fill("Nadie Con Este Nombre"); await d2.page.locator("#pfpin").fill("1111"); await d2.page.getByRole("button", { name: "Entrar" }).click();
+  await expect(d2.page.locator(".pf-msg")).toContainText("No existe un perfil con ese usuario", { timeout: 20000 });
+  await d2.page.locator("#pfusr").fill(A.nombre);
   for (let i = 1; i <= 5; i++) {
     await d2.page.locator("#pfpin").fill("0000"); await d2.page.getByRole("button", { name: "Entrar" }).click();
     await expect(d2.page.locator(".pf-msg")).toContainText(i < 5 ? `Le quedan ${5 - i} intento` : "Espere 60 s", { timeout: 20000 });
@@ -99,9 +105,9 @@ test("V5: perfiles, PIN, bloqueo, «Mis casos» y cierre desde el panel (celular
   expect(fa.caso.ent.conc).toBe("alerta");
 
   // Tablet: «Mis casos» de B (vuelve a entrar como B)
-  await d2.page.evaluate(() => { PF.sel = null; PF.msg = ""; perfilRender(); });
-  await expect(d2.page.locator("#perfil .pf-lista button", { hasText: B.nombre })).toBeVisible({ timeout: 20000 });
-  await d2.page.locator("#perfil .pf-lista button", { hasText: B.nombre }).click();
+  // Usuario sin distinguir mayúsculas ni espacios de más
+  await d2.page.evaluate(() => { PF.msg = ""; perfilRender(); });
+  await d2.page.locator("#pfusr").fill("  " + B.nombre.toUpperCase() + " ");
   await d2.page.locator("#pfpin").fill(B.pin); await d2.page.getByRole("button", { name: "Entrar" }).click();
   await expect(d2.page.locator("#perfil")).toBeHidden({ timeout: 20000 });
   await d2.page.locator("#miscasosbtn").click();

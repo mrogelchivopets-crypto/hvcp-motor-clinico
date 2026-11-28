@@ -7,7 +7,7 @@
 -- · casos: conciencia, critico, rcp, hemo_criterios y medico_id. cierres: cerrado_por_medico.
 -- · Funciones: listar_medicos, crear_medico, entrar_medico, salir_medico, mis_casos.
 -- Compatible con la v7.9.7 publicada: los campos nuevos son opcionales.
--- Si después se aplica la 06 (rol lector), su admin_casos debe conservar el nombre del médico.
+-- La 09 reemplaza admin_casos con puede_leer() de la 06 (administrador o lector) y conserva el nombre del médico.
 -- ═══════════════════════════════════════════════════════════════
 
 create table if not exists public.medicos (

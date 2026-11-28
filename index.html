@@ -122,6 +122,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .pf-caja h2{font-size:20px;margin:0 0 6px}.pf-caja .muted{margin-bottom:10px}
 .pf-lista{display:flex;flex-direction:column;gap:8px;margin:12px 0}.pf-lista button,.pf-btn{min-height:48px;font-size:16px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);padding:10px 14px;text-align:left;cursor:pointer}
 .pf-btn.pri{background:var(--accent);border-color:var(--accent);color:#fff;text-align:center}.pf-fila{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.pf-fila .pf-btn{flex:1;text-align:center}
+.pf-lbl{display:block;font-size:13px;font-weight:600;margin:10px 0 4px;color:var(--text)}
 .pf-in{width:100%;min-height:48px;font-size:18px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);padding:8px 12px;margin:6px 0}
 .pf-pin{letter-spacing:.5em;text-align:center;font-family:var(--mono)}
 .pf-msg{margin-top:8px;font-size:14px}.pf-msg.err{color:#FCA5A5}.pf-aviso{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:10px 12px;font-size:13.5px;margin:10px 0}
@@ -3168,7 +3169,7 @@ const VCAP={"14":"Enfermedades de la Piel y Tejido Subcutáneo","01":"Enfermedad
 // ═══════════════════════════════════════════════════════════════
 // V6 (v8.0): única fuente de la versión. Se usa en el título, el encabezado, la nota SOAP, el pie y el registro.
 // version.json (raíz del repositorio) debe tener los mismos valores: «Nuevo paciente» lo compara para actualizar.
-const MC_VERSION="8.0", MC_BUILD="2026-11-27b";
+const MC_VERSION="8.0", MC_BUILD="2026-11-27c";
 const MOTOR_VER=MC_VERSION; // nombre anterior (registro, scripts de catálogo, exportación y retroalimentación)
 document.title="HVCP ER Motor Clínico v"+MC_VERSION+" · registro en línea";
 {const h=document.getElementById("htitle");if(h)h.textContent="Motor Clínico de Urgencias v"+MC_VERSION+" · registro en línea";}
@@ -3291,11 +3292,16 @@ async function regGuardar(prueba){
 function regReset(){if(REG.cur||ST.motivo||ST.esp)regEvento("nuevo_paciente");REG.cur=null;const n=document.getElementById("regno");if(n)n.checked=false;const re1=document.getElementById("regre");if(re1)re1.checked=false;const rc=document.getElementById("regrecod");if(rc){rc.value="";rc.style.display="none"}regMsg("")}
 // ─── Vista del registro ───
 // ═══ V5 (v8.0) — Perfil por médico: nombre + PIN de 4 dígitos, verificado en el servidor (bcrypt) ═══
-// El perfil activo queda en el dispositivo hasta «Cambiar médico». El servidor solo acepta el médico en un caso o
+// Se entra con usuario (el nombre) y PIN en cualquier dispositivo. El perfil activo queda en el dispositivo hasta «Cambiar médico». El servidor solo acepta el médico en un caso o
 // un cierre si entró con su PIN en este dispositivo. Identificación práctica: no es una seguridad fuerte.
 const MED_K="hvcp_medico";
 let MED=(()=>{try{return JSON.parse(localStorage.getItem(MED_K)||"null")}catch(e){return null}})();
-const PF={vista:"lista",lista:null,sel:null,msg:"",err:false,ocupado:false};
+const PF={vista:"lista",lista:null,sel:null,usr:"",campos:{},msg:"",err:false,ocupado:false};
+// Usuario = nombre del perfil, sin distinguir mayúsculas, acentos ni espacios de más (el servidor no admite dos
+// perfiles con el mismo nombre). Funciona en cualquier dispositivo: el PIN se verifica en el servidor.
+function normUsr(t){return String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\s+/g," ").trim()}
+function perfilBuscar(usr){const L=PF.lista||[],n=normUsr(usr),ex=L.filter(m=>m.nombre.trim().toLowerCase()===usr.trim().toLowerCase());
+  if(ex.length===1)return ex[0];const c=L.filter(m=>normUsr(m.nombre)===n);return c.length===1?c[0]:null}
 function medGuardar(m){MED=m;try{m?localStorage.setItem(MED_K,JSON.stringify(m)):localStorage.removeItem(MED_K)}catch(e){}medPintar()}
 function medPintar(){const b=document.getElementById("medbtn");if(b)b.textContent=MED?"👤 "+MED.nombre+" · Cambiar médico":"Elegir médico";const m=document.getElementById("miscasosbtn");if(m)m.style.display=MED?"":"none"}
 async function medVerificar(){
@@ -3309,17 +3315,20 @@ async function medCambiar(){
   medGuardar(null);PF.msg="";PF.err=false;PF.vista="lista";perfilAbrir();
 }
 async function perfilAbrir(){
-  const el=document.getElementById("perfil");if(!el)return;el.style.display="flex";PF.sel=null;
-  if(!REG.sb){PF.lista=null;perfilRender();return}
-  PF.ocupado=true;perfilRender();
+  const el=document.getElementById("perfil");if(!el)return;PF.sel=null;
+  if(!REG.sb){el.style.display="flex";PF.lista=null;perfilRender();return}
+  // El formulario aparece de inmediato; la lista (para buscar el usuario) se carga en segundo plano y no
+  // vuelve a dibujar la pantalla, así no se pierde lo que el médico está escribiendo.
+  const yaVisible=el.style.display==="flex"&&el.querySelector("#pfusr,#pfnom");
+  el.style.display="flex";if(!yaVisible)perfilRender();
   try{await regSesionLista();const {data,error}=await REG.sb.rpc("listar_medicos");if(error)throw error;PF.lista=data||[]}
-  catch(e){PF.lista=null;PF.msg="No se pudo cargar la lista de médicos. Revise la conexión.";PF.err=true}
-  PF.ocupado=false;perfilRender();
+  catch(e){PF.lista=null}
 }
-function perfilCerrar(){const el=document.getElementById("perfil");if(el)el.style.display="none"}
+function perfilCerrar(){const el=document.getElementById("perfil");if(el)el.style.display="none";PF.campos={}}
 function perfilAvisoOk(){try{localStorage.setItem("hvcp_aviso_pin","1")}catch(e){}perfilRender()}
 function perfilRender(){
   const el=document.getElementById("perfil");if(!el)return;
+  el.querySelectorAll("input").forEach(i=>{if(i.id)PF.campos[i.id]=i.value});
   let aviso=false;try{aviso=!localStorage.getItem("hvcp_aviso_pin")}catch(e){}
   const msg=PF.msg?'<div class="pf-msg'+(PF.err?" err":"")+'" role="alert">'+esc(PF.msg)+'</div>':"";
   let cuerpo;
@@ -3330,23 +3339,27 @@ function perfilRender(){
     '<input id="pfpin" class="pf-in pf-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="PIN">'+
     '<input id="pfpin2" class="pf-in pf-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="Confirme el PIN">'+
     '<div class="pf-fila"><button class="pf-btn" onclick="PF.vista=\'lista\';PF.msg=\'\';perfilRender()">Volver</button><button class="pf-btn pri" onclick="perfilCrear()">Crear y entrar</button></div>';
-  else if(PF.sel) cuerpo='<p class="muted">'+esc(PF.sel.nombre)+'</p><input id="pfpin" class="pf-in pf-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="PIN" onkeydown="if(event.key===\'Enter\')perfilEntrar()">'+
-    '<div class="pf-fila"><button class="pf-btn" onclick="PF.sel=null;PF.msg=\'\';perfilRender()">Volver</button><button class="pf-btn pri" onclick="perfilEntrar()">Entrar</button></div>';
-  else cuerpo=(PF.lista&&PF.lista.length?'<div class="pf-lista">'+PF.lista.map(m=>'<button onclick="perfilElegir(\''+m.id+'\')">'+esc(m.nombre)+'</button>').join("")+'</div>':'<p class="muted">Todavía no hay perfiles.</p>')+
-    '<div class="pf-fila"><button class="pf-btn" onclick="PF.vista=\'crear\';PF.msg=\'\';perfilRender()">Crear mi perfil</button></div>';
-  el.innerHTML='<div class="pf-caja"><h2>¿Quién atiende?</h2><p class="muted">Elija su perfil para registrar los casos a su nombre.</p>'+
+  else cuerpo='<label class="pf-lbl" for="pfusr">Usuario</label><input id="pfusr" class="pf-in" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="Su nombre, como creó el perfil" maxlength="80" value="'+esc(PF.usr)+'" oninput="PF.usr=this.value" onkeydown="if(event.key===\'Enter\')document.getElementById(\'pfpin\').focus()">'+
+    '<label class="pf-lbl" for="pfpin">PIN</label><input id="pfpin" class="pf-in pf-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="4 dígitos" onkeydown="if(event.key===\'Enter\')perfilEntrar()">'+
+    '<div class="pf-fila"><button class="pf-btn pri" onclick="perfilEntrar()">Entrar</button></div>'+
+    '<p class="muted" style="margin-top:14px">¿Primera vez en el motor?</p><div class="pf-fila" style="margin-top:4px"><button class="pf-btn" onclick="PF.vista=\'crear\';PF.msg=\'\';perfilRender()">Crear mi perfil</button></div>';
+  el.innerHTML='<div class="pf-caja"><h2>¿Quién atiende?</h2><p class="muted">'+(PF.vista==="crear"?"Cree su perfil una sola vez: después entra con su usuario y PIN en cualquier dispositivo.":"Entre con su usuario y PIN. Funcionan en cualquier dispositivo del hospital.")+'</p>'+
     (aviso?'<div class="pf-aviso"><b>Identificación práctica, no una seguridad fuerte.</b> El PIN evita confusiones entre colegas; no lo comparta y pulse «Cambiar médico» al terminar su turno. <button class="pf-btn" style="min-height:36px;margin-top:6px" onclick="perfilAvisoOk()">Entendido</button></div>':"")+
     cuerpo+msg+'</div>';
-  const f=el.querySelector("#pfpin,#pfnom");if(f)setTimeout(()=>f.focus(),50);
+  el.querySelectorAll("input").forEach(i=>{if(i.id&&PF.campos[i.id]!=null)i.value=PF.campos[i.id]});
+  const f=PF.vista==="crear"?el.querySelector("#pfnom"):el.querySelector(PF.usr?"#pfpin":"#pfusr");if(f)setTimeout(()=>f.focus(),50);
 }
-function perfilElegir(id){PF.sel=(PF.lista||[]).find(m=>m.id===id)||null;PF.msg="";perfilRender()}
 function perfilError(d){const E={pin_incorrecto:"PIN incorrecto."+(d.restantes!=null?" Le quedan "+d.restantes+" intento"+(d.restantes===1?"":"s")+".":""),bloqueado:"Demasiados intentos. Espere "+(d.segundos||60)+" s.",no_existe:"Ese perfil ya no existe.",nombre_invalido:"Escriba el nombre completo (3 a 80 caracteres).",pin_invalido:"El PIN debe tener 4 dígitos.",nombre_existe:"Ya existe un perfil con ese nombre.",demasiados_perfiles:"Demasiados perfiles nuevos desde este dispositivo. Intente en una hora."};return E[d.error]||"No se pudo completar. Intente de nuevo."}
 async function perfilEntrar(){
-  const pin=(document.getElementById("pfpin")||{}).value||"";
+  const usr=((document.getElementById("pfusr")||{}).value||PF.usr||"").trim(),pin=(document.getElementById("pfpin")||{}).value||"";PF.usr=usr;
+  if(!usr){PF.msg="Escriba su usuario (su nombre, como creó el perfil).";PF.err=true;perfilRender();return}
   if(!/^[0-9]{4}$/.test(pin)){PF.msg="El PIN debe tener 4 dígitos.";PF.err=true;perfilRender();return}
-  try{const {data,error}=await REG.sb.rpc("entrar_medico",{p_id:PF.sel.id,p_pin:pin});if(error)throw error;
+  try{if(!PF.lista){await regSesionLista();const r=await REG.sb.rpc("listar_medicos");if(r.error)throw r.error;PF.lista=r.data||[]}
+    PF.sel=perfilBuscar(usr);
+    if(!PF.sel){PF.msg="No existe un perfil con ese usuario. Revise cómo lo escribió o cree su perfil.";PF.err=true;perfilRender();return}
+    const {data,error}=await REG.sb.rpc("entrar_medico",{p_id:PF.sel.id,p_pin:pin});if(error)throw error;
     if(data.error){PF.msg=perfilError(data);PF.err=true;perfilRender();return}
-    medGuardar({id:data.id,nombre:data.nombre});PF.msg="";perfilCerrar();renderAll()}
+    medGuardar({id:data.id,nombre:data.nombre});PF.msg="";PF.usr="";perfilCerrar();renderAll()}
   catch(e){PF.msg="No se pudo verificar el PIN. Revise la conexión.";PF.err=true;perfilRender()}
 }
 async function perfilCrear(){
